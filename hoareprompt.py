@@ -4,6 +4,7 @@ import ast
 import astor
 from ast import AST
 from enum import Enum, auto
+import json
 
 import openai
 from tenacity import (
@@ -15,7 +16,13 @@ from tenacity import (
 MODEL = "gpt-3.5-turbo"
 
 VERIFYER_SYSTEM_PROMPT = """
-You are a program verifyer that completes Hoare triples. Each triple consists of a precondition written in natural language, a program fragment, and a postcondition written in natural language. The precondition describes the initial state, that is the values of program varibles before the fragment is executed. The postcondition describe the values of program variables as well as the relationship between them after the fragment is executed. In precondition and postcondition, do not describe how the program operates. Only describe the values of program variables and their relationship.
+You are assigned the role of a program verifier, responsible for completing Hoare triples. Each Hoare triple is made up of three components: a precondition, a program fragment, and a postcondition. The precondition and the postcondition are expressed in natural language.
+
+Precondition: describes the initial state of the program variables before the execution of the program fragment. This description should only include the values of the variables, without detailing the operational aspects of the program.
+
+Program Fragment: This is a given part of the task and is not something you need to create or modify.
+
+Postcondition: describes the state of the program variables after the execution of the program fragment with the initial state described in the precondition. This description should include both the values of the variables and the relationships between them. Similar to the precondition, avoid explaining how the program operates; concentrate solely on the variable values and their interrelations.
 """
 
 DEFAULT_TEMPERATURE = 0.7
@@ -37,6 +44,14 @@ class State(Enum):
     BOTTOM = auto()    
     UNKNOWN = auto()
 
+def print_state(s):
+    if s == State.UNKNOWN:
+        return "the state is unknown"
+    if s == State.TOP:
+        return "variables can hold any values"
+    if s == State.BOTTOM:
+        return "the state is unreachable"
+    return s
 
 @dataclass
 class Triple:
@@ -45,7 +60,7 @@ class Triple:
     postcondition: str
 
     def __str__(self):
-        return f"{{ {self.precondition} }}\n{pprint_cmd(self.command)}{{ {self.postcondition} }}"
+        return f"{{ {print_state(self.precondition)} }}\n{pprint_cmd(self.command)}{{ {print_state(self.postcondition)} }}"
 
     def with_postcondition(self, pc):
         return Triple(self.precondition, self.command, pc)
@@ -58,7 +73,8 @@ def complete_triple(context_triples, incomplete_triple):
         msgs.append({"role": "system", "name": "example_user", "content": format_prompt(ctx)})
     msgs.append({"role": "user", "content": format_prompt(incomplete_triple)})
     response = completion_with_backoff(model=MODEL, messages=msgs, temperature=DEFAULT_TEMPERATURE)
-    return postprocess_completion(response.choices[0].message.content)
+    post = postprocess_completion(response.choices[0].message.content)
+    return post
 
 def postprocess_completion(s):
     keyword = "Postcondition:"
@@ -79,36 +95,19 @@ def format_prompt(triple):
 
 
 source = """
-n = int(input())
-a = list(map(int, input().split()))
+if n <= 1:
+  return n
 
-max_a = max(a)
-min_d = float('inf')
+prev, curr = 0, 1
+for _ in range(2, n + 1):
+  prev, curr = curr, prev + curr
 
-for D in range(max_a + 1):
-    max_ai = float('-inf')
-    min_ai = float('inf')
-    
-    for ai in a:
-        max_ai = max(max_ai, ai + D)
-        min_ai = min(min_ai, ai - D)
-    
-    if (max_ai - min_ai) % (2 * D) == 0:
-        min_d = min(min_d, D)
-
-if min_d == float('inf'):
-    print(-1)
-else:
-    print(min_d)
+return curr
 """
 
 generic_ctx = [
     Triple(
-        "Unknown state",
-        parse_stmt("z = 1"),
-        "z is 1"),
-    Triple(
-        "Unknown state",
+        State.TOP,
         parse_stmt("n = int(input())"),
         "n is an input integer"),
     Triple(
@@ -118,18 +117,14 @@ generic_ctx = [
     Triple(
         "x is greater than zero",
         parse_stmt("x = x + 1"),
-        "x is greater than one"),
-    Triple(
-        "Any",
-        parse_stmt("x = input()"),
-        "x is a program input"),
+        "x is greater than one")
 ]
 
 def complete_triple_cot(triple):
     assert triple.postcondition == State.UNKNOWN
-    if isinstance(triple.command, ast.Assign) or isinstance(triple.command, ast.Expr):
+    if isinstance(triple.command, ast.Assign) or isinstance(triple.command, ast.Expr) or isinstance(triple.command, ast.Return):
         post = complete_triple(generic_ctx, triple)
-        return triple.with_postcondition(post)
+        return post
     if isinstance(triple.command, list):
         pre = triple.precondition
         ctx = []
@@ -147,19 +142,19 @@ def complete_triple_cot(triple):
             ctx.append(Triple(pre, triple.command.orelse, else_completion))
         return complete_triple(ctx, triple)
     if isinstance(triple.command, ast.For):
-        pre = State.UNKNOWN
+        pre = State.TOP
         body_completion = complete_triple_cot(Triple(pre, triple.command.body, State.UNKNOWN))
         ctx = [Triple(pre, triple.command.body, body_completion)]
         return complete_triple(ctx, triple)
     if isinstance(triple.command, ast.While):
-        pre = State.UNKNOWN
+        pre = State.TOP
         body_completion = complete_triple_cot(Triple(pre, triple.command.body, State.UNKNOWN))
         ctx = [Triple(pre, triple.command.body, body_completion)]
         return complete_triple(ctx, triple)
     raise ValueError(f"unsupported statement type: {triple.command} {pprint_cmd(triple.command)}")
 
 cmd = ast.parse(source).body
-triple = Triple(State.UNKNOWN, cmd, State.UNKNOWN)
+triple = Triple("n is a positive integer", cmd, State.UNKNOWN)
 
 print(triple)
 
@@ -170,5 +165,3 @@ print(post)
 print("============= CoT: =============")
 post_cot = complete_triple_cot(triple)
 print(post_cot)
-
-
