@@ -5,6 +5,7 @@ import astor
 from ast import AST
 from enum import Enum, auto
 import json
+from groq import Groq
 
 import openai
 from tenacity import (
@@ -14,6 +15,8 @@ from tenacity import (
 )  # for exponential backoff
 
 MODEL = "gpt-3.5-turbo"
+
+#MODEL = "mixtral-8x7b-32768"
 
 VERIFYER_SYSTEM_PROMPT = """
 You are assigned the role of a program verifier, responsible for completing Hoare triples. Each Hoare triple is made up of three components: a precondition, a program fragment, and a postcondition. The precondition and the postcondition are expressed in natural language.
@@ -28,11 +31,15 @@ Postcondition: describes the state of the program variables after the execution 
 DEFAULT_TEMPERATURE = 0.7
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
+client = Groq(
+    api_key=os.environ.get("GROQ_API_KEY"),
+)
 
 
 @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
 def completion_with_backoff(**kwargs):
     return openai.ChatCompletion.create(**kwargs)
+#    return client.chat.completions.create(**kwargs)
 
 
 def parse_stmt(source):
