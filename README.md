@@ -12,13 +12,15 @@ Depending on the used LLM, define environment variables holding API keys, `OPENA
 
 ## Usage
 
-HoarePrompt's key feature is assessing if a given implementation is consistent with a given problem description. It can be executed as 
+HoarePrompt's key feature is assessing if a given implementation is consistent with a given problem description. It can be done by executing the command
 
     python hoareprompt.py assess --description <FILE> --program <FILE>
     
-HoarePrompt also provides commands to run intermediate assessment steps. This is to extract a precondition from a problem description:
+that prints either `CORRECT` or `INCORRECT` on STDOUT.
+    
+HoarePrompt also provides commands to run intermediate assessment steps. This is to extract a precondition from a problem description (printed on STDOUT):
 
-    python hoareprompt.py extract-precondition --description <FILE> --output <FILE>
+    python hoareprompt.py extract-precondition --description <FILE>
         
 This is to compute a postcondition, given a program and a precondition:
 
@@ -28,7 +30,7 @@ This is to assess if a program is consistent with a program description based on
 
     python hoareprompt.py check-entailment --description <FILE> --postcondition <FILE> --program <FILE> 
 
-Adding `--cex <FILE>` to the last command will also output a counterexample.
+Adding `--cex <FILE>` to `assess` or `check-entailment` commands will also output a counterexample.
 
 Adding `--log <DIR>` to any of these commands saves detailed logs in the specified directory.
 
