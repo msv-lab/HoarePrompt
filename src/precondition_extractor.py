@@ -92,5 +92,21 @@ Program:
 {program}
 ```
 
-Precondition:
 """
+
+def extract_precondition_from_response(response_content):
+    pattern = r"Precondition:\s*\*\*(.*?)\*\*|Precondition:\s*(.*)"
+    match = re.search(pattern, response_content)
+    if match:
+        if match.group(1):
+            return match.group(1).strip()
+        elif match.group(2):
+            return match.group(2).strip()
+    return response_content
+
+
+def default(model, description, program):
+    prompt = PRECONDITION_EXTRACTION_PROMPT_TEMPLATE.format(program=program, description=description)
+    response = model.query(prompt)
+    return extract_precondition_from_response(response)
+    

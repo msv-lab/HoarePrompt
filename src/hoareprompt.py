@@ -4,6 +4,8 @@ from pathlib import Path
 from model import get_model
 
 import precondition_extractor
+import entailment
+import comment_style
 
 
 def main():
@@ -13,10 +15,10 @@ def main():
 
     subparsers = parser.add_subparsers(dest='command', help="Available commands")
 
-    classify_parser = subparsers.add_parser('classify', help="Assess if a program is consistent with a description")
-    classify_parser.add_argument('--description', type=str, required=True, help="Path to the description file")
-    classify_parser.add_argument('--program', type=str, required=True, help="Path to the program file")
-    classify_parser.add_argument('--cex', type=str, help="Output file for the counterexample")
+    assess_parser = subparsers.add_parser('assess', help="Assess if a program is consistent with a description")
+    assess_parser.add_argument('--description', type=str, required=True, help="Path to the description file")
+    assess_parser.add_argument('--program', type=str, required=True, help="Path to the program file")
+    assess_parser.add_argument('--cex', type=str, help="Output file for the counterexample")
 
     extract_pre_parser = subparsers.add_parser('extract-precondition', help="Extract a precondition from a problem description")
     extract_pre_parser.add_argument('--description', type=str, required=True, help="Path to the description file")
@@ -47,12 +49,12 @@ def main():
         log_directory = Path(args.log)
         log_directory.mkdir(parents=True, exist_ok=True)
 
-    if args.command == 'classify':
+    if args.command == 'assess':
         with open(args.description, 'r') as f:
             description = f.read()
         with open(args.program, 'r') as f:
             program = f.read()
-        classify(description, program, config, log_directory)
+        assess(description, program, config, log_directory)
     elif args.command == 'extract-precondition':
         with open(args.description, 'r') as f:
             description = f.read()
@@ -77,7 +79,10 @@ def main():
         parser.print_help()
 
 
-def classify(description, program, model, config, log_directory):
+def assess(description, program, model, config, log_directory):
+
+    assert config['assessment-mode'] == 'postcondition-entailment'
+    
     with (log_directory / 'program.py').open("w", encoding ="utf-8") as f:
         f.write(program)
     with (log_directory / 'description.txt').open("w", encoding ="utf-8") as f:
@@ -99,15 +104,31 @@ def classify(description, program, model, config, log_directory):
 def extract_precondition(description, program, config, log_directory):
     model = get_model(config["model"], config["temperature"], log_directory)
 
-    return precondition_extractor.naive(description, model)
+    return precondition_extractor.default(model, description, program)
 
 
 def compute_postcondition(precondition, program, config, log_directory):
     model = get_model(config["model"], config["temperature"], log_directory)
 
+    if config['postcondition-mode'] == 'hoarecot':
+        sp_algorithms = {
+            "comment-style": comment_style.compute_postcondition
+        }
+
+        sp = sp_algorithms[config['postcondition-cot-prompt']]
+        
+        return sp(model, precondition, program, config)
+    else:
+        raise NotImplementedError
+
 
 def check_entailment(description, postcondition, program, config, log_directory):
     model = get_model(config["model"], config["temperature"], log_directory)
+
+    if config['entailment-mode'] == 'naive':
+        entailment.naive(model, description, postcondition, program, config)
+
+    raise NotImplementedError
 
 
 if __name__ == "__main__":

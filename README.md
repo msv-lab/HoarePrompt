@@ -14,7 +14,7 @@ Depending on the used LLM, define environment variables holding API keys, `OPENA
 
 HoarePrompt's key feature is assessing if a given implementation is consistent with a given problem description. It can be done by executing the command
 
-    python hoareprompt.py classify --description <FILE> --program <FILE>
+    python hoareprompt.py assess --description <FILE> --program <FILE>
     
 that prints either `CORRECT` or `INCORRECT` on STDOUT.
     
@@ -40,13 +40,13 @@ By default, HoarePrompt uses configuration options specified in "default-config.
 
 - `model`: check `src/model.py` for supported models
 - `temperature`
-- `classification-mode`:
+- `assessment-mode`:
   - `naive`: directly ask the model
   - `zero-shot-cot`: ask to reason step-by-step
   - `postcondition-entailment`: compute postcondition and check entailment
 - `postcondition-mode`:
   - `one-step`: compute postcondition in one step
-  - `cot`: compute postcondition step-by-step
+  - `hoarecot`: compute postcondition step-by-step
 - `postcondition-cot-prompt`:
   - `comment-style`: state description is embedded in comments
   - `few-shot-style`: Hoare logic premises are used as few-shot examples

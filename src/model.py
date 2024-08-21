@@ -1,9 +1,10 @@
+import os
 from abc import ABC, abstractmethod
 from pathlib import Path
 
 from groq import Groq
 
-import openai
+from openai import OpenAI
 
 from tenacity import (
     retry,
@@ -41,8 +42,8 @@ class Model(ABC):
         response = self._query(prompt)
         
         if self.log_directory:
-            prompt_file = f"{self.log_counter:04}.prompt.md"
-            response_file = f"{self.log_counter:04}.response.md"
+            prompt_file = self.log_directory / f"{self.log_counter:04}.prompt.md"
+            response_file = self.log_directory / f"{self.log_counter:04}.response.md"
             with prompt_file.open("w", encoding ="utf-8") as f:
                 f.write(prompt)
             with response_file.open("w", encoding ="utf-8") as f:
@@ -59,24 +60,30 @@ class Model(ABC):
 class OpenAIModel(Model):
 
     def __init__(self, name, temperature, log_directory):
+        self.log_directory = log_directory
         if log_directory:
             self.log_counter = 0
         self.name = name
         self.temperature = temperature
+
+        self.client = OpenAI(
+            api_key=os.environ.get("OPENAI_API_KEY"),
+        )
         
-        openai.api_key = os.getenv("OPENAI_API_KEY")
 
     @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
     def _query(self, prompt):
-        return openai.ChatCompletion.create(
+        response = self.client.chat.completions.create(
             model=self.name,
-            messages={"role": "user", "content": prompt},
+            messages=[{"role": "user", "content": prompt}],
             temperature=self.temperature)
+        return response.choices[0].message.content
 
 
 class GroqModel(Model):
     
     def __init__(self, name, temperature, log_directory):
+        self.log_directory = log_directory
         if log_directory:
             self.log_counter = 0
         self.name = name
@@ -85,9 +92,10 @@ class GroqModel(Model):
             api_key=os.environ.get("GROQ_API_KEY"),
         )
 
-    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))        
+    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
     def _query(self, prompt):
-        return self.client.chat.ChatCompletion.create(
+        response = self.client.chat.ChatCompletion.create(
             model=self.name,
-            messages={"role": "user", "content": prompt},
+            messages=[{"role": "user", "content": prompt}],
             temperature=self.temperature)
+        return response.choices[0].message.content

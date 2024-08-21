@@ -1,8 +1,8 @@
 {
-    "model": "gpt-3.5-turbo-0125"
+    "model": "gpt-3.5-turbo-0125",
     "temperature": 0.7,
-    "classification-mode": "postcondition-entailment",
-    "postcondition-mode": "cot",
+    "assessment-mode": "postcondition-entailment",
+    "postcondition-mode": "hoarecot",
     "postcondition-cot-prompt": "comment-style",
     "loop-unrolling-count": 0,
     "entailment-mode": "naive"
