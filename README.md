@@ -18,17 +18,19 @@ HoarePrompt's key feature is assessing if a given implementation is consistent w
     
 HoarePrompt also provides commands to run intermediate assessment steps. This is to extract a precondition from a problem description:
 
-    python hoareprompt.py extract-pre --description <FILE> --output <FILE>
+    python hoareprompt.py extract-precondition --description <FILE> --output <FILE>
         
 This is to compute a postcondition, given a program and a precondition:
 
-    python hoareprompt.py compute-post --precondition <FILE> --program <FILE> 
+    python hoareprompt.py compute-postcondition --precondition <FILE> --program <FILE> 
 
 This is to assess if a program is consistent with a program description based on the inferred postcondition:
 
-    python hoareprompt.py assess --description <FILE> --postcondition <FILE> --program <FILE> 
+    python hoareprompt.py check-entailment --description <FILE> --postcondition <FILE> --program <FILE> 
 
 Adding `--cex <FILE>` to the last command will also output a counterexample.
+
+Adding `--log <DIR>` to any of these commands saves detailed logs in the specified directory.
 
 ## Configuration
 
