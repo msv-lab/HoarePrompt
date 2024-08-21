@@ -36,7 +36,7 @@ Adding `--log <DIR>` to any of these commands saves detailed logs in the specifi
 
 ## Configuration
 
-By default, HoarePrompt uses configuration options specified in "default-config.json". A custom config can be supplied using the option `--config <FILE>`. There are the main supported options:
+By default, HoarePrompt uses configuration options specified in "default-config.json". A custom config can be supplied using the option `--config <FILE>`. These are the main supported options:
 
 - `model`: check `src/model.py` for supported models
 - `temperature`
