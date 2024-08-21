@@ -18,9 +18,9 @@ HoarePrompt's key feature is assessing if a given implementation is consistent w
     
 that prints either `CORRECT` or `INCORRECT` on STDOUT.
     
-HoarePrompt also provides commands to run intermediate assessment steps. This is to extract a precondition from a problem description (printed on STDOUT):
+HoarePrompt also provides commands to run intermediate assessment steps. This is to extract a precondition for a given program from a problem description (printed on STDOUT):
 
-    python hoareprompt.py extract-precondition --description <FILE>
+    python hoareprompt.py extract-precondition --description <FILE> --program <FILE>
         
 This is to compute a postcondition, given a program and a precondition:
 
