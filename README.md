@@ -14,7 +14,7 @@ Depending on the used LLM, define environment variables holding API keys, `OPENA
 
 HoarePrompt's key feature is assessing if a given implementation is consistent with a given problem description. It can be done by executing the command
 
-    python hoareprompt.py assess --description <FILE> --program <FILE>
+    python hoareprompt.py classify --description <FILE> --program <FILE>
     
 that prints either `CORRECT` or `INCORRECT` on STDOUT.
     
@@ -38,9 +38,21 @@ Adding `--log <DIR>` to any of these commands saves detailed logs in the specifi
 
 By default, HoarePrompt uses configuration options specified in "default-config.json". A custom config can be supplied using the option `--config <FILE>`. There are the main supported options:
 
-- `model`
+- `model`: check `src/model.py` for supported models
 - `temperature`
-- `context-in-prompt`: how code context is represented in the prompt, can be either `comment-style` or `few-shot-style`
-- `loop-unrolling-count`: how many time the loops are unrolled during analysis. `0` disables loop summarisation.
+- `classification-mode`:
+  - `naive`: directly ask the model
+  - `zero-shot-cot`: ask to reason step-by-step
+  - `postcondition-entailment`: compute postcondition and check entailment
+- `postcondition-mode`:
+  - `one-step`: compute postcondition in one step
+  - `cot`: compute postcondition in step-by-step
+- `postcondition-cot-prompt`:
+  - `comment-style`: state description is embedded in comments
+  - `few-shot-style`: Hoare logic premises are used as few-shot examples
+- `loop-unrolling-count`: how many times the loops are unrolled during analysis. `0` disables loop summarisation.
+- `entailment-mode`:
+  - `naive`: directly ask the model
+  - `cot`: a CoT prompt to analyse the postcondition
 
 ## Limitations
