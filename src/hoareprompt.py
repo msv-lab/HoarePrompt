@@ -79,7 +79,7 @@ def main():
         parser.print_help()
 
 
-def assess(description, program, model, config, log_directory):
+def assess(description, program, config, log_directory):
 
     assert config['assessment-mode'] == 'postcondition-entailment'
     
@@ -88,18 +88,27 @@ def assess(description, program, model, config, log_directory):
     with (log_directory / 'description.txt').open("w", encoding ="utf-8") as f:
         f.write(description)
 
-    precondition = extract_precondition(description, program, config, log_directory / 'extract-precondition')
+    precondition_log_dir = log_directory / 'extract-precondition'
+    precondition_log_dir.mkdir()
+    precondition = extract_precondition(description, program, config, precondition_log_dir)
     
     with (log_directory / 'precondition.txt').open("w", encoding ="utf-8") as f:
         f.write(precondition)
-    
-    postcondition = compute_postcondition(program, precondition, config, log_directory / 'compute-postcondition')
+
+    postcondition_log_dir = log_directory / 'compute-postcondition'
+    postcondition_log_dir.mkdir()
+    postcondition = compute_postcondition(precondition, program, config, postcondition_log_dir)
 
     with (log_directory / 'postcondition.txt').open("w", encoding ="utf-8") as f:
         f.write(postcondition)
-    
-    postcondition = check_entailment(description, precondition, program, config, log_directory / 'check_entailment')
-    
+
+    entailment_log_dir = log_directory / 'check_entailment'
+    entailment_log_dir.mkdir()
+    result = check_entailment(description, precondition, program, config, entailment_log_dir)
+    if result:
+        print('CORRECT')
+    else:
+        print('INCORRECT')
 
 def extract_precondition(description, program, config, log_directory):
     model = get_model(config["model"], config["temperature"], log_directory)
@@ -126,7 +135,7 @@ def check_entailment(description, postcondition, program, config, log_directory)
     model = get_model(config["model"], config["temperature"], log_directory)
 
     if config['entailment-mode'] == 'naive':
-        entailment.naive(model, description, postcondition, program, config)
+        return entailment.naive(model, description, postcondition, program, config)
 
     raise NotImplementedError
 

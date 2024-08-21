@@ -34,6 +34,14 @@ Adding `--cex <FILE>` to `assess` or `check-entailment` commands will also outpu
 
 Adding `--log <DIR>` to any of these commands saves detailed logs in the specified directory.
 
+## Example
+
+To run an example, execute the following command:
+
+    python src/hoareprompt.py --log log_001 assess --program example/program.py --description example/description.txt
+    
+The logs will be stored in `log_001`.
+
 ## Configuration
 
 By default, HoarePrompt uses configuration options specified in "default-config.json". A custom config can be supplied using the option `--config <FILE>`. These are the main supported options:

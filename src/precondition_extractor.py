@@ -1,3 +1,5 @@
+import re
+
 PRECONDITION_EXTRACTION_PROMPT_TEMPLATE = """
 You are given a programming problem description and a program that solves to this problem. From the problem description, extract a description of the values of the program's input variables and relationship between these variables. We refer to this description as precondition. Print the precondition following the word "Precondition", and surrounded with double asterisks (**). Follow these examples:
 
