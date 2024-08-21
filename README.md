@@ -46,7 +46,7 @@ By default, HoarePrompt uses configuration options specified in "default-config.
   - `postcondition-entailment`: compute postcondition and check entailment
 - `postcondition-mode`:
   - `one-step`: compute postcondition in one step
-  - `cot`: compute postcondition in step-by-step
+  - `cot`: compute postcondition step-by-step
 - `postcondition-cot-prompt`:
   - `comment-style`: state description is embedded in comments
   - `few-shot-style`: Hoare logic premises are used as few-shot examples
