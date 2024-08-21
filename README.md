@@ -14,21 +14,21 @@ Depending on the used LLM, define environment variables holding API keys, `OPENA
 
 HoarePrompt's key feature is assessing if a given implementation is consistent with a given problem description. It can be done by executing the command
 
-    python hoareprompt.py assess --description <FILE> --program <FILE>
+    python src/hoareprompt.py assess --description <FILE> --program <FILE>
     
 that prints either `CORRECT` or `INCORRECT` on STDOUT.
     
 HoarePrompt also provides commands to run intermediate assessment steps. This is to extract a precondition for a given program from a problem description (printed on STDOUT):
 
-    python hoareprompt.py extract-precondition --description <FILE> --program <FILE>
+    python src/hoareprompt.py extract-precondition --description <FILE> --program <FILE>
         
 This is to compute a postcondition, given a program and a precondition:
 
-    python hoareprompt.py compute-postcondition --precondition <FILE> --program <FILE> 
+    python src/hoareprompt.py compute-postcondition --precondition <FILE> --program <FILE> 
 
 This is to assess if a program is consistent with a program description based on the inferred postcondition:
 
-    python hoareprompt.py check-entailment --description <FILE> --postcondition <FILE> --program <FILE> 
+    python src/hoareprompt.py check-entailment --description <FILE> --postcondition <FILE> --program <FILE> 
 
 Adding `--cex <FILE>` to `assess` or `check-entailment` commands will also output a counterexample.
 
@@ -54,5 +54,3 @@ By default, HoarePrompt uses configuration options specified in "default-config.
 - `entailment-mode`:
   - `naive`: directly ask the model
   - `cot`: a CoT prompt to analyse the postcondition
-
-## Limitations
