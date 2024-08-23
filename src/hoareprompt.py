@@ -6,6 +6,7 @@ from model import get_model
 import precondition_extractor
 import entailment
 import comment_style
+import node_base_style.complete
 
 
 def main():
@@ -83,23 +84,23 @@ def assess(description, program, config, log_directory):
 
     assert config['assessment-mode'] == 'postcondition-entailment'
     
-    with (log_directory / 'program.py').open("w", encoding ="utf-8") as f:
+    with (log_directory / 'program.py').open("w", encoding="utf-8") as f:
         f.write(program)
-    with (log_directory / 'description.txt').open("w", encoding ="utf-8") as f:
+    with (log_directory / 'description.txt').open("w", encoding="utf-8") as f:
         f.write(description)
 
     precondition_log_dir = log_directory / 'extract-precondition'
     precondition_log_dir.mkdir()
     precondition = extract_precondition(description, program, config, precondition_log_dir)
     
-    with (log_directory / 'precondition.txt').open("w", encoding ="utf-8") as f:
+    with (log_directory / 'precondition.txt').open("w", encoding="utf-8") as f:
         f.write(precondition)
 
     postcondition_log_dir = log_directory / 'compute-postcondition'
     postcondition_log_dir.mkdir()
     postcondition = compute_postcondition(precondition, program, config, postcondition_log_dir)
 
-    with (log_directory / 'postcondition.txt').open("w", encoding ="utf-8") as f:
+    with (log_directory / 'postcondition.txt').open("w", encoding="utf-8") as f:
         f.write(postcondition)
 
     entailment_log_dir = log_directory / 'check_entailment'
@@ -121,7 +122,8 @@ def compute_postcondition(precondition, program, config, log_directory):
 
     if config['postcondition-mode'] == 'hoarecot':
         sp_algorithms = {
-            "comment-style": comment_style.compute_postcondition
+            "comment-style": comment_style.compute_postcondition,
+            "node-based-style": node_base_style.complete.compute_postcondition
         }
 
         sp = sp_algorithms[config['postcondition-cot-prompt']]
