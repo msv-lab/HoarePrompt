@@ -101,7 +101,7 @@ class OpenAIModel(Model):
     def _query(self, prompt):
         response = self.client.chat.completions.create(
             model=self.name,
-            messages=[{"role": "user", "content": prompt}],
+            messages=[{"role": "user", "content": prompt}] if isinstance(prompt, str) else prompt,
             temperature=self.temperature)
         return response.choices[0].message.content
 
@@ -123,7 +123,7 @@ class GroqModel(Model):
     def _query(self, prompt):
         response = self.client.chat.completions.create(
             model=self.name,
-            messages=[{"role": "user", "content": prompt}],
+            messages=[{"role": "user", "content": prompt}] if isinstance(prompt, str) else prompt,
             temperature=self.temperature)
         return response.choices[0].message.content
 
