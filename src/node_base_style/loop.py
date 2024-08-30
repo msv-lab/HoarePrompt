@@ -9,27 +9,24 @@ Example:
 Loop executes 1 time:
 Initial State: `factorial` is 1, n is a positive integer.
 ```
-while n > 0:
-    factorial *= n
-    n -= 1
+factorial *= n
+n -= 1
 ```
 Output State: `factorial` is `n`, `n` is decremented to `n-1`.
 
 Loop executes 2 time:
 Initial State: `factorial` is `n`, `n` is decremented to `n-1`, `n` is greater then 1.
 ```
-while n > 0:
-    factorial *= n
-    n -= 1
+factorial *= n
+n -= 1
 ```
 Output State: `factorial` is `n * (n - 1)`, `n` is decremented to `n-2`, `n` is greater then 1.
 
 Loop executes 3 time:
 Initial State: `factorial` is `n * (n - 1)`, `n` is decremented to `n-2`, `n` is greater then 2.
 ```
-while n > 0:
-    factorial *= n
-    n -= 1
+factorial *= n
+n -= 1
 ```
 Output State: `factorial` is `n * (n - 1) * (n - 2)`, `n` is decremented to `n-3`, `n` is greater then 2.
 
@@ -68,7 +65,7 @@ def format_examples(examples: list[Triple]):
     i = 1
     for e in examples:
         pre = e.precondition
-        code = pprint_cmd(e.command)
+        code = pprint_cmd(e.command.body)
         post = e.postcondition
         s = s + f"Loop executes {i} time:" + "\n" + f"Initial State: {pre}" + "\n```\n" + code + "\n```\n" + f"Output State: {post}" + "\n\n"
         i += 1

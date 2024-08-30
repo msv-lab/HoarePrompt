@@ -7,4 +7,3 @@ def f(n):
         prev, curr = curr, prev * curr
 
     return curr
-
