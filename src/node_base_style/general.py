@@ -44,7 +44,7 @@ def complete_triple(incomplete_triple: Triple, model, context_triples=generic_ct
     prompt = prompt + "\n" + format_prompt(incomplete_triple)
     response = model.query(prompt)
     post = extract_postcondition(response)
-    print("+" * 50)
+    print("*" * 50)
     print(incomplete_triple)
     print(f"LLM post: {post}")
     return post
