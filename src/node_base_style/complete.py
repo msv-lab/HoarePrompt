@@ -49,7 +49,7 @@ def complete_triple_cot(triple: Triple, model, config) -> str:
             finally_completion = complete_triple_cot(Triple(State.UNKNOWN, triple.command.finalbody, State.UNKNOWN),
                                                      model, config)
             ctx.append(Triple(State.UNKNOWN, triple.command.orelse, finally_completion))
-        return complete_triple(triple, ctx, model)
+        return complete_triple(triple, model)
     if isinstance(triple.command, ast.For):
         k = config["loop-unrolling-count"]
         body_completion = complete_triple_cot(Triple(State.TOP, triple.command.body, State.UNKNOWN), model, config)

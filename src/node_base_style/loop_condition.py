@@ -5,6 +5,7 @@ from node_base_style.hoare_triple import LoopTriple, pprint_cmd
 WHILE_PROMPT = """
 You have been assigned the task of a program verifier, responsible for analyzing the conditions under which the `while` loop can execute at least a specified number, denoted as `k`, of times. You will be provided with the conditions under which the loop can execute at least `k-1` times, along with how a single iteration of the loop body affects the variables as reference information. If the loop cannot execute the specified number of iterations, please respond with 'None'. If the conditions do not need to be changed, please repeat it unchanged. If the conditions need to be adjusted, modify only the necessary parts. You must adhere to the text format: Condition: **condition.**
 
+
 Example:
 Under what conditions can the loop execute at least 3 times?
 The condition that allows the loop to execute at least 2 times: `sum` is 10, `x` is greater then 2.
@@ -31,55 +32,41 @@ Please think step by step about the conditions under which the loop can be enter
 """
 
 FOR_PROMPT = """
-You have been assigned the task of a program verifier, responsible for analyzing the conditions under which a `for` loop can execute at least a specified number of iterations, denoted as `k`. The value of the loop variable before iteration `k` should also be provided as part of the condition. You will be given the conditions under which the loop can execute at least `k-1` times, along with information on how a single iteration of the loop body affects the variables as reference. If the loop cannot execute the specified number of iterations, please respond with 'None'. If the conditions do not need to be changed, please only update the value of the loop variable and leave the rest unchanged. If the conditions need to be adjusted, only modify the necessary parts. You must adhere to the text format: Condition: **condition.**
+You have been assigned the task of a program verifier, responsible for updating the program state so that a `for` loop can execute at least a specified number of times. You also need to add or update the loop variables to reflect the state just before the specified iteration. If it is impossible for the loop to execute at least the specified number of times, please respond with 'None.' You will be provided with the state after executing the previous iteration as the initial state. You need to modify it so that the loop can execute at least one more time. lease note, you only need to change the initial condition to allow the next iteration. For variables in the initial state that do not require modification, please repeat them in the condition, as they are already in the state after the previous iteration. You must adhere to the text format: Condition: **condition.**
 
 Example1:
 Under what conditions can the loop execute at least 5 times? Before loop iteration 5, what is the state of the loop variable?
-The condition that allows the loop to execute at least 4 times: `total_sum` is 10, `i` is 4.
+State at the end of iteration 4: `n` is greater then 4, `total_sum` is 10, `i` is 4.
 ```
-for i in range(1, 6):
+for i in range(1, n):
     total_sum += i
 ```
-Please think step by step about how the loop variable changes during each iteration of the loop.
+Now, please think step by step: How can the loop reach the next iteration? What is the loop variable just before the loop executes?
 Example Answer:
-When entering the first iteration of the loop, the loop variable `i` is 1, and each iteration increases `i` by 1. The loop can execute 5 times, and on the fifth iteration, the loop variable `i` is 5.
-Condition: **`total_sum` is 10, `i` is 5.**
+The number of loop iterations depends only on `n`. The loop iterates over the integers from 1 to `n` (excluding `n`), increasing by 1 each time. For the loop to execute at least 5 times, `n` should be greater than 5. Before the 5th iteration, the loop variable `i` is 5. `total_sum` is not related to whether the loop can execute, therefore it should retain the state after the previous iteration, i.e., `total_sum = 10`. Therefore, the condition state is `n` is greater than 5, `total_sum` is 10, `i` is 5.
+Condition: **`n` is greater then 5, `total_sum` is 10, `i` is 5.**
 
 
 Example2:
 Under what conditions can the loop execute at least 6 times? Before loop iteration 6, what is the state of the loop variable?
-The condition that allows the loop to execute at least 5 times: `squares` is a list: `[0, 1, 4, 9, 16]`.
+State at the end of iteration 5: `squares` is a list: `[0, 1, 4, 9, 16]`.
 ```
 for i in range(5):
     squares.append(i ** 2)
 ```
-Please think step by step about how the loop variable changes during each iteration of the loop.
+Now, please think step by step: How can the loop reach the next iteration? What is the loop variable just before the loop executes?
 Example Answer:
-When entering the first iteration of the loop, the loop variable `i` is 0, and each iteration increases `i` by 1. The loop can execute a total of 5 times but cannot execute 6 times.
+This is a fixed-count loop that can only run 5 times, so it cannot execute 6 times under any conditions.
 Condition: **None**
-
-
-Example3:
-Under what conditions can the loop execute at least 2 times? Before loop iteration 2, what is the state of the loop variable?
-The condition that allows the loop to execute at least 1 times: `numbers` must have at least one elements, `number` is the first element of `numbers`.
-```
-for number in numbers:
-    squared = number ** 2
-    result.append(squared)
-```
-Please think step by step about how the loop variable changes during each iteration of the loop.
-Example Answer:
-The loop iterates over each element in numbers, so for the loop to run twice, `numbers` must have at least two elements. During the second iteration, `number` is the second element of `numbers`.
-Condition: **`numbers` must have at least two elements, `number` is the second element of `numbers`.**
 
 
 Your Task:
 Under what conditions can the loop execute at least {k} times? Before loop iteration {k}, what is the state of the loop variable?
-The condition that allows the loop to execute at least {km1} times: {pre}
+State at the end of iteration {km1}: {pre}
 ```
 {program}
 ```
-Please think step by step about how the loop variable changes during each iteration of the loop.
+Now, please think step by step: How can the loop reach the next iteration? What is the loop variable just before the loop executes?
 """
 
 
