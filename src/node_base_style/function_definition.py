@@ -53,7 +53,7 @@ def complete_func_triple(incomplete_triple: FuncTriple, model, context_triples=g
     prompt = prompt + "\n" + format_prompt(incomplete_triple)
     response = model.query(prompt)
     post = extract_postcondition(response)
-    # print("*" * 50)
-    # print(incomplete_triple)
-    # print(f"LLM post: {post}")
+    print("*" * 50)
+    print(incomplete_triple)
+    print(f"LLM post: {post}")
     return post
