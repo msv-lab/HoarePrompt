@@ -7,6 +7,7 @@ import precondition_extractor
 import entailment
 import comment_style
 import node_base_style.complete
+import cex_generator
 
 
 def main():
@@ -50,12 +51,16 @@ def main():
         log_directory = Path(args.log)
         log_directory.mkdir(parents=True, exist_ok=True)
 
+    cex_path = None
+
     if args.command == 'assess':
         with open(args.description, 'r') as f:
             description = f.read()
         with open(args.program, 'r') as f:
             program = f.read()
-        assess(description, program, config, log_directory)
+        if args.cex:
+            cex_path = Path(args.cex)
+        assess(description, program, config, log_directory, cex_path)
     elif args.command == 'extract-precondition':
         with open(args.description, 'r') as f:
             description = f.read()
@@ -75,12 +80,14 @@ def main():
             postcondition = f.read()
         with open(args.program, 'r') as f:
             program = f.read()
-        return check_entailment(description, postcondition, program, config, log_directory)
+        if args.cex:
+            cex_path = Path(args.cex)
+        return check_entailment(description, postcondition, program, config, log_directory, cex_path)
     else:
         parser.print_help()
 
 
-def assess(description, program, config, log_directory):
+def assess(description, program, config, log_directory, cex_path):
 
     assert config['assessment-mode'] == 'postcondition-entailment'
     
@@ -105,7 +112,12 @@ def assess(description, program, config, log_directory):
 
     entailment_log_dir = log_directory / 'check_entailment'
     entailment_log_dir.mkdir()
-    result = check_entailment(description, precondition, program, config, entailment_log_dir)
+
+    if cex_path:
+        result = check_entailment(description, precondition, program, config, entailment_log_dir, cex_path)
+    else:
+        result = check_entailment(description, precondition, program, config, entailment_log_dir)
+
     if result:
         print('CORRECT')
     else:
@@ -133,14 +145,19 @@ def compute_postcondition(precondition, program, config, log_directory):
         raise NotImplementedError
 
 
-def check_entailment(description, postcondition, program, config, log_directory):
+def check_entailment(description, postcondition, program, config, log_directory, cex_path=None):
     model = get_model(config["model"], config["temperature"], log_directory)
 
     if config['entailment-mode'] == 'naive':
-        return entailment.naive(model, description, postcondition, program, config)
+        if not cex_path:
+            correctness = entailment.naive(model, description, postcondition, program, config)
+        else:
+            correctness = entailment.naive(model, description, postcondition, program, config, cex_path)
+            if config['cex-mode'] != 'embedded-in-entailment-checking' and correctness is False:
+                cex_generator.output_cex(model, description, postcondition, program, config, cex_path)
+        return correctness
 
     raise NotImplementedError
-
 
 if __name__ == "__main__":
     main()
