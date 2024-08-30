@@ -1,0 +1,9 @@
+venv/
+myvenv/
+log_*/
+.idea/
+src/__pycache__
+src/node_base_style/__pycache__
+example/__pycache__
+example1/
+example2/
