@@ -1,1 +1,1 @@
-n is an integer
+n is a non-negative integer.
