@@ -15,20 +15,20 @@ n -= 1
 Output State: `factorial` is `n`, `n` is decremented to `n-1`.
 
 Loop executes 2 time:
-Initial State: `factorial` is `n`, `n` is decremented to `n-1`, `n` is greater then 1.
+Initial State: `factorial` is `n`, `n` is decremented to `n-1`, `n` is greater than 1.
 ```
 factorial *= n
 n -= 1
 ```
-Output State: `factorial` is `n * (n - 1)`, `n` is decremented to `n-2`, `n` is greater then 1.
+Output State: `factorial` is `n * (n - 1)`, `n` is decremented to `n-2`, `n` is greater than 1.
 
 Loop executes 3 time:
-Initial State: `factorial` is `n * (n - 1)`, `n` is decremented to `n-2`, `n` is greater then 2.
+Initial State: `factorial` is `n * (n - 1)`, `n` is decremented to `n-2`, `n` is greater than 2.
 ```
 factorial *= n
 n -= 1
 ```
-Output State: `factorial` is `n * (n - 1) * (n - 2)`, `n` is decremented to `n-3`, `n` is greater then 2.
+Output State: `factorial` is `n * (n - 1) * (n - 2)`, `n` is decremented to `n-3`, `n` is greater than 2.
 
 
 The following provides the initial state of the loop and the loop's code.
