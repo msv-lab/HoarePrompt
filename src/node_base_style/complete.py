@@ -5,7 +5,7 @@ from node_base_style.general import complete_triple
 from node_base_style.if_statement import complete_if_triple
 from node_base_style.loop import complete_loop_triple
 from node_base_style.function_definition import complete_func_triple
-from node_base_style.loop_condition import get_condition
+from node_base_style.loop_condition import get_conditions, combin_condition
 
 
 def complete_triple_cot(triple: Triple, model, config) -> str:
@@ -56,8 +56,9 @@ def complete_triple_cot(triple: Triple, model, config) -> str:
         while_triple = LoopTriple(triple.precondition, triple.command, triple.command.body, body_completion,
                                   State.UNKNOWN, "for")
         examples = []
-        for i in range(1, k + 1):
-            pre = get_condition(model, while_triple, i)
+        conditions = get_conditions(model, while_triple, k)
+        for i in range(k):
+            pre = combin_condition(model, triple.precondition, conditions[i])
             post = complete_triple_cot(Triple(pre, triple.command.body, State.UNKNOWN), model, config)
             examples.append(Triple(pre, triple.command, post))
             while_triple.precondition = post
