@@ -95,24 +95,30 @@ You have been assigned the task of a program verifier, responsible for updating 
 
 Example1:
 Old State: `x` is 1, `y` is 2
-Update: `x` is 2, `z` is 3
+Update: `x` is 2, `z` is 3, `_` is 5.
+Now, please think step by step: Which variables have been updated? Which variables have remained unchanged?
+
 
 Example answer:
+The old state is `x` is 1, `y` is 2. The update is `x` is 2, `z` is 3, `_` is 5. Note that the `_` variable does not need to be considered, added, or updated. Therefore, `x` is updated to 2, `z` is added as a new variable with the value 3, and `y` remains unaffected, so `y` is 2.
 New State: **`x` is 2, `y` is 2, `z` is 3**
 
 
 Example2:
 Old State: `n` is an integer greater then 1
 Update： `n` is an integer greater then 2
+Now, please think step by step: Which variables have been updated? Which variables have remained unchanged?
 
 
 Example Answer:
+The old state is `n` is an integer greater than 1. The update is `n` is an integer greater than 2. Therefore, the new state is directly updated to `n` is an integer greater than 2.
 New State: **`n` is an integer greater then 2**
 
 
 Your Task:
 Old State: {condition}
 Update: {update}
+Now, please think step by step: Which variables have been updated? Which variables have remained unchanged?
 """
 
 

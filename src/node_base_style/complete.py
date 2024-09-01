@@ -57,12 +57,11 @@ def complete_triple_cot(triple: Triple, model, config) -> str:
                                   State.UNKNOWN, "for")
         examples = []
         conditions = get_conditions(model, while_triple, k)
+        pre = triple.precondition
         for i in range(k):
-            pre = combin_condition(model, triple.precondition, conditions[i])
             post = complete_triple_cot(Triple(pre, triple.command.body, State.UNKNOWN), model, config)
             examples.append(Triple(pre, triple.command, post))
-            while_triple.precondition = post
-        while_triple.precondition = triple.precondition
+            pre = combin_condition(model, post, conditions[i])
         return complete_loop_triple(while_triple, model, examples)
     if isinstance(triple.command, ast.While):
         k = config["loop-unrolling-count"]
