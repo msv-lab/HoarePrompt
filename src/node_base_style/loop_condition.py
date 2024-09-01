@@ -58,7 +58,7 @@ Now, please think step by step, list the conditions for the first few iterations
 """
 
 VARIABLE_PROMPT = """
-You have been assigned the task of a program verifier, responsible for extracting the value of the loop variable just before a specific iteration of a `for` loop. The loop variable refers to the local variable defined in the `for` loop header, which takes on different values in different iterations. You must adhere to the text format: Variables: **variables.**
+You have been assigned the task of a program verifier, responsible for extracting the value of the loop variable just before a specific iteration of a `for` loop. The loop variable refers to the local variable defined in the for loop header, which takes on different values in different iterations. Regardless of whether this variable is an underscore ('_') placeholder, you should still provide the value of the loop variable. Please note that any variables and operations within the loop body are not your concern. Focus only on the changes in the variable defined in the loop header. You must adhere to the text format: Variables: **variables.**
 
 
 Example:
