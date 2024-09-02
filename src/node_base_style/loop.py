@@ -1,6 +1,7 @@
-import re
+import ast
 
-from node_base_style.hoare_triple import LoopTriple, pprint_cmd, Triple
+from node_base_style.hoare_triple import pprint_cmd, Triple
+from node_base_style.helper import extract_result
 
 LOOP_PROMPT = """
 You have been assigned the role of a program verifier, responsible for analyzing the program's state after the loop. The initial state of the code has already been provided. Additionally, you can see examples of the loop executing several times. The initial state includes the values and relationships of the variables before the program execution. The output state should include the values and relationships of the variables after the execution of the loop. Similar to the initial state, avoid explaining how the program operates; focus solely on the variable values and their interrelations. You must adhere to the text format: Output State: **output state.**
@@ -65,26 +66,80 @@ def format_examples(examples: list[Triple]):
     i = 1
     for e in examples:
         pre = e.precondition
-        code = pprint_cmd(e.command.body)
+        code = pprint_cmd(e.command)
         post = e.postcondition
         s = s + f"Loop executes {i} time:" + "\n" + f"Initial State: {pre}" + "\n```\n" + code + "\n```\n" + f"Output State: {post}" + "\n\n"
         i += 1
     return s
 
-def complete_loop_triple(incomplete_triple: LoopTriple, model, examples: list[Triple]):
+
+def complete_loop_triple(incomplete_triple: Triple, model, examples: list[Triple]):
     loop_unrolled = format_examples(examples)
-    prompt = LOOP_PROMPT.format(loop_unrolled=loop_unrolled, pre=incomplete_triple.precondition, loop_code=pprint_cmd(incomplete_triple.command))
+    prompt = LOOP_PROMPT.format(loop_unrolled=loop_unrolled, pre=incomplete_triple.precondition,
+                                loop_code=pprint_cmd(incomplete_triple.command))
     response = model.query(prompt)
-    post = extract_postcondition(response)
-    print("*" * 50)
-    print(incomplete_triple)
-    print(f"LLM post: {post}")
+    post = extract_result(response, "Output State")
     return post
 
 
-def extract_postcondition(s: str) -> str:
-    pattern = r"Output State:\s*\*\*(.*?)\*\*"
-    match = re.search(pattern, s, re.DOTALL)
-    if match:
-        return match.group(1)
-    return s
+def get_while_head(node: ast.While) -> str:
+    condition = ast.unparse(node.test)
+    while_head = f"while {condition}:"
+    return while_head
+
+
+class ForToWhileTransformer(ast.NodeTransformer):
+    def visit_For(self, node):
+        target = node.target
+        iter_call = node.iter
+
+        if isinstance(iter_call, ast.Call) and isinstance(iter_call.func, ast.Name) and iter_call.func.id == 'range':
+            start = ast.Constant(value=0)
+            stop = ast.Constant(value=0)
+            step = ast.Constant(value=1)
+            if len(iter_call.args) == 1:
+                stop = iter_call.args[0]
+            elif len(iter_call.args) == 2:
+                start, stop = iter_call.args
+            elif len(iter_call.args) == 3:
+                start, stop, step = iter_call.args
+
+            if isinstance(step, ast.UnaryOp) and isinstance(step.op, ast.USub):
+                comp_op = ast.Gt()
+            else:
+                comp_op = ast.Lt()
+
+            init = ast.Assign(targets=[target], value=start)
+            condition = ast.Compare(left=target, ops=[comp_op], comparators=[stop])
+            self.generic_visit(node)
+            increment = ast.AugAssign(target=target, op=ast.Add(), value=step)
+            node.body.append(increment)
+
+            while_node = ast.While(test=condition, body=node.body, orelse=node.orelse)
+
+            return [init, while_node]
+
+        else:
+            iter_var = ast.Name(id='iterator', ctx=ast.Store())
+            iter_init = ast.Assign(targets=[iter_var],
+                                   value=ast.Call(func=ast.Name(id='iter', ctx=ast.Load()), args=[node.iter],
+                                                  keywords=[]))
+            self.generic_visit(node)
+
+            try_except = ast.Try(
+                body=[ast.Assign(targets=[node.target],
+                                 value=ast.Call(func=ast.Name(id='next', ctx=ast.Load()), args=[iter_var],
+                                                keywords=[]))] + node.body,
+                handlers=[ast.ExceptHandler(type=ast.Name(id='StopIteration', ctx=ast.Load()), name=None,
+                                            body=[ast.Break()])],
+                orelse=[],
+                finalbody=[]
+            )
+
+            while_node = ast.While(test=ast.Constant(value=True), body=[try_except], orelse=node.orelse)
+
+            return [iter_init, while_node]
+
+    def generic_visit(self, node):
+        super().generic_visit(node)
+        return node

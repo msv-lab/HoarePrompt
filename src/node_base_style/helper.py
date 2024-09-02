@@ -1,9 +1,9 @@
 import re
 
-from node_base_style.hoare_triple import Triple, IfTriple, LoopTriple, FuncTriple, print_state, pprint_cmd
+from node_base_style.hoare_triple import Triple, IfTriple, FuncTriple, print_state, pprint_cmd
 
 
-def format_prompt(triple: Triple | IfTriple | LoopTriple | FuncTriple) -> str:
+def format_prompt(triple: Triple | IfTriple | FuncTriple) -> str:
     # This function generates prompts for the LLM based on different AST nodes.
     if isinstance(triple, Triple):
         format_str = f"Precondition: {print_state(triple.precondition)}\nProgram fragment:\n```\n{pprint_cmd(triple.command)}\n```"
@@ -16,8 +16,17 @@ def format_prompt(triple: Triple | IfTriple | LoopTriple | FuncTriple) -> str:
 
     return format_str
 
+
 def extract_postcondition(s: str) -> str:
     pattern = r"Postcondition:\s*\*\*(.*?)\*\*"
+    match = re.search(pattern, s, re.DOTALL)
+    if match:
+        return match.group(1)
+    return s
+
+
+def extract_result(s: str, keyword: str) -> str:
+    pattern = fr"{keyword}:\s*\*\*(.*?)\*\*"
     match = re.search(pattern, s, re.DOTALL)
     if match:
         return match.group(1)
