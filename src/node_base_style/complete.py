@@ -1,11 +1,11 @@
 import ast
 
-from node_base_style.hoare_triple import State, Triple, IfTriple, LoopTriple, FuncTriple, pprint_cmd
+from node_base_style.hoare_triple import State, Triple, IfTriple, FuncTriple, pprint_cmd
 from node_base_style.general import complete_triple
 from node_base_style.if_statement import complete_if_triple
-from node_base_style.loop import complete_loop_triple
-from node_base_style.function_definition import complete_func_triple
-from node_base_style.loop_condition import get_conditions, combin_condition
+from node_base_style.function_definition import complete_func_triple, get_func_def
+from node_base_style.loop import complete_loop_triple, ForToWhileTransformer, get_while_head
+from node_base_style.loop_condition import get_precondition
 
 
 def complete_triple_cot(triple: Triple, model, config) -> str:
@@ -51,28 +51,28 @@ def complete_triple_cot(triple: Triple, model, config) -> str:
             ctx.append(Triple(State.UNKNOWN, triple.command.orelse, finally_completion))
         return complete_triple(triple, model)
     if isinstance(triple.command, ast.For):
-        k = config["loop-unrolling-count"]
-        body_completion = complete_triple_cot(Triple(State.TOP, triple.command.body, State.UNKNOWN), model, config)
-        while_triple = LoopTriple(triple.precondition, triple.command, triple.command.body, body_completion,
-                                  State.UNKNOWN, "for")
-        examples = []
-        conditions = get_conditions(model, while_triple, k)
-        pre = triple.precondition
-        for i in range(k):
-            post = complete_triple_cot(Triple(pre, triple.command.body, State.UNKNOWN), model, config)
-            examples.append(Triple(pre, triple.command, post))
-            pre = combin_condition(model, post, conditions[i])
-        return complete_loop_triple(while_triple, model, examples)
+        t = ForToWhileTransformer()
+        while_code = t.visit(triple.command)
+        new_triple = Triple(triple.precondition, while_code, State.UNKNOWN)
+        return complete_triple_cot(new_triple, model, config)
     if isinstance(triple.command, ast.While):
         k = config["loop-unrolling-count"]
-        body_completion = complete_triple_cot(Triple(State.TOP, triple.command.body, State.UNKNOWN), model, config)
-        for_triple = LoopTriple(triple.precondition, triple.command, triple.command.body, body_completion,
-                                State.UNKNOWN, "while")
-        return complete_loop_triple(for_triple, model, k)
+        body_command = triple.command.body
+        while_head = get_while_head(triple.command)
+        examples = []
+        pre = triple.precondition
+        for i in range(k):
+            post = complete_triple_cot(Triple(pre, body_command, State.UNKNOWN), model, config)
+            examples.append(Triple(pre, body_command, post))
+            pre = get_precondition(model, post, while_head)
+        triple = Triple(triple.precondition, triple.command, State.UNKNOWN)
+        return complete_loop_triple(triple, model, examples)
     if isinstance(triple.command, ast.FunctionDef):
         pre = triple.precondition
+        def_str = get_func_def(triple.command)
         body_completion = complete_triple_cot(Triple(pre, triple.command.body, State.UNKNOWN), model, config)
-        func_triple = FuncTriple(triple.precondition, triple.command, body_completion, State.UNKNOWN)
+        func_triple = FuncTriple(triple.precondition, triple.command, def_str, triple.command.body, body_completion,
+                                 State.UNKNOWN)
         return complete_func_triple(func_triple, model)
     if isinstance(triple.command, (ast.Import, ast.ImportFrom, ast.Assert)):
         return triple.precondition

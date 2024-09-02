@@ -47,22 +47,11 @@ class IfTriple:
 
 
 @dataclass
-class LoopTriple:
-    precondition: str | State
-    command: ast.AST
-    body_command: list
-    body_postcondition: str
-    postcondition: str | State
-    type: str
-
-    def __str__(self):
-        return f"{{ {print_state(self.precondition)} }}\n{pprint_cmd(self.command)}\n{{ {print_state(self.postcondition)} }}"
-
-
-@dataclass
 class FuncTriple:
     precondition: str | State
     command: ast.AST
+    head: str
+    body_command: list
     body_postcondition: str
     postcondition: str | State
 

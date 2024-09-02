@@ -105,7 +105,7 @@ def assess(description, program, config, log_directory):
 
     entailment_log_dir = log_directory / 'check_entailment'
     entailment_log_dir.mkdir()
-    result = check_entailment(description, precondition, program, config, entailment_log_dir)
+    result = check_entailment(description, postcondition, program, config, entailment_log_dir)
     if result:
         print('CORRECT')
     else:
