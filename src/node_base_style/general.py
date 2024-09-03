@@ -3,7 +3,7 @@ import re
 from node_base_style.hoare_triple import Triple, pprint_cmd
 
 PROMPT = """
-You have been assigned the task of a program state analyzer, responsible for analyzing the changes in the program's state after executing a Python code snippet. You will be given an initial state and a piece of Python code. You need to describe the program's state in natural language after the code executes. The program's state should only include the values of variables and the relationships between them, and when specific values can be calculated, prioritize using those specific values; please avoid describing how the program runs. Note that information in the initial state not affected by the program should not be omitted in the Output State. You must adhere to the text format: Output State: **output state**.
+You have been assigned the role of a program executor, responsible for simulating the execution of Python code. You will be provided with an initial state and a Python code snippet. You need to provide the output state after running the Python code based on the initial state. You must adhere to the text format: Output State: **output state**.
 
 
 Example1:
