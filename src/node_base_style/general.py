@@ -3,7 +3,7 @@ import re
 from node_base_style.hoare_triple import Triple, pprint_cmd
 
 PROMPT = """
-You have been assigned the role of a program executor, responsible for simulating the execution of Python code. You will be provided with an initial state and a Python code snippet. You need to provide the output state after running the Python code based on the initial state. You must adhere to the text format: Output State: **output state**.
+You have been assigned the role of a program executor, responsible for simulating the execution of Python code. You will be provided with an initial state and a Python code snippet. You need to provide the output state after running the Python code based on the initial state. Please avoid describing how the program runs. When a variable has a specific value, use that specific value directly for calculations. You must adhere to the text format: Output State: **output state**.
 
 
 Example1:

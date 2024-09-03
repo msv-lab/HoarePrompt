@@ -90,56 +90,106 @@ def get_while_head(node: ast.While) -> str:
 
 class ForToWhileTransformer(ast.NodeTransformer):
     def visit_For(self, node):
-        target = node.target
-        iter_call = node.iter
+        if isinstance(node.iter, ast.Call) and isinstance(node.iter.func, ast.Name) and node.iter.func.id == 'range':
+            args = node.iter.args
+            start = args[0] if len(args) > 0 else ast.Constant(value=0)
+            stop = args[1] if len(args) > 1 else ast.Constant(value=0)
+            step = args[2] if len(args) > 2 else ast.Constant(value=1)
 
-        if isinstance(iter_call, ast.Call) and isinstance(iter_call.func, ast.Name) and iter_call.func.id == 'range':
-            start = ast.Constant(value=0)
-            stop = ast.Constant(value=0)
-            step = ast.Constant(value=1)
-            if len(iter_call.args) == 1:
-                stop = iter_call.args[0]
-            elif len(iter_call.args) == 2:
-                start, stop = iter_call.args
-            elif len(iter_call.args) == 3:
-                start, stop, step = iter_call.args
+            if len(args) < 3 or (isinstance(start, ast.Constant) and isinstance(stop, ast.Constant) and isinstance(step,
+                                                                                                                   ast.Constant)):
+                init = ast.Assign(targets=[node.target], value=start)
+                if isinstance(step, ast.UnaryOp) and isinstance(step.op, ast.USub):
+                    comp_op = ast.Gt()
+                else:
+                    comp_op = ast.Lt()
+                condition = ast.Compare(left=node.target, ops=[comp_op], comparators=[stop])
 
-            if isinstance(step, ast.UnaryOp) and isinstance(step.op, ast.USub):
-                comp_op = ast.Gt()
+                self.generic_visit(node)
+
+                increment = ast.AugAssign(target=node.target, op=ast.Add(), value=step)
+                node.body.append(increment)
+                while_node = ast.While(test=condition, body=node.body, orelse=node.orelse)
+                return [init, while_node]
             else:
-                comp_op = ast.Lt()
+                target = node.target
+                iter_var = ast.Name(id=f'_iter_{target.id}', ctx=ast.Store())
+                iter_init = ast.Assign(
+                    targets=[iter_var],
+                    value=ast.Call(
+                        func=ast.Name(id='iter', ctx=ast.Load()),
+                        args=[node.iter],
+                        keywords=[]
+                    )
+                )
+                self.generic_visit(node)
 
-            init = ast.Assign(targets=[target], value=start)
-            condition = ast.Compare(left=target, ops=[comp_op], comparators=[stop])
-            self.generic_visit(node)
-            increment = ast.AugAssign(target=target, op=ast.Add(), value=step)
-            node.body.append(increment)
-
-            while_node = ast.While(test=condition, body=node.body, orelse=node.orelse)
-
-            return [init, while_node]
-
+                iter_next_init = ast.Assign(
+                    targets=[target],
+                    value=ast.Call(
+                        func=ast.Name(id='next', ctx=ast.Load()),
+                        args=[iter_var, ast.Constant(value=None)],
+                        keywords=[]
+                    )
+                )
+                condition = ast.Compare(left=target, ops=[ast.IsNot()], comparators=[ast.Constant(value=None)])
+                iter_next = ast.Assign(
+                    targets=[target],
+                    value=ast.Call(
+                        func=ast.Name(id='next', ctx=ast.Load()),
+                        args=[iter_var, ast.Constant(value=None)],
+                        keywords=[]
+                    )
+                )
+                while_node = ast.While(test=condition, body=[iter_next] + node.body, orelse=node.orelse)
+                return [iter_init, iter_next_init, while_node]
         else:
             iter_var = ast.Name(id='iterator', ctx=ast.Store())
             iter_init = ast.Assign(targets=[iter_var],
                                    value=ast.Call(func=ast.Name(id='iter', ctx=ast.Load()), args=[node.iter],
                                                   keywords=[]))
+
             self.generic_visit(node)
 
-            try_except = ast.Try(
-                body=[ast.Assign(targets=[node.target],
-                                 value=ast.Call(func=ast.Name(id='next', ctx=ast.Load()), args=[iter_var],
-                                                keywords=[]))] + node.body,
-                handlers=[ast.ExceptHandler(type=ast.Name(id='StopIteration', ctx=ast.Load()), name=None,
-                                            body=[ast.Break()])],
-                orelse=[],
-                finalbody=[]
+            iter_next_init = ast.Assign(
+                targets=[node.target],
+                value=ast.Call(
+                    func=ast.Name(id='next', ctx=ast.Load()),
+                    args=[iter_var, ast.Constant(value=None)],
+                    keywords=[]
+                )
             )
+            condition = ast.Compare(left=node.target, ops=[ast.IsNot()], comparators=[ast.Constant(value=None)])
+            iter_next = ast.Assign(
+                targets=[node.target],
+                value=ast.Call(
+                    func=ast.Name(id='next', ctx=ast.Load()),
+                    args=[iter_var, ast.Constant(value=None)],
+                    keywords=[]
+                )
+            )
+            while_node = ast.While(test=condition, body=[iter_next] + node.body, orelse=node.orelse)
+            return [iter_init, iter_next_init, while_node]
 
-            while_node = ast.While(test=ast.Constant(value=True), body=[try_except], orelse=node.orelse)
 
-            return [iter_init, while_node]
+if __name__ == "__main__":
+    code = """
+for i in range(2, n + 1):
+    prev, curr = curr, prev * curr
+for j in some_iterable:
+    print(j)
+for i in ma:
+    for j in i:
+        print(j)
+for i, j in combin(xs, ys):
+    print(i)
+    """
+    parsed_code = ast.parse(code)
 
-    def generic_visit(self, node):
-        super().generic_visit(node)
-        return node
+    transformer = ForToWhileTransformer()
+    transformed_code = transformer.visit(parsed_code)
+
+    transformed_code = ast.fix_missing_locations(transformed_code)
+    final_code = ast.unparse(transformed_code)
+
+    print(final_code)

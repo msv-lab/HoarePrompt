@@ -36,4 +36,3 @@ def get_precondition(model, post: str, loop_head: str) -> str:
     response = model.query(prompt)
     pre = extract_result(response, "State")
     return pre
-
