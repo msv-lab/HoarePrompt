@@ -32,6 +32,16 @@ This is to assess if a program is consistent with a program description based on
 
 Adding `--cex <FILE>` to `assess` or `check-entailment` commands will also output a counterexample.
 
+If you want to run the generated counterexample, there are two ways:
+
+- Run the provided script under `src` directory named `run_test` using the following command:
+
+      python src/run_test.py /path/to/program/root/dir /path/to/test/file
+
+- Directly execute the following command in the terminal (using PowerShell as an example):
+      
+      $env:PYTHONPATH="/path/to/program/root/dir"; pytest /path/to/test/file
+
 Adding `--log <DIR>` to any of these commands saves detailed logs in the specified directory.
 
 ## Example
@@ -41,6 +51,14 @@ To run an example, execute the following command:
     python src/hoareprompt.py --log log_001 assess --program example/program.py --description example/description.txt
     
 The logs will be stored in `log_001`.
+
+If you want to generate a counterexample when the program is determined to be incorrect as well, execute the following command:
+
+    python src/hoareprompt.py --log log_001 assess --program example/program.py --description example/description.txt --cex example/test.py
+
+The potential counterexample will be stored in `example/test.py`. And then you can run it by executing the following command:
+
+    python src/run_test.py example example/test.py
 
 ## Configuration
 

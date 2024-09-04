@@ -2,7 +2,8 @@ import os
 import re
 
 CEX_GENERATING_PROMPT_TEMPLATE_W = """
-You have been assigned the role of a program tester. Now that we know that the given program does not conform to the given description of the problem, your task is: based on the given program, the description of the problem, and the description of the program's output, give a counterexample that strongly demonstrates why the program does not conform to the description of the problem. In the process of completing the task, you need to pay attention to three key issues: First, the test cases you give must conform to the program description; Second, the test cases you give make the output answer of a given program, the test cases, distinguishable; Third, don't forget to refer to the description of the program's output, which may help you understand the program better. You need to strictly follow the format. Follow the following examples:
+You have been assigned the role of a program tester. Now that we know that the given program does not conform to the given problem description, your task is: based on the given program, problem description and the description of the program's output, give a counterexample that demonstrates why the program does not conform to the problem description. You need to strictly follow the format. Follow the following examples:
+
 # Example:
 
 Problem description: Write a python function to count all the substrings starting and ending with same characters.
@@ -25,16 +26,10 @@ Correctness: **False**.
 
 Counterexample:
 ```
-import pytest
-import program
-
+from <module_name> import count_Substring_With_Equal_Ends
 
 def test_count_Substring_With_Equal_Ends():
-    assert program.count_Substring_With_Equal_Ends('abba') == 6
-
-
-if __name__ == "__main__":
-    pytest.main()
+    assert count_Substring_With_Equal_Ends('abba') == 6
 ```
 
 # Your task:
@@ -49,7 +44,7 @@ Output description: {postcondition}
 
 
 CEX_GENERATING_PROMPT_TEMPLATE_WO = """
-You have been assigned the role of a program tester. Now that we know that the given program does not conform to the given description of the problem, your task is: based on the given program and the description of the problem, give a counterexample that strongly demonstrates why the program does not conform to the description of the problem. In the process of completing the task, you need to pay attention to two key issues: first, the test cases you give must conform to the program description; Second, the test cases you give make the output answer of a given program, the test cases, distinguishable. You need to strictly follow the format. Follow the following examples:
+You have been assigned the role of a program tester. Now that we know that the given program does not conform to the given problem description, your task is: based on the given program and problem description, give a counterexample that demonstrates why the program does not conform to the problem description. You need to strictly follow the format. Follow the following examples:
 
 # Example:
 
@@ -73,16 +68,10 @@ Correctness: **False**.
 
 Counterexample:
 ```
-import pytest
-import program
-
+from <module_name> import count_Substring_With_Equal_Ends
 
 def test_count_Substring_With_Equal_Ends():
-    assert program.count_Substring_With_Equal_Ends('abba') == 6
-
-
-if __name__ == "__main__":
-    pytest.main()
+    assert count_Substring_With_Equal_Ends('abba') == 6
 ```
 
 # Your task:
@@ -95,13 +84,19 @@ Program:
 """
 
 
-def extract_code_blocks(text):
+def extract_code_blocks(text, module_name):
     pattern = re.compile(r'```(.*?)```', re.DOTALL)
     matches = pattern.findall(text)
-    return matches
+    updated_blocks = []
+    for code in matches:
+        updated_code = re.sub(rf'from\s+<module_name>\s+import', f'from {module_name} import', code)
+        updated_blocks.append(updated_code)
 
-def store_cex(response, cex_path):
-    extract_code = extract_code_blocks(response)
+    return updated_blocks
+
+
+def store_cex(response, cex_path, module_name):
+    extract_code = extract_code_blocks(response, module_name)
     print(extract_code)
 
     directory = os.path.dirname(cex_path)
@@ -113,7 +108,7 @@ def store_cex(response, cex_path):
             file.write(code.strip())
             file.write("\n\n")
 
-def output_cex(model, description, postcondition, program, config, cex_path):
+def output_cex(model, description, postcondition, program, config, cex_path, module_name):
     if config['cex-mode'] == "with-postcondition":
         prompt = CEX_GENERATING_PROMPT_TEMPLATE_W.format(program=program, description=description,
                                                             postcondition=postcondition)
@@ -127,5 +122,5 @@ def output_cex(model, description, postcondition, program, config, cex_path):
     else:
         raise NotImplementedError
 
-    store_cex(response, cex_path)
+    store_cex(response, cex_path, module_name)
 
