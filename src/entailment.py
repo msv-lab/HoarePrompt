@@ -81,7 +81,7 @@ Explanation: According to the explanation, if the string is a palindrome, the fu
 
 Correctness: **False**.
 
-# Example 4
+# Example 5
 
 Problem description: Write a function to check if the given number is woodball or not.
 Program:
@@ -106,8 +106,7 @@ Output description: {postcondition}
 """
 
 ENTAILMENT_CHECKING_PROMPT_TEMPLATE_CEX = """
-You have been assigned the role of a program verifier. Your task is to determine the correctness of a given Python program based on the provided problem description and the description of program's output. If the program is correct, that is it meets the requirements in the problem description, print "True"; otherwise, print "False". Partially correct programs should be considered incorrect. In addition, if the procedure is determined to be incorrect, you also need to give a counterexample that strongly demonstrates why the program does not conform to the description of the problem. You need to strictly follow the format. Follow the following examples:
-
+You have been assigned the role of a program verifier. Your task is to determine the correctness of a given Python program based on the provided problem description and the description of program's output. If the program is correct, that is it meets the requirements in the problem description, print "True"; otherwise, print "False". Partially correct programs should be considered incorrect. In addition, if the program is determined to be incorrect, you also need to give a counterexample that demonstrates why the program does not conform to the problem description. You need to strictly follow the format. Follow the following examples:
 # Example 1
 
 Problem description: Write a python function to identify non-prime numbers.
@@ -149,16 +148,10 @@ Correctness: **False**.
 
 Counterexample:
 ```
-import pytest
-import program
-
+from <module_name> import count_Substring_With_Equal_Ends
 
 def test_count_Substring_With_Equal_Ends():
-    assert program.count_Substring_With_Equal_Ends('abba') == 6
-
-
-if __name__ == "__main__":
-    pytest.main()
+    assert count_Substring_With_Equal_Ends('abba') == 6
 ```
 
 # Example 3
@@ -183,16 +176,10 @@ Correctness: **False**.
 
 Counterexample:
 ```
-import pytest
-import program
-
+from <module_name> import dif_Square
 
 def test_dif_Square():
-    assert program.dif_Square(15) == True
-
-
-if __name__ == "__main__":
-    pytest.main()
+    assert dif_Square(15) == True
 ```
 
 # Example 4
@@ -215,16 +202,10 @@ Correctness: **False**.
 
 Counterexample:
 ```
-import pytest
-import program
-
+from <module_name> import find_Rotations
 
 def test_find_Rotations():
-    assert program.find_Rotations('aba') == ''
-
-
-if __name__ == "__main__":
-    pytest.main()
+    assert find_Rotations('aba') == ''
 ```
 
 # Example 5
@@ -243,16 +224,10 @@ Correctness: **False**.
 
 Counterexample:
 ```
-import pytest
-import program
-
+from <module_name> import is_woodall
 
 def test_is_woodall():
-    assert program.is_woodall(7) == True
-
-
-if __name__ == "__main__":
-    pytest.main()
+    assert is_woodall(7) == True
 ```
 
 # Your task:
@@ -276,7 +251,7 @@ def extract_correctness_from_response(response_content: str) -> str:
     return response_content
 
 
-def naive(model, description, postcondition, program, config, cex_path=None):
+def naive(model, description, postcondition, program, module_name, config, cex_path=None):
     if cex_path and config['cex-mode'] == 'embedded-in-entailment-checking':
         prompt = ENTAILMENT_CHECKING_PROMPT_TEMPLATE_CEX.format(program=program, description=description, postcondition=postcondition)
     else:
@@ -290,6 +265,6 @@ def naive(model, description, postcondition, program, config, cex_path=None):
         return True
     if result.lower() == 'false':
         if cex_path and config['cex-mode'] == 'embedded-in-entailment-checking':
-            cex_generator.store_cex(response, cex_path)
+            cex_generator.store_cex(response, cex_path, module_name)
         return False
     raise ValueError('failed to parse entailment checking response')
