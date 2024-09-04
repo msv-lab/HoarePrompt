@@ -59,6 +59,18 @@ class FuncTriple:
         return f"{{ {print_state(self.precondition)} }}\n{pprint_cmd(self.command)}\nBody Post: {self.body_postcondition}\n{{ {print_state(self.postcondition)} }}"
 
 
+@dataclass
+class TryTriple:
+    precondition: str | State
+    command: ast.AST
+    try_command: list
+    try_post: str
+    except_command: list
+    except_post: str
+    postcondition: str | State
+
+
+
 def parse_stmt(source: str) -> ast.AST:
     return ast.parse(source).body[0]
 

@@ -4,8 +4,7 @@ from node_base_style.helper import extract_result
 #     total += i
 #     i += 1
 PROMPT = """
-You have been assigned the task of a program verifier, responsible for modifying the program state so that the next iteration of the `while` loop can proceed. You will be provided with the program state after the previous iteration, which you need to modify. You will also see the `while` loop statement. You must adhere to the text format: State: **state**.
-
+You have been assigned the task of a program verifier, responsible for modifying the program state so that the next iteration of the `while` loop can proceed. You will be provided with the program state after the previous iteration, which you need to modify. You will also see the `while` loop statement. If it is a `while True` loop or if the loop can certainly execute one more time, please simply repeat the program state at the end of the previous iteration. Please do not make any assumptions. You must adhere to the text format: State: **state**.
 
 Example:
 State at the end of the previous iteration: `total` is 10, `i` is 4, `n` is greater than 3.
