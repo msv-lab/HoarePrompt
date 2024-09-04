@@ -1,11 +1,12 @@
 import ast
 
-from node_base_style.hoare_triple import State, Triple, IfTriple, FuncTriple, pprint_cmd
+from node_base_style.hoare_triple import State, Triple, IfTriple, FuncTriple, TryTriple, pprint_cmd
 from node_base_style.general import complete_triple
 from node_base_style.if_statement import complete_if_triple
 from node_base_style.function_definition import complete_func_triple, get_func_def
-from node_base_style.loop import complete_loop_triple, ForToWhileTransformer, get_while_head
+from node_base_style.loop import complete_loop_triple, get_while_head,  ForToWhileTransformer, ForToWhileTransformer2
 from node_base_style.loop_condition import get_precondition
+from node_base_style.try_statement import complete_try_triple
 
 
 def complete_triple_cot(triple: Triple, model, config) -> str:
@@ -34,24 +35,20 @@ def complete_triple_cot(triple: Triple, model, config) -> str:
         if_triple = IfTriple(pre, triple.command, if_post, else_post, State.UNKNOWN)
         return complete_if_triple(if_triple, model)
     if isinstance(triple.command, ast.Try):
-        # this is a very old version.
         pre = triple.precondition
-        try_completion = complete_triple_cot(Triple(pre, triple.command.body, State.UNKNOWN), model, config)
-        except_completion = complete_triple_cot(Triple(State.UNKNOWN, triple.command.body, State.UNKNOWN), model,
+        try_command = triple.command.body
+        except_command = triple.command.handlers[0].body
+        try_completion = complete_triple_cot(Triple(pre, try_command, State.UNKNOWN), model, config)
+        except_completion = complete_triple_cot(Triple(State.UNKNOWN, except_command, State.UNKNOWN), model,
                                                 config)
-        ctx = [Triple(pre, triple.command.body, try_completion),
-               Triple(State.UNKNOWN, triple.command.body, except_completion)]
+        try_triple = TryTriple(pre, triple.command, try_command, try_completion, except_command, except_completion, State.UNKNOWN)
         if triple.command.orelse:
-            else_completion = complete_triple_cot(Triple(try_completion, triple.command.orelse, State.UNKNOWN), model,
-                                                  config)
-            ctx.append(Triple(pre, triple.command.orelse, else_completion))
+            raise NotImplemented
         if triple.command.finalbody:
-            finally_completion = complete_triple_cot(Triple(State.UNKNOWN, triple.command.finalbody, State.UNKNOWN),
-                                                     model, config)
-            ctx.append(Triple(State.UNKNOWN, triple.command.orelse, finally_completion))
-        return complete_triple(triple, model)
+            raise NotImplemented
+        return complete_try_triple(try_triple, model)
     if isinstance(triple.command, ast.For):
-        t = ForToWhileTransformer()
+        t = ForToWhileTransformer2()
         while_code = t.visit(triple.command)
         new_triple = Triple(triple.precondition, while_code, State.UNKNOWN)
         return complete_triple_cot(new_triple, model, config)
