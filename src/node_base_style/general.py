@@ -1,6 +1,7 @@
 import re
 
-from node_base_style.hoare_triple import Triple, pprint_cmd
+from node_base_style.hoare_triple import Triple, pprint_cmd, print_state
+from node_base_style.helper import extract_result
 
 PROMPT = """
 You have been assigned the role of a program executor, responsible for simulating the execution of Python code. You will be provided with an initial state and a Python code snippet. You need to provide the output state after running the Python code based on the initial state. Please avoid describing how the program runs. When a variable has a specific value, use that specific value directly for calculations. You must adhere to the text format: Output State: **output state**.
@@ -70,20 +71,12 @@ Now, please think step by step: List the impact of the code on the program, chec
 """
 
 def complete_triple(incomplete_triple: Triple, model):
-    pre = incomplete_triple.precondition
+    pre = print_state(incomplete_triple.precondition)
     program = pprint_cmd(incomplete_triple.command)
     prompt = PROMPT.format(pre=pre, program=program)
     response = model.query(prompt)
-    post = extract_postcondition(response)
+    post = extract_result(response, "Output State")
     print("*" * 50)
     print(incomplete_triple)
     print(f"LLM post: {post}")
     return post
-
-
-def extract_postcondition(s: str) -> str:
-    pattern = r"Output State:\s*\*\*(.*?)\*\*"
-    match = re.search(pattern, s, re.DOTALL)
-    if match:
-        return match.group(1)
-    return s
