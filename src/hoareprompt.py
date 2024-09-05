@@ -117,9 +117,9 @@ def assess(description, program, module_name, config, log_directory, cex_path):
     entailment_log_dir.mkdir()
 
     if cex_path:
-        result = check_entailment(description, precondition, program, module_name, config, entailment_log_dir, cex_path)
+        result = check_entailment(description, postcondition, program, module_name, config, entailment_log_dir, cex_path)
     else:
-        result = check_entailment(description, precondition, program, module_name, config, entailment_log_dir)
+        result = check_entailment(description, postcondition, program, module_name, config, entailment_log_dir)
 
     with open(cex_path, 'r') as f:
         cex_code = f.read()
