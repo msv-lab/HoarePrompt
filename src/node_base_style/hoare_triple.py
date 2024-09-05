@@ -56,7 +56,7 @@ class FuncTriple:
     postcondition: str | State
 
     def __str__(self):
-        return f"{{ {print_state(self.precondition)} }}\n{pprint_cmd(self.command)}\nBody Post: {self.body_postcondition}\n{{ {print_state(self.postcondition)} }}"
+        return f"{{ {print_state(self.precondition)} }}\n{self.head}\nBody Post: {self.body_postcondition}\n{{ {print_state(self.postcondition)} }}"
 
 
 @dataclass

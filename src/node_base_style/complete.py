@@ -4,7 +4,7 @@ from node_base_style.hoare_triple import State, Triple, IfTriple, FuncTriple, Tr
 from node_base_style.general import complete_triple
 from node_base_style.if_statement import complete_if_triple
 from node_base_style.function_definition import complete_func_triple, get_func_def
-from node_base_style.loop import complete_loop_triple, get_while_head,  ForToWhileTransformer, ForToWhileTransformer2
+from node_base_style.loop import complete_loop_triple, get_while_head,  ForToWhileTransformer
 from node_base_style.loop_condition import get_precondition
 from node_base_style.try_statement import complete_try_triple
 
@@ -48,7 +48,7 @@ def complete_triple_cot(triple: Triple, model, config) -> str:
             raise NotImplemented
         return complete_try_triple(try_triple, model)
     if isinstance(triple.command, ast.For):
-        t = ForToWhileTransformer2()
+        t = ForToWhileTransformer()
         while_code = t.visit(triple.command)
         new_triple = Triple(triple.precondition, while_code, State.UNKNOWN)
         return complete_triple_cot(new_triple, model, config)
