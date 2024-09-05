@@ -38,9 +38,6 @@ def complete_func_triple(incomplete_triple: FuncTriple, model):
     prompt = PROMPT.format(pre=pre, body_post=body_post, head=head)
     response = model.query(prompt)
     post = extract_result(response, "Functionality")
-    print("*" * 50)
-    print(incomplete_triple)
-    print(f"LLM post: {post}")
     return post
 
 

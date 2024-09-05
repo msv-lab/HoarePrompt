@@ -124,96 +124,6 @@ class ForToWhileTransformer(ast.NodeTransformer):
                 )
                 self.generic_visit(node)
 
-                iter_next_init = ast.Assign(
-                    targets=[target],
-                    value=ast.Call(
-                        func=ast.Name(id='next', ctx=ast.Load()),
-                        args=[iter_var, ast.Constant(value=None)],
-                        keywords=[]
-                    )
-                )
-                condition = ast.Compare(left=target, ops=[ast.IsNot()], comparators=[ast.Constant(value=None)])
-                iter_next = ast.Assign(
-                    targets=[target],
-                    value=ast.Call(
-                        func=ast.Name(id='next', ctx=ast.Load()),
-                        args=[iter_var, ast.Constant(value=None)],
-                        keywords=[]
-                    )
-                )
-                while_node = ast.While(test=condition, body=[iter_next] + node.body, orelse=node.orelse)
-                return [iter_init, iter_next_init, while_node]
-        else:
-            iter_var = ast.Name(id='iterator', ctx=ast.Store())
-            iter_init = ast.Assign(targets=[iter_var],
-                                   value=ast.Call(func=ast.Name(id='iter', ctx=ast.Load()), args=[node.iter],
-                                                  keywords=[]))
-
-            self.generic_visit(node)
-
-            iter_next_init = ast.Assign(
-                targets=[node.target],
-                value=ast.Call(
-                    func=ast.Name(id='next', ctx=ast.Load()),
-                    args=[iter_var, ast.Constant(value=None)],
-                    keywords=[]
-                )
-            )
-            condition = ast.Compare(left=node.target, ops=[ast.IsNot()], comparators=[ast.Constant(value=None)])
-            iter_next = ast.Assign(
-                targets=[node.target],
-                value=ast.Call(
-                    func=ast.Name(id='next', ctx=ast.Load()),
-                    args=[iter_var, ast.Constant(value=None)],
-                    keywords=[]
-                )
-            )
-            while_node = ast.While(test=condition, body=[iter_next] + node.body, orelse=node.orelse)
-            return [iter_init, iter_next_init, while_node]
-
-
-class ForToWhileTransformer2(ast.NodeTransformer):
-    def visit_For(self, node):
-        # 检查是否是 range 函数调用
-        if isinstance(node.iter, ast.Call) and isinstance(node.iter.func, ast.Name) and node.iter.func.id == 'range':
-            args = node.iter.args
-            start = args[0] if len(args) > 0 else ast.Constant(value=0)
-            stop = args[1] if len(args) > 1 else ast.Constant(value=0)
-            step = args[2] if len(args) > 2 else ast.Constant(value=1)
-
-            # 处理只有一个或两个参数的情况，继续使用简单的 while 循环
-            if len(args) < 3 or (isinstance(start, ast.Constant) and isinstance(stop, ast.Constant) and isinstance(step,
-                                                                                                                   ast.Constant)):
-                init = ast.Assign(targets=[node.target], value=start)
-                if isinstance(step, ast.UnaryOp) and isinstance(step.op, ast.USub):
-                    comp_op = ast.Gt()
-                else:
-                    comp_op = ast.Lt()
-                condition = ast.Compare(left=node.target, ops=[comp_op], comparators=[stop])
-
-                # 处理循环体的嵌套结构
-                self.generic_visit(node)
-
-                increment = ast.AugAssign(target=node.target, op=ast.Add(), value=step)
-                node.body.append(increment)
-                while_node = ast.While(test=condition, body=node.body, orelse=node.orelse)
-                return [init, while_node]
-            else:
-                # 如果是三参数形式并且有动态值，使用迭代器方式
-                target = node.target
-                iter_var = ast.Name(id=f'iter_{target.id}', ctx=ast.Store())
-                iter_init = ast.Assign(
-                    targets=[iter_var],
-                    value=ast.Call(
-                        func=ast.Name(id='iter', ctx=ast.Load()),
-                        args=[node.iter],
-                        keywords=[]
-                    )
-                )
-                # 处理循环体的嵌套结构
-                self.generic_visit(node)
-
-                # 使用 try-except 捕获 StopIteration 异常
                 try_except = ast.Try(
                     body=[
                              ast.Assign(
@@ -238,16 +148,13 @@ class ForToWhileTransformer2(ast.NodeTransformer):
                 while_node = ast.While(test=ast.Constant(value=True), body=[try_except], orelse=node.orelse)
                 return [iter_init, while_node]
         else:
-            # 处理其他类型的 for 循环（不涉及 range）
             iter_var = ast.Name(id='iterator', ctx=ast.Store())
             iter_init = ast.Assign(targets=[iter_var],
                                    value=ast.Call(func=ast.Name(id='iter', ctx=ast.Load()), args=[node.iter],
                                                   keywords=[]))
 
-            # 处理循环体的嵌套结构
             self.generic_visit(node)
 
-            # 使用 try-except 捕获 StopIteration 异常
             try_except = ast.Try(
                 body=[ast.Assign(targets=[node.target],
                                  value=ast.Call(func=ast.Name(id='next', ctx=ast.Load()), args=[iter_var],
@@ -260,6 +167,7 @@ class ForToWhileTransformer2(ast.NodeTransformer):
 
             while_node = ast.While(test=ast.Constant(value=True), body=[try_except], orelse=node.orelse)
             return [iter_init, while_node]
+
 
 if __name__ == "__main__":
     code = """
@@ -277,7 +185,7 @@ for i, j in zip(xs, ys):
     """
     parsed_code = ast.parse(code)
 
-    transformer = ForToWhileTransformer2()
+    transformer = ForToWhileTransformer()
     transformed_code = transformer.visit(parsed_code)
 
     transformed_code = ast.fix_missing_locations(transformed_code)
