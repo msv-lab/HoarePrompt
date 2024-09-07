@@ -1,6 +1,6 @@
 # HoarePrompt: Structural Reasoning About Programs in Natural Language
 
-HoarePrompt reasons about programs in natural languages using LLMs. It analyses a given program step-by-step by inferring natural language descriptions of states (values of program variables) that the program can reach during execution at various program locations. To enhance precision of these descriptions, HoarePrompt uses a special technique to summarise loops. These descriptions are then applied to assess the correctness of this program with respect to a specification written in natural language. When the program is deemed incorrect, HoarePrompt generates a failing test acting as a counterexample of the program's compliance with the natural language specification.
+HoarePrompt leverages large language models (LLMs) to reason about programs in natural language. It analyzes a program step-by-step by generating natural language descriptions of the possible states (i.e., values of program variables) the program may reach at different program locations during execution. To improve the accuracy of these descriptions, HoarePrompt employs a specialized technique to summarize loops. These descriptions are then used to assess the program's correctness against a specification written in natural language. If the program is found to be incorrect, HoarePrompt produces a failing test, serving as a counterexample to demonstrate the program's non-compliance with the specification.
 
 ## Installation
 
