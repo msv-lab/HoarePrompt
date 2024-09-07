@@ -57,7 +57,7 @@ By default, HoarePrompt uses configuration options specified in "default-config.
   - `hoarecot`: compute postcondition step-by-step
 - `postcondition-cot-prompt`:
   - `comment-style`: state description is embedded in comments
-  - `few-shot-style`: Hoare logic premises are used as few-shot examples
+  - `node-based-style`: Hoare logic premises are used as few-shot examples
 - `loop-unrolling-count`: how many times the loops are unrolled during analysis. `0` disables loop summarisation.
 - `entailment-mode`:
   - `naive`: directly ask the model
