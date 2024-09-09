@@ -121,15 +121,15 @@ def assess(description, program, module_name, config, log_directory, cex_path):
     else:
         result = check_entailment(description, postcondition, program, module_name, config, entailment_log_dir)
 
-    with open(cex_path, 'r') as f:
-        cex_code = f.read()
-    with (log_directory / os.path.basename(cex_path)).open("w", encoding="utf-8") as f:
-        f.write(cex_code)
-
     if result:
         print('CORRECT')
     else:
         print('INCORRECT')
+        if cex_path:
+            with open(cex_path, 'r') as f:
+                cex_code = f.read()
+            with (log_directory / os.path.basename(cex_path)).open("w", encoding="utf-8") as f:
+                f.write(cex_code)
 
 def extract_precondition(description, program, config, log_directory):
     model = get_model(config["model"], config["temperature"], log_directory)
