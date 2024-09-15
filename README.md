@@ -29,20 +29,12 @@ This is to compute a postcondition, given a program and a precondition:
 This is to assess if a program is consistent with a program description based on the inferred postcondition:
 
     python src/hoareprompt.py check-entailment --description <FILE> --postcondition <FILE> --program <FILE> 
-
-Adding `--cex <FILE>` to `assess` or `check-entailment` commands will also output a counterexample.
-
-If you want to run the generated counterexample, there are two ways:
-
-- Run the provided script under `src` directory named `run_test` using the following command:
-
-      python src/run_test.py /path/to/program/root/dir /path/to/test/file
-
-- Directly execute the following command in the terminal (using PowerShell as an example):
-      
-      $env:PYTHONPATH="/path/to/program/root/dir"; pytest /path/to/test/file
-
+    
 Adding `--log <DIR>` to any of these commands saves detailed logs in the specified directory.
+
+Adding `--cex <FILE>` to `assess` or `check-entailment` commands will also output a counterexample. If you want to run the generated counterexample, execute the following command:
+
+    PYTHONPATH=/path/to/program/root/dir pytest /path/to/test/file
 
 ## Example
 
