@@ -161,7 +161,7 @@ def check_entailment(description, postcondition, program, module_name, config, l
             correctness = entailment.naive(model, description, postcondition, program, config)
         else:
             correctness = entailment.naive(model, description, postcondition, program, module_name, config, cex_path)
-            if config['cex-mode'] != 'embedded-in-entailment-checking' and correctness is False:
+            if correctness is False:
                 cex_generator.output_cex(model, description, postcondition, program, config, cex_path, module_name)
         return correctness
 
