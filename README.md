@@ -29,10 +29,12 @@ This is to compute a postcondition, given a program and a precondition:
 This is to assess if a program is consistent with a program description based on the inferred postcondition:
 
     python src/hoareprompt.py check-entailment --description <FILE> --postcondition <FILE> --program <FILE> 
-
-Adding `--cex <FILE>` to `assess` or `check-entailment` commands will also output a counterexample.
-
+    
 Adding `--log <DIR>` to any of these commands saves detailed logs in the specified directory.
+
+Adding `--cex <FILE>` to `assess` or `check-entailment` commands will also output a counterexample. If you want to run the generated counterexample, execute the following command:
+
+    PYTHONPATH=/path/to/program/root/dir pytest /path/to/test/file
 
 ## Example
 
@@ -41,6 +43,14 @@ To run an example, execute the following command:
     python src/hoareprompt.py --log log_001 assess --program example/program.py --description example/description.txt
     
 The logs will be stored in `log_001`.
+
+If you want to generate a counterexample when the program is determined to be incorrect as well, execute the following command:
+
+    python src/hoareprompt.py --log log_001 assess --program example/program.py --description example/description.txt --cex example/test.py
+
+The potential counterexample will be stored in `example/test.py`. And then you can run it by executing the following command:
+
+    python src/run_test.py example example/test.py
 
 ## Configuration
 
@@ -62,3 +72,6 @@ By default, HoarePrompt uses configuration options specified in "default-config.
 - `entailment-mode`:
   - `naive`: directly ask the model
   - `cot`: a CoT prompt to analyse the postcondition
+- `cex-mode`:
+  - `without-postcondition`: give a counterexample based only on the given program and description, which is independent of entailment checking.
+  - `with-postcondition`: give a counterexample based on the given program, description and the inferred postcondition, which is independent of entailment checking.

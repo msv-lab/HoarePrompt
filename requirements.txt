@@ -2,3 +2,4 @@ openai
 tenacity
 astor
 groq
+pytest
