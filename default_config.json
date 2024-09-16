@@ -3,8 +3,8 @@
     "temperature": 0.7,
     "assessment-mode": "postcondition-entailment",
     "postcondition-mode": "hoarecot",
-    "postcondition-cot-prompt": "comment-style",
-    "loop-unrolling-count": 0,
+    "postcondition-cot-prompt": "node-based-style",
+    "loop-unrolling-count": 3,
     "entailment-mode": "naive",
     "cex-mode": "with-postcondition"
 }
