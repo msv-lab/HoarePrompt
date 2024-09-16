@@ -1,1 +1,1 @@
-Write a python function to identify non-prime numbers.
+implement a function computing the n-th Fibonacci's number.

@@ -1,50 +1,82 @@
-from node_base_style.hoare_triple import Triple, parse_stmt, State
-from node_base_style.helper import extract_postcondition, format_prompt
+import re
 
-VERIFYER_SYSTEM_PROMPT = """You are assigned the role of a program verifier, responsible for completing Hoare triples. Each Hoare triple is made up of three components: a precondition, a program fragment, and a postcondition. The precondition and the postcondition are expressed in natural language.
+from node_base_style.hoare_triple import Triple, pprint_cmd, print_state
+from node_base_style.helper import extract_result
 
-Precondition: describes the initial state of the program variables before the execution of the program fragment. This description should only include the values of the variables, without detailing the operational aspects of the program.
-
-Program Fragment: This is a given part of the task and is not something you need to create or modify.
-
-Postcondition: describes the state of the program variables after the execution of the program fragment with the initial state described in the precondition. This description should include both the values of the variables and the relationships between them. Similar to the precondition, avoid explaining how the program operates; concentrate solely on the variable values and their interrelations."""
-
-generic_ctx = [
-    Triple(
-        "`str` is a string",
-        parse_stmt("n = int(input())"),
-        "`str` is a string, `n` is an input integer"),
-    Triple(
-        State.TOP,
-        parse_stmt("i += 1"),
-        "variable `i` is increased by 1"
-    ),
-    Triple(
-        "`n` is either 3 or 5",
-        parse_stmt("m = n + 1"),
-        "`n` is either 3 or 5; `m` is either 4 or 6"),
-    Triple(
-        "`i` is integer",
-        parse_stmt("j += len(str1)"),
-        "`i` is integer and `j` is the length of str1"),
-    Triple(
-        "`n` is a positive integer",
-        parse_stmt("memo = [-1] * (n + 1)"),
-        "`n` is a positive integer, `memo` is a list of length n+1 with all initial values set to -1."),
-]
+PROMPT = """
+You have been assigned the role of a program executor, responsible for simulating the execution of Python code. You will be provided with an initial state and a Python code snippet. You need to provide the output state after running the Python code based on the initial state. Please avoid describing how the program runs. When a variable has a specific value, use that specific value directly for calculations. You must adhere to the text format: Output State: **output state**.
 
 
-def complete_triple(incomplete_triple: Triple, model, context_triples=generic_ctx,
-                    example_number=5):
-    if len(context_triples) < example_number:
-        context_triples = generic_ctx[:example_number - len(context_triples)] + context_triples
-    prompt = VERIFYER_SYSTEM_PROMPT
-    for ctx in context_triples:
-        prompt = prompt + "\n" + format_prompt(ctx) + "\n" + f"Postcondition: **{ctx.postcondition}**"
-    prompt = prompt + "\n" + format_prompt(incomplete_triple)
+Example1:
+Initial State: `str` is a string
+```
+n = int(input())
+```
+Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate the result.
+Example Answer:
+`n` is assigned the value `int(input())`, where `input` accepts an input and `int` converts it to an integer. Other variables are not affected, so the output state is `str` is a string, `n` is an input integer.
+Output State: **`str` is a string, `n` is an input integer**
+
+
+Example2:
+Initial State: variables can hold any values
+```
+i += 1
+```
+Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate the result.
+Example Answer:
+The value of `i` is incremented by 1, but the previous value of `i` is unknown, so the output state is: variable `i` is increased by 1.
+Output State: **variable `i` is increased by 1**
+
+
+Example3:
+Initial State: `n` is either 3 or 5
+```
+m = n + 1
+```
+Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate the result.
+Example Answer:
+m is assigned the value n + 1. The value of n can be 3 or 5, so the value of m is 4 or 6. Therefore, the Output State is: n is either 3 or 5; m is either 4 or 6.
+Output State: **`n` is either 3 or 5; `m` is either 4 or 6**
+
+
+Example4:
+Initial State: `x` is 1, `y` is 0, `z` is 0
+```
+y = x
+```
+Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate the result.
+Example Answer: 
+`y` is assigned the value of `x`, and `x` is 1, so after execution, `y` is 1. The states of the other variables are not affected. Therefore, the Output State is: `x` is 1, `y` is 1, `z` is 0.
+Output State: **`x` is 1, `y` is 1, `z` is 0**
+
+
+Example5:
+Initial State: `n` is 0, `m` is 2
+```
+return n
+```
+Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate the result.
+Example Answer: 
+The function returns `n`, and `n` has a value of 0, so the function returns 0. The return statement does not change the state, so the output state is `n` is 0, `m` is 2, and the function returns 0.
+Output State: **`n` is 0, `m` is 2, and the function returns 0**
+
+
+Your Task:
+Initial State: {pre}
+```
+{program}
+```
+Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate the result.
+"""
+
+def complete_triple(incomplete_triple: Triple, model):
+    pre = print_state(incomplete_triple.precondition)
+    program = pprint_cmd(incomplete_triple.command)
+    prompt = PROMPT.format(pre=pre, program=program)
     response = model.query(prompt)
-    post = extract_postcondition(response)
-    print("+" * 50)
+    post = extract_result(response, "Output State")
+    print("*" * 50)
     print(incomplete_triple)
     print(f"LLM post: {post}")
     return post
