@@ -1,6 +1,6 @@
 # HoarePrompt: Structural Reasoning About Programs in Natural Language
 
-HoarePrompt reasons about programs in natural languages using LLMs. It analyses a given program step-by-step by inferring natural language descriptions of states (values of program variables) that the program can reach during execution at various program locations. To enhance precision of these descriptions, HoarePrompt uses a special technique to summarise loops. These descriptions are then applied to assess the correctness of this program with respect to a specification written in natural language. When the program is deemed incorrect, HoarePrompt generates a failing test acting as a counterexample of the program's compliance with the natural language specification.
+HoarePrompt leverages large language models (LLMs) to reason about programs in natural language. It analyzes a program step-by-step by generating natural language descriptions of the possible states (i.e., values of program variables) the program may reach at different program locations during execution. To improve the accuracy of these descriptions, HoarePrompt employs a specialized technique to summarize loops. These descriptions are then used to assess the program's correctness against a specification written in natural language. If the program is found to be incorrect, HoarePrompt produces a failing test, serving as a counterexample to demonstrate the program's non-compliance with the specification.
 
 ## Installation
 
@@ -29,10 +29,12 @@ This is to compute a postcondition, given a program and a precondition:
 This is to assess if a program is consistent with a program description based on the inferred postcondition:
 
     python src/hoareprompt.py check-entailment --description <FILE> --postcondition <FILE> --program <FILE> 
-
-Adding `--cex <FILE>` to `assess` or `check-entailment` commands will also output a counterexample.
-
+    
 Adding `--log <DIR>` to any of these commands saves detailed logs in the specified directory.
+
+Adding `--cex <FILE>` to `assess` or `check-entailment` commands will also output a counterexample. If you want to run the generated counterexample, execute the following command:
+
+    PYTHONPATH=/path/to/program/root/dir pytest /path/to/test/file
 
 ## Example
 
@@ -41,6 +43,14 @@ To run an example, execute the following command:
     python src/hoareprompt.py --log log_001 assess --program example/program.py --description example/description.txt
     
 The logs will be stored in `log_001`.
+
+If you want to generate a counterexample when the program is determined to be incorrect as well, execute the following command:
+
+    python src/hoareprompt.py --log log_001 assess --program example/program.py --description example/description.txt --cex example/test.py
+
+The potential counterexample will be stored in `example/test.py`. And then you can run it by executing the following command:
+
+    python src/run_test.py example example/test.py
 
 ## Configuration
 
@@ -57,8 +67,11 @@ By default, HoarePrompt uses configuration options specified in "default-config.
   - `hoarecot`: compute postcondition step-by-step
 - `postcondition-cot-prompt`:
   - `comment-style`: state description is embedded in comments
-  - `few-shot-style`: Hoare logic premises are used as few-shot examples
+  - `node-based-style`: Hoare logic premises are used as few-shot examples
 - `loop-unrolling-count`: how many times the loops are unrolled during analysis. `0` disables loop summarisation.
 - `entailment-mode`:
   - `naive`: directly ask the model
   - `cot`: a CoT prompt to analyse the postcondition
+- `cex-mode`:
+  - `without-postcondition`: give a counterexample based only on the given program and description, which is independent of entailment checking.
+  - `with-postcondition`: give a counterexample based on the given program, description and the inferred postcondition, which is independent of entailment checking.

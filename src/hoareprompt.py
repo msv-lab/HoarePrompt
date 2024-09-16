@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 from pathlib import Path
 from model import get_model
 
@@ -7,6 +8,7 @@ import precondition_extractor
 import entailment
 import comment_style
 import node_base_style.complete
+import cex_generator
 
 
 def main():
@@ -50,12 +52,17 @@ def main():
         log_directory = Path(args.log)
         log_directory.mkdir(parents=True, exist_ok=True)
 
+    cex_path = None
+
     if args.command == 'assess':
         with open(args.description, 'r') as f:
             description = f.read()
         with open(args.program, 'r') as f:
             program = f.read()
-        assess(description, program, config, log_directory)
+        module_name = os.path.splitext(os.path.basename(args.program))[0]
+        if args.cex:
+            cex_path = Path(args.cex)
+        assess(description, program, module_name, config, log_directory, cex_path)
     elif args.command == 'extract-precondition':
         with open(args.description, 'r') as f:
             description = f.read()
@@ -75,16 +82,19 @@ def main():
             postcondition = f.read()
         with open(args.program, 'r') as f:
             program = f.read()
-        return check_entailment(description, postcondition, program, config, log_directory)
+        module_name = os.path.splitext(os.path.basename(args.program))[0]
+        if args.cex:
+            cex_path = Path(args.cex)
+        return check_entailment(description, postcondition, program, module_name, config, log_directory, cex_path)
     else:
         parser.print_help()
 
 
-def assess(description, program, config, log_directory):
+def assess(description, program, module_name, config, log_directory, cex_path):
 
     assert config['assessment-mode'] == 'postcondition-entailment'
     
-    with (log_directory / 'program.py').open("w", encoding="utf-8") as f:
+    with (log_directory / str(module_name + '.py')).open("w", encoding="utf-8") as f:
         f.write(program)
     with (log_directory / 'description.txt').open("w", encoding="utf-8") as f:
         f.write(description)
@@ -105,11 +115,20 @@ def assess(description, program, config, log_directory):
 
     entailment_log_dir = log_directory / 'check_entailment'
     entailment_log_dir.mkdir()
-    result = check_entailment(description, postcondition, program, config, entailment_log_dir)
+    if cex_path:
+        result = check_entailment(description, postcondition, program, module_name, config, entailment_log_dir, cex_path)
+    else:
+        result = check_entailment(description, postcondition, program, module_name, config, entailment_log_dir)
+
     if result:
         print('CORRECT')
     else:
         print('INCORRECT')
+        if cex_path:
+            with open(cex_path, 'r') as f:
+                cex_code = f.read()
+            with (log_directory / os.path.basename(cex_path)).open("w", encoding="utf-8") as f:
+                f.write(cex_code)
 
 def extract_precondition(description, program, config, log_directory):
     model = get_model(config["model"], config["temperature"], log_directory)
@@ -133,14 +152,19 @@ def compute_postcondition(precondition, program, config, log_directory):
         raise NotImplementedError
 
 
-def check_entailment(description, postcondition, program, config, log_directory):
+def check_entailment(description, postcondition, program, module_name, config, log_directory, cex_path=None):
     model = get_model(config["model"], config["temperature"], log_directory)
 
     if config['entailment-mode'] == 'naive':
-        return entailment.naive(model, description, postcondition, program, config)
+        if not cex_path:
+            correctness = entailment.naive(model, description, postcondition, program, config)
+        else:
+            correctness = entailment.naive(model, description, postcondition, program, module_name, config, cex_path)
+            if correctness is False:
+                cex_generator.output_cex(model, description, postcondition, program, config, cex_path, module_name)
+        return correctness
 
     raise NotImplementedError
-
 
 if __name__ == "__main__":
     main()

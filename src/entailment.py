@@ -1,7 +1,8 @@
 import re
+import cex_generator
 
 ENTAILMENT_CHECKING_PROMPT_TEMPLATE = """
-You have been assigned the role of a program verifier. Your task is to determine the correctness of a given Python program based on the provided problem description and the description of program's output. If the program is correct, that is it meets the requirements in the problem description, print "True"; otherwise, print "False". Partially correct programs should be considered incorrect. You need to strictly follow the format. Follow the following examples:
+You have been assigned the role of a program verifier. Your task is to determineg the correctness of a given Python program based on the provided problem description and the description of program's output. If the program is correct, that is it meets the requirements in the problem description, print "True"; otherwise, print "False". Partially correct programs should be considered incorrect. You need to strictly follow the format. Follow the following examples:
 
 # Example 1
 
@@ -80,7 +81,7 @@ Explanation: According to the explanation, if the string is a palindrome, the fu
 
 Correctness: **False**.
 
-# Example 4
+# Example 5
 
 Problem description: Write a function to check if the given number is woodball or not.
 Program:
@@ -116,10 +117,14 @@ def extract_correctness_from_response(response_content: str) -> str:
     return response_content
 
 
-def naive(model, description, postcondition, program, config):
-    prompt = ENTAILMENT_CHECKING_PROMPT_TEMPLATE.format(program=program, description=description, postcondition=postcondition)
+def naive(model, description, postcondition, program, module_name, config, cex_path=None):
+    prompt = ENTAILMENT_CHECKING_PROMPT_TEMPLATE.format(program=program,
+                                                        description=description,
+                                                        postcondition=postcondition)
+
     response = model.query(prompt)
     result = extract_correctness_from_response(response)
+
     if result.lower() == 'true':
         return True
     if result.lower() == 'false':
