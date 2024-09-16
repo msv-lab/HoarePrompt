@@ -73,6 +73,5 @@ By default, HoarePrompt uses configuration options specified in "default-config.
   - `naive`: directly ask the model
   - `cot`: a CoT prompt to analyse the postcondition
 - `cex-mode`:
-  - `embedded-in-entailment-checking`: give a counterexample if the program is incorrect, which is conducted at the same time as entailment checking.
   - `without-postcondition`: give a counterexample based only on the given program and description, which is independent of entailment checking.
   - `with-postcondition`: give a counterexample based on the given program, description and the inferred postcondition, which is independent of entailment checking.
