@@ -101,7 +101,7 @@ class OpenAIModel(Model):
     def _query(self, prompt):
         response = self.client.chat.completions.create(
             model=self.name,
-            messages=[{"role": "user", "content": prompt}],
+            messages=[{"role": "user", "content": prompt}] if isinstance(prompt, str) else prompt,
             temperature=self.temperature)
         return response.choices[0].message.content
 
@@ -113,6 +113,7 @@ class GroqModel(Model):
         if log_directory:
             self.log_counter = 0
         self.name = name
+        self.temperature = temperature
 
         self.client = Groq(
             api_key=os.environ.get("GROQ_API_KEY"),
@@ -120,9 +121,9 @@ class GroqModel(Model):
 
     @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
     def _query(self, prompt):
-        response = self.client.chat.ChatCompletion.create(
+        response = self.client.chat.completions.create(
             model=self.name,
-            messages=[{"role": "user", "content": prompt}],
+            messages=[{"role": "user", "content": prompt}] if isinstance(prompt, str) else prompt,
             temperature=self.temperature)
         return response.choices[0].message.content
 
