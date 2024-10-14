@@ -157,7 +157,7 @@ def check_entailment(description, postcondition, program, module_name, config, l
 
     if config['entailment-mode'] == 'naive':
         if not cex_path:
-            correctness = entailment.naive(model, description, postcondition, program, config)
+            correctness = entailment.naive(model, description, postcondition, program, module_name, config)
         else:
             correctness = entailment.naive(model, description, postcondition, program, module_name, config, cex_path)
             if correctness is False:
