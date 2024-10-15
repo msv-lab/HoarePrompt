@@ -3,6 +3,8 @@ import ast
 from node_base_style.hoare_triple import pprint_cmd, Triple
 from node_base_style.helper import extract_result
 
+
+# The prompt template instructs the model on how to analyze the state of the loop after several(k) iterations.
 LOOP_PROMPT = """
 You have been assigned the role of a program verifier, responsible for analyzing the program's state after the loop. The initial state of the code has already been provided. Additionally, you can see examples of the loop executing several times. The initial state includes the values and relationships of the variables before the program execution. The output state should include the values and relationships of the variables after the execution of the loop. Similar to the initial state, avoid explaining how the program operates; focus solely on the variable values and their interrelations. You must adhere to the text format: Output State: **output state.**
 
@@ -60,7 +62,8 @@ Initial State: {pre}
 Now, please think step by step. Using the results from the first few iterations of the loop provided in the example, determine the loop's output state.
 """
 
-
+# Format examples of loop iterations into the text format required for the prompt.
+# This will show multiple iterations of a loop and how the state changes.the loop k unrolled
 def format_examples(examples: list[Triple]):
     s = ""
     i = 1
@@ -72,7 +75,7 @@ def format_examples(examples: list[Triple]):
         i += 1
     return s
 
-
+# The model will compute the final state of the program after multiple iterations of the loop.
 def complete_loop_triple(incomplete_triple: Triple, model, examples: list[Triple]):
     loop_unrolled = format_examples(examples)
     prompt = LOOP_PROMPT.format(loop_unrolled=loop_unrolled, pre=incomplete_triple.precondition,
@@ -81,21 +84,22 @@ def complete_loop_triple(incomplete_triple: Triple, model, examples: list[Triple
     post = extract_result(response, "Output State")
     return post
 
-
+# Retrieve the head of a while loop, which is its condition 
 def get_while_head(node: ast.While) -> str:
     condition = ast.unparse(node.test)
     while_head = f"while {condition}:"
     return while_head
 
-
+# This class transforms a for loop into a while loop
 class ForToWhileTransformer(ast.NodeTransformer):
     def visit_For(self, node):
+        # If the for loop is iterating over a range, we transform it into a while loop
         if isinstance(node.iter, ast.Call) and isinstance(node.iter.func, ast.Name) and node.iter.func.id == 'range':
-            args = node.iter.args
-            start = args[0] if len(args) > 0 else ast.Constant(value=0)
-            stop = args[1] if len(args) > 1 else ast.Constant(value=0)
-            step = args[2] if len(args) > 2 else ast.Constant(value=1)
-
+            args = node.iter.args 
+            start = args[0] if len(args) > 0 else ast.Constant(value=0) #start of the range
+            stop = args[1] if len(args) > 1 else ast.Constant(value=0) #end of the range
+            step = args[2] if len(args) > 2 else ast.Constant(value=1) #step of the range
+            # Case of a simple range loop with constant values
             if len(args) < 3 or (isinstance(start, ast.Constant) and isinstance(stop, ast.Constant) and isinstance(step,
                                                                                                                    ast.Constant)):
                 init = ast.Assign(targets=[node.target], value=start)
@@ -111,8 +115,11 @@ class ForToWhileTransformer(ast.NodeTransformer):
                 node.body.append(increment)
                 while_node = ast.While(test=condition, body=node.body, orelse=node.orelse)
                 return [init, while_node]
+            # Case of a more complex loop
             else:
                 target = node.target
+                # Instead of directly looping over the sequence, the code creates an explicit iterator using the built-in iter function
+                # Then a try catch block is used to handle the StopIteration exception
                 iter_var = ast.Name(id=f'iter_{target.id}', ctx=ast.Store())
                 iter_init = ast.Assign(
                     targets=[iter_var],
@@ -147,6 +154,7 @@ class ForToWhileTransformer(ast.NodeTransformer):
                 )
                 while_node = ast.While(test=ast.Constant(value=True), body=[try_except], orelse=node.orelse)
                 return [iter_init, while_node]
+        # Case of other non-range iterators like lists
         else:
             iter_var = ast.Name(id='iterator', ctx=ast.Store())
             iter_init = ast.Assign(targets=[iter_var],
@@ -168,7 +176,7 @@ class ForToWhileTransformer(ast.NodeTransformer):
             while_node = ast.While(test=ast.Constant(value=True), body=[try_except], orelse=node.orelse)
             return [iter_init, while_node]
 
-
+# This is a test to test the transformation logic for for-loops
 if __name__ == "__main__":
     code = """
 for i in range(2, n + 1):

@@ -1,6 +1,7 @@
 from node_base_style.hoare_triple import IfTriple, parse_stmt, State
 from node_base_style.helper import extract_postcondition, format_prompt
 
+# prompt template for asking the model to verify and describe if-statements
 VERIFYER_SYSTEM_PROMPT_IF = """You are assigned the role of a program verifier, responsible for completing the overall postcondition of Hoare triples for if statements based on the conditions in the program fragment. In addition to the Hoare triples, you will also see the postconditions for the if and else parts, and if there is an elif part, it will be described in the else postcondition. Each Hoare triple is made up of three components: a precondition, a program fragment, and a postcondition. The precondition and the postcondition are expressed in natural language.
 
 Precondition: describes the initial state of the program variables before the execution of the program fragment. This description should only include the values of the variables, without detailing the operational aspects of the program.
@@ -75,12 +76,12 @@ if x > 0:
     ),
 ]
 
-
+# Function to complete the IfTriple by computing its overall postcondition using the model
 def complete_if_triple(incomplete_triple: IfTriple, model, context_triples=generic_if_ctx):
     prompt = VERIFYER_SYSTEM_PROMPT_IF
-    for ctx in context_triples:
+    for ctx in context_triples:  # Add examples of IfTriple contexts to the prompt
         prompt = prompt + "\n" + format_prompt(ctx) + "\n" + f"Postcondition: **{ctx.postcondition}**"
-    prompt = prompt + "\n" + format_prompt(incomplete_triple)
+    prompt = prompt + "\n" + format_prompt(incomplete_triple) # add the incpmplete triple in the end
     response = model.query(prompt)
     post = extract_postcondition(response)
     # print("*" * 50)
