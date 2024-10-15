@@ -12,6 +12,7 @@ from tenacity import (
     wait_random_exponential,
 )  # for exponential backoff
 
+# Returns the appropriate model object based on the model name. Supports OpenAI, Groq, DeepSeek, and Qwen models.
 def get_model(name: str, temperature: float, log_directory: Path = None):
     openai_models = {
         "gpt-4o-2024-05-13",
@@ -59,11 +60,16 @@ def get_model(name: str, temperature: float, log_directory: Path = None):
     if name in qwen_models:
         return QwenModel(name, temperature, log_directory)
 
+    # Raise an error if the model name does not match any supported models
     raise ValueError(f"unsupported model {name}")
 
 
+# Abstract base class for all models
+# It defines a query method to interact with the model and log the queries and responses
 class Model(ABC):
 
+    # Queries the model with a given prompt and logs the interaction if a log directory is set.
+    # Since we now create a temporary log dir, all interactions are logged but if log not specified they will be overwritten at the next invocation of the tool
     def query(self, prompt):
         response = self._query(prompt)
         
@@ -78,6 +84,7 @@ class Model(ABC):
 
         return response
 
+    #Abstract method that must be implemented by subclasses to handle the model query.
     @abstractmethod
     def _query(self, prompt):
         pass
@@ -92,11 +99,13 @@ class OpenAIModel(Model):
         self.name = name
         self.temperature = temperature
 
+        # Initialize OpenAI client using the API key from environment variables
         self.client = OpenAI(
             api_key=os.environ.get("OPENAI_API_KEY"),
         )
         
-
+    # Queries the OpenAI API with a prompt, using exponential backoff for retries in case of failures.
+    # When a request to the API fails , the system will automatically try again after waiting for a certain period . Each retry will wait a different time than the previous one to avoid overloading the server.
     @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
     def _query(self, prompt):
         response = self.client.chat.completions.create(
@@ -111,14 +120,16 @@ class GroqModel(Model):
     def __init__(self, name, temperature, log_directory):
         self.log_directory = log_directory
         if log_directory:
-            self.log_counter = 0
+            self.log_counter = 0 # Counter for logging interactions
         self.name = name
         self.temperature = temperature
 
+        # Initialize Groq client using the API key from environment variables
         self.client = Groq(
             api_key=os.environ.get("GROQ_API_KEY"),
         )
 
+    # Queries the Groq API with a prompt, using exponential backoff for retries in case of failures.
     @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
     def _query(self, prompt):
         response = self.client.chat.completions.create(
@@ -127,7 +138,7 @@ class GroqModel(Model):
             temperature=self.temperature)
         return response.choices[0].message.content
 
-
+# Same for the other models
 class DeepSeekModel(Model):
     def __init__(self, name, temperature, log_directory):
         self.log_directory = log_directory

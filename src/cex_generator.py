@@ -1,6 +1,8 @@
 import os
 import re
 
+# This function returns a template for instructing the model to generate a counterexample.
+# If the 'use_postcondition' flag is True, it includes a description of the actual program's output in the template.
 
 def cex_generation_instruction(use_postcondition):
    TEMPLATE = """
@@ -11,7 +13,9 @@ The program below is incorrect. Given the program, a description of the problem 
    else:
        return TEMPLATE.format("")
 
-
+# This function provides an example of a counterexample generation.
+# It includes both the incorrect program and the counterexample test.
+# If 'use_postcondition' is True, it includes the output description.
 def cex_generation_example(use_postcondition):
     PROGRAM = """
 Problem description: Write a Python function to count all the substrings starting and ending with same characters.
@@ -51,7 +55,8 @@ def test_count_Substring_With_Equal_Ends():
     else:
         return PROGRAM + ONLY_EXPLANATION + COUNTEREXAMPLE
 
-
+# This function generates a template for the counterexample generation prompt.
+# It includes the instruction and an example, followed by a task specific to the given problem.
 def cex_generation_prompt_template(use_postcondition):
     HEADER_TEMPLATE = """
 {instruction}
@@ -79,7 +84,8 @@ Program:
                                     example=cex_generation_example(use_postcondition))
     return header + TASK_TEMPLATE
     
-
+# This function extracts code blocks  from the model's response.
+# It replaces the placeholder <module_name> with the actual module name provided.
 def extract_code_blocks(text, module_name):
     pattern = re.compile(r'```(.*?)```', re.DOTALL)
     matches = pattern.findall(text)
@@ -90,7 +96,8 @@ def extract_code_blocks(text, module_name):
 
     return updated_blocks
 
-
+# This function stores the generated counterexample into a file.
+# It ensures that the necessary directories exist and writes the extracted code to the specified path.
 def store_cex(response, cex_path, module_name):
     extract_code = extract_code_blocks(response, module_name)
     print(extract_code)
@@ -104,7 +111,8 @@ def store_cex(response, cex_path, module_name):
             file.write(code.strip())
             file.write("\n\n")
 
-
+# This is the main function that interacts with the model to generate the counterexample.
+# It selects the appropriate prompt template, with or without postcondition, dpending on the input param, and stores the generated counterexample.
 def output_cex(model, description, postcondition, program, config, cex_path, module_name):
     if config['cex-mode'] == "with-postcondition":
         template = cex_generation_prompt_template(True)
