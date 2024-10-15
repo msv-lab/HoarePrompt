@@ -48,6 +48,7 @@ def main():
     with config_file.open() as f:
         config = json.load(f)
 
+    
     # Setup log directory if provided
     # If it is not provided, create the log_temporary directory
     # If the log directory already exists, delete it and recreate it
@@ -63,6 +64,11 @@ def main():
 
     # Create the log directory
     log_directory.mkdir(parents=True, exist_ok=True)
+
+    # I also want to store the config file in the log directory
+    with (log_directory / 'config.json').open("w") as f:
+        json.dump(config, f, indent=4)
+
 
     cex_path = None
 
