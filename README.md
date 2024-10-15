@@ -1,9 +1,9 @@
 <table>
   <tr>
-    <td style="width: 20%; text-align: center;">
+    <td style="width: 35%; text-align: center;">
       <img src="./assets/HoarePrompt_logo.png" alt="HoarePrompt Logo" width="100"/>
     </td>
-    <td style="width: 80%; text-align: left;">
+    <td style="width: 65%; text-align: left;">
       <h1>HoarePrompt: Structural Reasoning About Programs in Natural Language</h1>
     </td>
   </tr>
