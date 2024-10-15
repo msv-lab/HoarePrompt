@@ -1,11 +1,14 @@
-<div style="display: flex; align-items: center;">
-    <div style="flex: 20%; text-align: center;">
-        <img src="./assets/HoarePrompt_logo.png" alt="HoarePrompt Logo" width="100%"/>
-    </div>
-    <div style="flex: 80%; padding-left: 20px;">
-        <h1>HoarePrompt: Structural Reasoning About Programs in Natural Language</h1>
-    </div>
-</div>
+<table>
+  <tr>
+    <td style="width: 20%; text-align: center;">
+      <img src="./assets/HoarePrompt_logo.png" alt="HoarePrompt Logo" width="100"/>
+    </td>
+    <td style="width: 80%; text-align: left;">
+      <h1>HoarePrompt: Structural Reasoning About Programs in Natural Language</h1>
+    </td>
+  </tr>
+</table>
+
 
 
 
@@ -228,3 +231,17 @@ For more complex control structures, such as conditionals (`if` statements) and 
 ## Contributions
 This is a joint project collaboration of Peking Univeristy and University College London.
 Feel free to contribute to HoarePrompt by opening issues or submitting pull requests on GitHub. Your contributions are highly appreciated!
+
+<table>
+  <tr>
+    <td style="text-align: center;">
+      <img src="./assets/PKU.png" alt="Image 1" width="300"/>
+    </td>
+    <td style="text-align: center;">
+      <img src="./assets/HoarePrompt_logo.png" alt="Image 2" width="300"/>
+    </td>
+    <td style="text-align: center;">
+      <img src="./assets/UCL.png" alt="Image 3" width="300"/>
+    </td>
+  </tr>
+</table>
