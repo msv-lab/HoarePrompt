@@ -1,5 +1,8 @@
 import re
-import cex_generator
+
+# This is the final step after the final post condition has been generated. This is the prompt template that will be filled in with the problem description, the program,
+# and the final output description (postcondition). It instructs the model to determine whether the program
+# satisfies the description and output specification, and asks it to return either "True" or "False".
 
 ENTAILMENT_CHECKING_PROMPT_TEMPLATE = """
 You have been assigned the role of a program verifier. Your task is to determineg the correctness of a given Python program based on the provided problem description and the description of program's output. If the program is correct, that is it meets the requirements in the problem description, print "True"; otherwise, print "False". Partially correct programs should be considered incorrect. You need to strictly follow the format. Follow the following examples:
@@ -105,7 +108,7 @@ Program:
 Output description: {postcondition}
 """
 
-
+# Parses the model response to see if it responded True or False
 def extract_correctness_from_response(response_content: str) -> str:
     pattern = r"Correctness:\s*\*\*(.*?)\*\*|Correctness:\s*(True|False)"
     match = re.search(pattern, response_content)
@@ -116,7 +119,7 @@ def extract_correctness_from_response(response_content: str) -> str:
             return match.group(2).strip()
     return response_content
 
-
+# This function handles the core logic for checking program correctness using a naive entailment approach.
 def naive(model, description, postcondition, program, module_name, config, cex_path=None):
     prompt = ENTAILMENT_CHECKING_PROMPT_TEMPLATE.format(program=program,
                                                         description=description,
@@ -130,3 +133,6 @@ def naive(model, description, postcondition, program, module_name, config, cex_p
     if result.lower() == 'false':
         return False
     raise ValueError('failed to parse entailment checking response')
+
+
+# TBD: WHAT OTHER APPROACH CAN BE USED OTHER THAN NAIVE?
