@@ -18,7 +18,7 @@ HoarePrompt uses different approaches to handle loops and conditional statements
 
 ## Key Features
 
-1. **Program ment:** 
+1. **Program specification-functionality comparison:** 
    - Verifies if a program is consistent with a natural language description of its behavior (specification).
    - Produces a verdict of `CORRECT` or `INCORRECT`.
    
