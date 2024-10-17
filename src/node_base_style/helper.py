@@ -22,7 +22,9 @@ def extract_postcondition(s: str) -> str:
     pattern = r"Postcondition:\s*\*\*(.*?)\*\*"
     match = re.search(pattern, s, re.DOTALL)
     if match:
-        return match.group(1)
+        res=match.group(1)
+        #cleanup the begginign and end of the string for any weird characters like * or newlines
+        return res.strip()
     return s
 
 # Extracts the result from the model's response given a keyword . For example the keyword can be "Output State"
@@ -31,5 +33,6 @@ def extract_result(s: str, keyword: str) -> str:
     pattern = fr"{keyword}:\s*\*\*(.*?)\*\*"
     match = re.search(pattern, s, re.DOTALL)
     if match:
-        return match.group(1)
+        res= match.group(1)
+        return res.strip()
     return s

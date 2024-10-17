@@ -6,7 +6,8 @@ from node_base_style.helper import extract_result
 
 # The prompt template instructs the model on how to analyze the state of the loop after several(k) iterations.
 LOOP_PROMPT = """
-You have been assigned the role of a program verifier, responsible for analyzing the program's state after the loop. The initial state of the code has already been provided. Additionally, you can see examples of the loop executing several times. The initial state includes the values and relationships of the variables before the program execution. The output state should include the values and relationships of the variables after the execution of the loop. Similar to the initial state, avoid explaining how the program operates; focus solely on the variable values and their interrelations. You must adhere to the text format: Output State: **output state.**
+You have been assigned the role of a program verifier, responsible for analyzing the program's state after the loop. The initial state of the code has already been provided. Additionally, you can see examples of the loop executing several times. The initial state includes the values and relationships of the variables before the program execution. The output state should include the values and relationships of the variables after the execution of the loop. Similar to the initial state, avoid explaining how the program operates; focus solely on the variable values and their interrelations. 
+You must adhere to the text format: Output State: **output state.**
 
 Example: 
 Loop executes 1 time:
