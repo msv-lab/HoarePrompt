@@ -15,7 +15,8 @@ class PostconditionAnalyzer:
         self.model = model
         self.config = config
         self.collected_returns = []  # Collects postconditions from return statements as strings
-    
+        self.got_return = False # Flag to check if a return statement was encountered in the same level of recursion
+        self.last_return =""
     # Core recursive method to compute the postcondition of a Triple .
     def complete_triple_cot(self, triple: Triple, depth=0) -> str:
         assert triple.postcondition == State.UNKNOWN
@@ -30,8 +31,10 @@ class PostconditionAnalyzer:
         if isinstance(triple.command, ast.Return):
             post = complete_triple(triple, self.model)
             # If we're at the first level of depth (inside a function), collect the return postcondition and we are done for this recursion
-            if depth == 1:
-                self.collected_returns.append(str(post))
+            if depth == 1 :
+                self.got_return = True
+                self.last_return = str(post)
+                #self.collected_returns.append(str(post))
             return post
 
         # case where there are multiple statements, like a function body or a block of code
@@ -41,12 +44,14 @@ class PostconditionAnalyzer:
             for subcmd in triple.command:
                 completion = self.complete_triple_cot(Triple(pre, subcmd, State.UNKNOWN), depth=depth)
                 pre = completion
+                if self.got_return:
+                    break
             return pre
         
         # Case for if statements
         if isinstance(triple.command, ast.If):
             pre = triple.precondition
-            # Find the postconiiton for the if body
+            # Find the postcondition for the if body
             then_completion = self.complete_triple_cot(Triple(pre, triple.command.body, State.UNKNOWN), depth=depth)
             if_post = then_completion
 
@@ -62,7 +67,11 @@ class PostconditionAnalyzer:
             post = complete_if_triple(if_triple, self.model)
             # If we are inside a function and there's a return statement, collect the postcondition and we are done for this recursion
             if depth == 1 and any(isinstance(node, ast.Return) for node in ast.walk(triple.command)):
+                self.got_return = False
+                print("got return at if")
                 self.collected_returns.append(str(post))
+                # since the post condition has been appended as a return element we dont deal with it any more
+                return pre
             return post
 
         # Case for try except blocks
@@ -83,6 +92,9 @@ class PostconditionAnalyzer:
             # If we are inside a function and there's a return statement, collect the postcondition and we are done for this recursion
             if depth == 1 and any(isinstance(node, ast.Return) for node in ast.walk(triple.command)):
                 self.collected_returns.append(str(post))
+                self.got_return = False
+                 # since the post condition has been appended as a return element we dont deal with it any more
+                return pre
             return post
         # This is a tricky case. If the command is a for loop, we need to convert it to a while loop and then compute the postcondition
         if isinstance(triple.command, ast.For):
@@ -108,6 +120,9 @@ class PostconditionAnalyzer:
             post = complete_loop_triple(triple, self.model, examples)
             if depth == 1 and any(isinstance(node, ast.Return) for node in ast.walk(triple.command)):
                 self.collected_returns.append(post)
+                self.got_return = False
+                 # since the post condition has been appended as a return element we dont deal with it any more
+                return pre
 
             return post
 
@@ -116,10 +131,21 @@ class PostconditionAnalyzer:
             pre = triple.precondition
             def_str = get_func_def(triple.command) # Get the function signature (the name plus input params of the func) as a string
             
-            #this gives us the postcondition of the function body . I dont think its being used
-            body_completion = self.complete_triple_cot(Triple(pre, triple.command.body, State.UNKNOWN), depth=1)
+            #this is where the main job is being done by iterating over the body of the function
+            self.complete_triple_cot(Triple(pre, triple.command.body, State.UNKNOWN), depth=1)
 
-            return_conditions_str = " ; ".join(self.collected_returns)
+            #if the got_return flag is True then the last_return ahs not been appended to the collected_returns
+            if self.got_return:
+                print("got return")
+                self.collected_returns.append(self.last_return)
+                self.got_return = False
+            if len(self.collected_returns) > 1:
+                # add Case_{counter} to ecah return postcondition and new line at the end of it
+                self.collected_returns= [f"Case_{i+1}: {ret}" for i, ret in enumerate(self.collected_returns)]
+            return_conditions_str = "\n".join(self.collected_returns)
+            print("return_conditions_str", return_conditions_str)
+            #print the self.collected_returns with /n as a separator
+            #print("@@@@@@@@@@\n".join(self.collected_returns))
 
             func_triple = FuncTriple(triple.precondition, triple.command, def_str, triple.command.body,
                                     return_conditions_str, State.UNKNOWN)
