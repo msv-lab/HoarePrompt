@@ -65,7 +65,7 @@ def main():
     # Create the log directory
     log_directory.mkdir(parents=True, exist_ok=True)
 
-    # I also want to store the config file in the log directory
+    # I also want to store the config file in the log directory so that we know what configuration were used for each run
     with (log_directory / 'config.json').open("w") as f:
         json.dump(config, f, indent=4)
 
