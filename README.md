@@ -1,9 +1,9 @@
 <table>
   <tr>
-    <td style="width: 20%; text-align: center;">
+    <td style="width: 35%; text-align: center;">
       <img src="./assets/HoarePrompt_logo.png" alt="HoarePrompt Logo" width="100"/>
     </td>
-    <td style="width: 80%; text-align: left;">
+    <td style="width: 65%; text-align: left;">
       <h1>HoarePrompt: Structural Reasoning About Programs in Natural Language</h1>
     </td>
   </tr>
@@ -18,7 +18,7 @@ HoarePrompt uses different approaches to handle loops and conditional statements
 
 ## Key Features
 
-1. **Program Assessment:** 
+1. **Program specification-functionality comparison:** 
    - Verifies if a program is consistent with a natural language description of its behavior (specification).
    - Produces a verdict of `CORRECT` or `INCORRECT`.
    
@@ -76,11 +76,11 @@ You can add these export commands to your `.bashrc` or `.zshrc` file to avoid ha
 
 HoarePrompt provides several commands to analyze programs:
 
-### 1.Assess (default command)
+### 1. (default command)
 
-To assess whether a program conforms to a problem description, you can use the following command, as by default, if you run HoarePrompt without specifying a command, it assumes assess. Here’s how you can use it:
+To  whether a program conforms to a problem description, you can use the following command, as by default, if you run HoarePrompt without specifying a command, it assumes . Here’s how you can use it:
 
-**Command:** `assess`  
+**Command:** ``  
 **Parameters required:**  
 - `--description`: Path to the problem description file  
 - `--program`: Path to the program file  
@@ -90,11 +90,11 @@ To assess whether a program conforms to a problem description, you can use the f
 ```bash
 python src/hoareprompt.py  --description <FILE> --program <FILE>
 or 
-python src/hoareprompt.py --command assess --description <FILE> --program <FILE>
+python src/hoareprompt.py --command  --description <FILE> --program <FILE>
 ```
 
-This will output `CORRECT` or `INCORRECT` depending on the assessment result.
-The assess command is a combination of the following commands of the HoarePrompt tool
+This will output `CORRECT` or `INCORRECT` depending on the ment result.
+The  command is a combination of the following commands of the HoarePrompt tool
 
 
 ### 2.Extract Precondition
@@ -111,7 +111,7 @@ python src/hoareprompt.py --command extract-precondition --description example/d
 ```
 
 ### 3.Compute Postcondition
-To get the postcondition of the program in the postcondition.txt of the log directory (but not an assessment of whether the programs follows the specification or not)
+To get the postcondition of the program in the postcondition.txt of the log directory (but not an ment of whether the programs follows the specification or not)
 
 **Command:** `compute-postcondition`  
 **Parameters required:**  
@@ -145,15 +145,15 @@ If the directory already exists it will be overwritten. If no log directory is s
 
 **Example:**
 ```bash
-python src/hoareprompt.py --log log1 --command assess --program example/program.py --description example/description.txt
+python src/hoareprompt.py --log log1 --command  --program example/program.py --description example/description.txt
 ```
 
 #### Counterexample (CEX):
-Add `--cex <FILE>` to `assess` or `check-entailment` commands to generate a counterexample when the program is incorrect.
+Add `--cex <FILE>` to `` or `check-entailment` commands to generate a counterexample when the program is incorrect.
 
 **Example:**
 ```bash
-python src/hoareprompt.py --command assess --program example/program.py --description example/description.txt --cex example/test.py
+python src/hoareprompt.py --command  --program example/program.py --description example/description.txt --cex example/test.py
 ```
 
 
@@ -179,7 +179,7 @@ python src/hoareprompt.py  --program example/program.py --description example/de
 This will store logs in `log_001`. If you also want to generate a counterexample:
 
 ```bash
-python src/hoareprompt.py assess --program example/program.py --description example/description.txt --cex example/test.py
+python src/hoareprompt.py --command assess --program example/program.py --description example/description.txt --cex example/test.py
 ```
 
 The generated counterexample will be saved to `example/test.py`, and you can run it with:
@@ -200,7 +200,7 @@ python src/hoareprompt.py --config <FILE>
 
 - **model**: Choose the model to use. Supported models can be found in `src/model.py`.
 - **temperature**: Control the randomness of the model's outputs.
-- **assessment-mode**:
+- **ment-mode**:
   - `naive`: Directly ask the model for the correctness of the program.
   - `postcondition-entailment`: Compute postcondition and check entailment based on precondition and program.
 - **postcondition-mode**:
