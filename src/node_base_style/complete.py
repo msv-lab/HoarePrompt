@@ -7,6 +7,7 @@ from node_base_style.function_definition import complete_func_triple, get_func_d
 from node_base_style.loop import complete_loop_triple, get_while_head, ForToWhileTransformer
 from node_base_style.loop_condition import get_precondition
 from node_base_style.try_statement import complete_try_triple
+from node_base_style.task_sorter import sort_tasks_by_depth, pretty_print_tasks
 
 
 # This is a class responsible for analyzing the postcondition of a program given its precondition and source code
@@ -156,26 +157,26 @@ class PostconditionAnalyzer:
                 self.got_return = False
             if len(self.collected_returns) > 1:
                 # add Case_{counter} to ecah return postcondition and new line at the end of it. but remember that the collected_returns is a list of tuples
-                # also i want as many * as the depth of the return
-                # self.collected_returns = [f"{'    ' * int(ret[1])} Case_{i+1}: {ret[0]}\n" for i, ret in enumerate(self.collected_returns)]
                 self.collected_returns = [f"Case_{i+1}: {ret[0]}\n" for i, ret in enumerate(self.collected_returns)]
-                # self.collected_returns= [f"Case_{i+1}: {ret}" for i, ret in enumerate(self.collected_returns)]
+
             return_conditions_str = "\n".join(self.collected_returns)
             print("return_conditions_str\n", return_conditions_str)
            
 
             func_triple = FuncTriple(triple.precondition, triple.command, def_str, triple.command.body,
                                     return_conditions_str, State.UNKNOWN)
-            #this gives us the functionality of the function
+            
+            #sort the collected items by depth
+            self.collected=sort_tasks_by_depth(self.collected)
+            #pretty print the collected items
+            pretty_print_tasks(self.collected)
+            
+            #get the final reasoning from the llm
             final= complete_func_triple(func_triple, self.model)
+            
+            #append the final reasoning to the collected list , useless for now
             self.collected.append((str(final), depth))
-            # in the self.collected list give to its item a name. The name must be their depth and then a . aand then the number of which eleemnth with depth = thir depth exist in this list
-
-            # self.collected = [f"{'    ' * int(ret[1])} Case_{i+1}: {ret[0]}\n" for i, ret in enumerate(self.collected)]
-            # #print the self.collected items one by one
-            # print("self.collected\n:")
-            # for i in self.collected:
-            #     print(i)
+            
             
             return final
          
