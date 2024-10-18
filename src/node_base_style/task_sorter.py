@@ -9,7 +9,7 @@ def sort_tasks_by_depth(elements_simple):
     """
     elements_processed_list = []
     elements_processed = 0
-    elements = [(elem[0], elem[1], idx) for idx, elem in enumerate(elements_simple)]
+    elements = [(elem[0], elem[1], idx, elem[2]) for idx, elem in enumerate(elements_simple)]
     # Start from the second to last element and move towards the first
     while elements_processed < len(elements):
         # Iterate through the elements of the list from last to first
@@ -17,7 +17,7 @@ def sort_tasks_by_depth(elements_simple):
             if elements[i] not in elements_processed_list:
                 # print(f"Processing element {elements[i]}")
                 elements_processed_list.append(elements[i])
-                current_element, current_depth, current_id = elements[i]
+                current_element, current_depth, current_id, type = elements[i]
                 elements_processed += 1
                 break
 
@@ -32,31 +32,31 @@ def sort_tasks_by_depth(elements_simple):
             elements.insert(j, elements.pop(i))
             # print(f"New list: {elements}")
     #remove the third element from the tuple
-    elements = [(elem[0], elem[1]) for elem in elements]
+    elements = [(elem[0], elem[1], elem[3]) for elem in elements]
     return elements
 
 
 # Example list of tuples (string, depth)
-elements = [
-    ("A", 3),
-    ("B", 1),
-    ("C", 2),
-    ("D", 3),
-    ("D", 6),
-    ("E", 4),
-    ("F", 2)
-]
+# elements = [
+#     ("A", 3, "aaa"),
+#     ("B", 1, "llll"),
+#     ("C", 2, "kkkk"),
+#     ("D", 3, "jjjj"),
+#     ("D", 6, "hhhh"),
+#     ("E", 4, "gggg"),
+#     ("F", 2, "ffff")
+# ]
 
 # Add unique identifiers to each element by appending the index as the third item in the tuple
 
 # Applying the move function
 # modified_elements = sort_tasks_by_depth(elements)
 
-# # Removing the unique identifier for display if needed
-# final_elements = [(elem[0], elem[1]) for elem in modified_elements]
+# Removing the unique identifier for display if needed
+# final_elements = [(elem[0], elem[1], elem[3]) for elem in modified_elements]
 
-# # Printing the modified list
-# for item in final_elements:
+# Printing the modified list
+# for item in modified_elements:
 #     print(item)
 
 def pretty_print_tasks(elements):
@@ -69,7 +69,7 @@ def pretty_print_tasks(elements):
     numbering = []  # Keeps track of the numbering for each depth level
     current_depth = 0
 
-    for element, depth in elements:
+    for element, depth, type in elements:
         # If the current task is at a higher depth (subtask), increase numbering levels
         if depth > current_depth:
             numbering.append(1)
@@ -86,7 +86,7 @@ def pretty_print_tasks(elements):
         indent = " " * (depth * 4)  # Indentation based on depth level
 
         # Print the task with the appropriate numbering and indentation
-        print(f"{indent}Task_{task_number} {element}")
+        print(f"{indent} Task_{task_number}: Type: {type}. Postcondition: {element}")
 
         # Update the current depth for the next iteration
         current_depth = depth
