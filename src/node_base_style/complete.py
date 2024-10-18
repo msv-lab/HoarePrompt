@@ -43,7 +43,11 @@ class PostconditionAnalyzer:
                 self.got_return = True
                 self.last_return = str(post)
                 self.last_reurn_depth= depth
-                self.collected.append((str(post), depth,"return statement"))
+                if type != "":
+                    self.collected.append((str(post), depth, f"return statement in {type}"))
+                else:
+                    self.collected.append((str(post), depth, "return statement"))
+                return post
                 #self.collected_returns.append(str(post))
             return post
 
@@ -65,6 +69,7 @@ class PostconditionAnalyzer:
             # Find the postcondition for the if body
             then_completion = self.complete_triple_cot(Triple(pre, triple.command.body, State.UNKNOWN), depth=depth+1, type="if part")
             if_post = then_completion
+            
 
             else_post = None
             if triple.command.orelse:
@@ -91,14 +96,27 @@ class PostconditionAnalyzer:
         if isinstance(triple.command, ast.Try):
             pre = triple.precondition
             try_command = triple.command.body # Commands inside the try block
-            except_command = triple.command.handlers[0].body # Commands inside the first except block
+
+            
+            except_commands = triple.command.handlers # Commands inside the first except block
             # First get the postcondition for the try block
-            try_completion = self.complete_triple_cot(Triple(pre, try_command, State.UNKNOWN), depth=depth+1, typr = "try block")
+            try_completion = self.complete_triple_cot(Triple(pre, try_command, State.UNKNOWN), depth=depth+1, type = "try block")
             # Then get the postcondition for the except block
-            except_completion = self.complete_triple_cot(Triple(State.UNKNOWN, except_command, State.UNKNOWN),
-                                                         depth=depth+1, type="except block")
+            # except_completion = self.complete_triple_cot(Triple(State.UNKNOWN, except_command, State.UNKNOWN),
+                                                        #  depth=depth+1, type="except block")
+            
+            # Handle multiple except blocks
+            except_completions = []
+            #keep the index of the except block\
+            for handler, i in zip(triple.command.handlers, range(len(triple.command.handlers))):
+                except_command = handler.body
+                except_completion = self.complete_triple_cot(Triple(State.UNKNOWN, except_command, State.UNKNOWN), depth=depth+1, type=f"except block_{i+1}")
+                except_completions.append(except_completion)
+
+            #for the except_completitions make them into one string saying that its one is the except number i
+            except_completion = "\n".join([f"except_{i+1}: {exc}" for i, exc in enumerate(except_completions)])
             # Create a TryTriple to represent the try-except block and then compute the overall postcondition
-            try_triple = TryTriple(pre, triple.command, try_command, try_completion, except_command, except_completion,
+            try_triple = TryTriple(pre, triple.command, try_command, try_completion, except_commands, except_completion,
                                    State.UNKNOWN)
 
             post = complete_try_triple(try_triple, self.model)
@@ -128,8 +146,8 @@ class PostconditionAnalyzer:
             # Unroll the loop by simulating 'k' iterations
             depth = depth + 1
             for i in range(k):
-                post = self.complete_triple_cot(Triple(pre, body_command, State.UNKNOWN), depth=depth, type=f"unrolled_loop_{i}")
-                self.collected.append((str(post), depth, f'summary of unrolled_loop_{i}'))
+                post = self.complete_triple_cot(Triple(pre, body_command, State.UNKNOWN), depth=depth, type=f"unrolled_loop_{i+1}")
+                self.collected.append((str(post), depth, f'summary of unrolled_loop_{i+1}'))
                 examples.append(Triple(pre, body_command, post))
                 pre = get_precondition(self.model, post, while_head)
             depth = depth -1
