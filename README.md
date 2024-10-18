@@ -76,11 +76,11 @@ You can add these export commands to your `.bashrc` or `.zshrc` file to avoid ha
 
 HoarePrompt provides several commands to analyze programs:
 
-### 1. (default command)
+### 1. Assess (default command)
 
 To  whether a program conforms to a problem description, you can use the following command, as by default, if you run HoarePrompt without specifying a command, it assumes . Here’s how you can use it:
 
-**Command:** ``  
+**Command:** `assess`  
 **Parameters required:**  
 - `--description`: Path to the problem description file  
 - `--program`: Path to the program file  
@@ -90,7 +90,7 @@ To  whether a program conforms to a problem description, you can use the followi
 ```bash
 python src/hoareprompt.py  --description <FILE> --program <FILE>
 or 
-python src/hoareprompt.py --command  --description <FILE> --program <FILE>
+python src/hoareprompt.py --command assess --description <FILE> --program <FILE>
 ```
 
 This will output `CORRECT` or `INCORRECT` depending on the ment result.
