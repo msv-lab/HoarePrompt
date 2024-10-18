@@ -22,14 +22,17 @@ class PostconditionAnalyzer:
         self.last_return =""
         self.last_reurn_depth=0
     # Core recursive method to compute the postcondition of a Triple .
-    def complete_triple_cot(self, triple: Triple, depth=0) -> str:
+    def complete_triple_cot(self, triple: Triple, depth=0, type ="") -> str:
         assert triple.postcondition == State.UNKNOWN
 
         #generic easy case
         if isinstance(triple.command,
                       (ast.Assign, ast.AugAssign, ast.Expr, ast.Raise, ast.Pass, ast.Break, ast.Continue)):
             post = complete_triple(triple, self.model)
-            self.collected.append((str(post), depth))
+            if type != "":
+                self.collected.append((str(post), depth, f"simple command in {type}"))
+            else:
+                self.collected.append((str(post), depth, "simple command"))
             return post
 
         # Handle return statements
@@ -40,7 +43,7 @@ class PostconditionAnalyzer:
                 self.got_return = True
                 self.last_return = str(post)
                 self.last_reurn_depth= depth
-                self.collected.append((str(post), depth))
+                self.collected.append((str(post), depth,"return statement"))
                 #self.collected_returns.append(str(post))
             return post
 
@@ -49,7 +52,7 @@ class PostconditionAnalyzer:
             pre = triple.precondition
             # Recursively compute the postcondition for each sub-command
             for subcmd in triple.command:
-                completion = self.complete_triple_cot(Triple(pre, subcmd, State.UNKNOWN), depth=depth)
+                completion = self.complete_triple_cot(Triple(pre, subcmd, State.UNKNOWN), depth=depth, type=type)
                 pre = completion
                 #self.collected.append((str(completion), depth))
                 if self.got_return:
@@ -60,20 +63,20 @@ class PostconditionAnalyzer:
         if isinstance(triple.command, ast.If):
             pre = triple.precondition
             # Find the postcondition for the if body
-            then_completion = self.complete_triple_cot(Triple(pre, triple.command.body, State.UNKNOWN), depth=depth+1)
+            then_completion = self.complete_triple_cot(Triple(pre, triple.command.body, State.UNKNOWN), depth=depth+1, type="if part")
             if_post = then_completion
 
             else_post = None
             if triple.command.orelse:
                 # If there is an else part, find the postcondition for it
                 else_completion = self.complete_triple_cot(Triple(pre, triple.command.orelse, State.UNKNOWN),
-                                                           depth=depth+1)
+                                                           depth=depth+1, type="else part")
                 else_post = else_completion
 
             # Create an IfTriple to represent the if statement with its branches and then compute the overall post condition
             if_triple = IfTriple(pre, triple.command, if_post, else_post, State.UNKNOWN)
             post = complete_if_triple(if_triple, self.model)
-            self.collected.append((str(post), depth))
+            self.collected.append((str(post), depth, "if statement"))
             # If we are inside a function and there's a return statement, collect the postcondition and we are done for this recursion
             if depth >= 1 and any(isinstance(node, ast.Return) for node in ast.walk(triple.command)):
                 self.got_return = False
@@ -90,16 +93,16 @@ class PostconditionAnalyzer:
             try_command = triple.command.body # Commands inside the try block
             except_command = triple.command.handlers[0].body # Commands inside the first except block
             # First get the postcondition for the try block
-            try_completion = self.complete_triple_cot(Triple(pre, try_command, State.UNKNOWN), depth=depth+1)
+            try_completion = self.complete_triple_cot(Triple(pre, try_command, State.UNKNOWN), depth=depth+1, typr = "try block")
             # Then get the postcondition for the except block
             except_completion = self.complete_triple_cot(Triple(State.UNKNOWN, except_command, State.UNKNOWN),
-                                                         depth=depth+1)
+                                                         depth=depth+1, type="except block")
             # Create a TryTriple to represent the try-except block and then compute the overall postcondition
             try_triple = TryTriple(pre, triple.command, try_command, try_completion, except_command, except_completion,
                                    State.UNKNOWN)
 
             post = complete_try_triple(try_triple, self.model)
-            self.collected.append((str(post), depth))
+            self.collected.append((str(post), depth, "try except block"))
             # If we are inside a function and there's a return statement, collect the postcondition and we are done for this recursion
             if depth >= 1 and any(isinstance(node, ast.Return) for node in ast.walk(triple.command)):
                 self.collected_returns.append((str(post),self.last_reurn_depth))
@@ -124,16 +127,16 @@ class PostconditionAnalyzer:
             pre = triple.precondition
             # Unroll the loop by simulating 'k' iterations
             depth = depth + 1
-            for _ in range(k):
-                post = self.complete_triple_cot(Triple(pre, body_command, State.UNKNOWN), depth=depth)
-                self.collected.append((str(post), depth))
+            for i in range(k):
+                post = self.complete_triple_cot(Triple(pre, body_command, State.UNKNOWN), depth=depth, type=f"unrolled_loop_{i}")
+                self.collected.append((str(post), depth, f'summary of unrolled_loop_{i}'))
                 examples.append(Triple(pre, body_command, post))
                 pre = get_precondition(self.model, post, while_head)
             depth = depth -1
             # Create a Triple for the entire 'while' loop
             triple = Triple(triple.precondition, triple.command, State.UNKNOWN)
             post = complete_loop_triple(triple, self.model, examples)
-            self.collected.append((str(post), depth))
+            self.collected.append((str(post), depth, "total loop"))
             if depth >= 1 and any(isinstance(node, ast.Return) for node in ast.walk(triple.command)):
                 self.collected_returns.append((str(post),self.last_reurn_depth))
                 self.last_reurn_depth=0
@@ -175,7 +178,7 @@ class PostconditionAnalyzer:
             final= complete_func_triple(func_triple, self.model)
             
             #append the final reasoning to the collected list , useless for now
-            self.collected.append((str(final), depth))
+            self.collected.append((str(final), depth, "function"))
             
             
             return final
