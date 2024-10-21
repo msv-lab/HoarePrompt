@@ -87,7 +87,7 @@ Program:
 # This function extracts code blocks  from the model's response.
 # It replaces the placeholder <module_name> with the actual module name provided.
 def extract_code_blocks(text, module_name):
-    pattern = re.compile(r'```(.*?)```', re.DOTALL)
+    pattern = re.compile(r'```python(.*?)```', re.DOTALL)
     matches = pattern.findall(text)
     updated_blocks = []
     for code in matches:

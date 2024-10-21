@@ -100,7 +100,25 @@ def main():
             description = f.read()
         with open(args.program, 'r') as f:
             program = f.read()
-        return extract_precondition(description, program, config, log_directory)
+        
+        # Get the module name from the program file name
+        module_name = os.path.splitext(os.path.basename(args.program))[0]
+
+        # Save the program and description to the log directory
+        with (log_directory / str(module_name + '.py')).open("w", encoding="utf-8") as f:
+            f.write(program)
+        with (log_directory / 'description.txt').open("w", encoding="utf-8") as f:
+            f.write(description)
+
+        # Extract the precondition from the description and program
+        precondition_log_dir = log_directory / 'extract-precondition'
+        precondition_log_dir.mkdir()
+        precondition = extract_precondition(description, program, config, precondition_log_dir)
+        
+        # Save the extracted precondition
+        with (log_directory / 'precondition.txt').open("w", encoding="utf-8") as f:
+            f.write(precondition)
+        return precondition
     
     # Handle the 'compute-postcondition' command
     elif args.command == 'compute-postcondition':
@@ -110,7 +128,24 @@ def main():
             precondition = f.read()
         with open(args.program, 'r') as f:
             program = f.read()
-        return compute_postcondition(precondition, program, config, log_directory)
+        
+        module_name = os.path.splitext(os.path.basename(args.program))[0]
+
+        # Save the program and description to the log directory
+        with (log_directory / str(module_name + '.py')).open("w", encoding="utf-8") as f:
+            f.write(program)
+        with (log_directory / 'precondition.txt').open("w", encoding="utf-8") as f:
+            f.write(precondition)
+        
+        postcondition_log_dir = log_directory / 'compute-postcondition'
+        postcondition_log_dir.mkdir()
+        postcondition = compute_postcondition(precondition, program, config, postcondition_log_dir)
+
+        # Save the computed postcondition
+        with (log_directory / 'postcondition.txt').open("w", encoding="utf-8") as f:
+            f.write(postcondition)
+
+        return postcondition
     # Handle the 'check-entailment' command
     elif args.command == 'check-entailment':
         if not args.description or not args.program or not args.postcondition:
@@ -125,7 +160,34 @@ def main():
         module_name = os.path.splitext(os.path.basename(args.program))[0]
         if args.cex:
             cex_path = Path(args.cex)
-        return check_entailment(description, postcondition, program, module_name, config, log_directory, cex_path)
+            
+        
+        with (log_directory / 'description.txt').open("w", encoding="utf-8") as f:
+            f.write(description)
+        with (log_directory / 'postcondition.txt').open("w", encoding="utf-8") as f:
+            f.write(postcondition)
+        with (log_directory / str(module_name + '.py')).open("w", encoding="utf-8") as f:
+            f.write(program)
+        
+        
+
+        # Check entailment to verify consistency with the description
+        entailment_log_dir = log_directory / 'check_entailment'
+        entailment_log_dir.mkdir()
+
+        result= check_entailment(description, postcondition, program, module_name, config, log_directory, cex_path)
+        # Print result (CORRECT or INCORRECT) and log counterexample if provided
+        if result:
+            print('CORRECT')
+        else:
+            print('INCORRECT')
+        
+        if cex_path:
+            with open(cex_path, 'r') as f:
+                cex_code = f.read()
+            with (log_directory / os.path.basename(cex_path)).open("w", encoding="utf-8") as f:
+                f.write(cex_code)
+            
     # If no command is provided, display help information
     else:
         parser.print_help()
