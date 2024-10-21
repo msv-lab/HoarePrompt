@@ -14,7 +14,7 @@
 
 **HoarePrompt** leverages large language models (LLMs) to perform natural language reasoning about program behavior and correctness. By analyzing programs step-by-step, it generates descriptions of the program's state (i.e., the values of variables) at various points during execution. These descriptions are used to check if the program adheres to a given specification or problem description written in natural language. It is a combination of Chain of thought reasoning and Hoare logic expressed in Natural language to be more easily understood by the LLM. 
 
-HoarePrompt uses different approaches to handle loops and conditional statements, improving the accuracy of the description of the states throughout the program execution. If an inconsistency between the program and its specification is found, HoarePrompt not only informs the user that the program is malfunctioning but it is also able to generate a failing test case (counterexample) that demonstrates the error.
+HoarePrompt uses different approaches to handle loops and conditional statements, like k-unrolling, improving the accuracy of the description of the states throughout the program execution. If an inconsistency between the program and its specification is found, HoarePrompt not only informs the user that the program is malfunctioning but it is also able to generate a failing test case (counterexample) that demonstrates the error.
 
 ## Key Features
 
@@ -78,7 +78,7 @@ HoarePrompt provides several commands to analyze programs:
 
 ### 1. Assess (default command)
 
-To  whether a program conforms to a problem description, you can use the following command, as by default, if you run HoarePrompt without specifying a command, it assumes . Here’s how you can use it:
+To understand whether a program conforms to a problem description, you can use the following command, as by default, if you run HoarePrompt without specifying a command, it assumes . Here’s how you can use it:
 
 **Command:** `assess`  
 **Parameters required:**  
@@ -93,8 +93,8 @@ or
 python src/hoareprompt.py --command assess --description <FILE> --program <FILE>
 ```
 
-This will output `CORRECT` or `INCORRECT` depending on the ment result.
-The  command is a combination of the following commands of the HoarePrompt tool
+This will output `CORRECT` or `INCORRECT` depending on the assessment result.
+The  command is a combination of the following 3 commands of the HoarePrompt tool, and they are invoked in the order they are presented below.
 
 
 ### 2.Extract Precondition
@@ -111,7 +111,7 @@ python src/hoareprompt.py --command extract-precondition --description example/d
 ```
 
 ### 3.Compute Postcondition
-To get the postcondition of the program in the postcondition.txt of the log directory (but not an ment of whether the programs follows the specification or not)
+To get the postcondition of the program in the postcondition.txt of the log directory (but not an assessment of whether the programs follows the specification or not)
 
 **Command:** `compute-postcondition`  
 **Parameters required:**  
@@ -145,15 +145,15 @@ If the directory already exists it will be overwritten. If no log directory is s
 
 **Example:**
 ```bash
-python src/hoareprompt.py --log log1 --command  --program example/program.py --description example/description.txt
+python src/hoareprompt.py --log log1 --program example/program.py --description example/description.txt
 ```
 
 #### Counterexample (CEX):
-Add `--cex <FILE>` to `` or `check-entailment` commands to generate a counterexample when the program is incorrect.
+Add `--cex <FILE>` to `assess` or `check-entailment` commands to generate a counterexample when the program is incorrect.
 
 **Example:**
 ```bash
-python src/hoareprompt.py --command  --program example/program.py --description example/description.txt --cex example/test.py
+python src/hoareprompt.py --command assess --program example/program.py --description example/description.txt --cex example/test.py
 ```
 
 
@@ -179,13 +179,13 @@ python src/hoareprompt.py  --program example/program.py --description example/de
 This will store logs in `log_001`. If you also want to generate a counterexample:
 
 ```bash
-python src/hoareprompt.py --command assess --program example/program.py --description example/description.txt --cex example/test.py
+python src/hoareprompt.py --command assess --program example/program.py --description example/description.txt  --log log_001 --cex example/test.py 
 ```
 
-The generated counterexample will be saved to `example/test.py`, and you can run it with:
+The generated counterexample will be saved to  `example/test.py` and in the log directory as  `test.py`. You can run it with:
 
 ```bash
-python src/run_test.py example example/test.py
+./src/run_tests.sh example/test.py
 ```
 
 ## Configuration
