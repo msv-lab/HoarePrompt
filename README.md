@@ -200,7 +200,7 @@ python src/hoareprompt.py --config <FILE>
 
 - **model**: Choose the model to use. Supported models can be found in `src/model.py`.
 - **temperature**: Control the randomness of the model's outputs.
-- **ment-mode**:
+- **assessment-mode**:
   - `naive`: Directly ask the model for the correctness of the program.
   - `postcondition-entailment`: Compute postcondition and check entailment based on precondition and program.
 - **postcondition-mode**:
@@ -222,26 +222,24 @@ python src/hoareprompt.py --config <FILE>
 HoarePrompt's reasoning process revolves around breaking down programs into smaller components and analyzing the behavior of each component in isolation:
 - **Precondition Extraction**: The tool generates a precondition based on the natural language description and the program itself.
 - **Postcondition Computation**: The postcondition is inferred by simulating the execution of the program step-by-step.
-- **Loop Unrolling**: Loops are handled via unrolling (i.e., simulating the first few iterations) to better understand how the loop transforms variables. In more detail or for loops are transformed into while loops and unrolled with an unrolling factor k as specified in the configuration json.
+- **Loop Unrolling**: Loops are handled via k-unrolling (simulating the first k iterations) to better understand how the loop transforms variables. In more detail or for loops are transformed into while loops and unrolled with an unrolling factor k as specified in the configuration json.
 - **Function summarising**: The functionality of a function can be summarised to assist the LLM into infering about the states after its execution 
 - **Entailment Checking**: The postcondition is checked to determine whether it meets the requirements described in the natural language specification.
 
 For more complex control structures, such as conditionals (`if` statements) and exception handling (`try-except` blocks), HoarePrompt generates specialized prompts for the model, ensuring the correct reasoning is applied to those cases. 
 
 ## Contributions
-This is a joint project collaboration of Peking Univeristy and University College London.
-Feel free to contribute to HoarePrompt by opening issues or submitting pull requests on GitHub. Your contributions are highly appreciated!
+This is a project of Peking Univeristy. Feel free to contribute to HoarePrompt-data by opening issues or submitting pull requests on GitHub. Your contributions are highly appreciated!
 
-<table>
-  <tr>
-    <td style="text-align: center;">
-      <img src="./assets/PKU.png" alt="Image 1" width="300"/>
-    </td>
-    <td style="text-align: center;">
-      <img src="./assets/HoarePrompt_logo.png" alt="Image 2" width="300"/>
-    </td>
-    <td style="text-align: center;">
-      <img src="./assets/UCL.png" alt="Image 3" width="300"/>
-    </td>
-  </tr>
-</table>
+<div style="display: flex; justify-content: center;">
+  <table style="table-layout: fixed; text-align: center;">
+    <tr>
+      <td style="width: 50%; text-align: center;">
+        <img src="./assets/PKU.png" alt="Image 1" width="300"/>
+      </td>
+      <td style="width: 50%; text-align: center;">
+        <img src="./assets/HoarePrompt_logo.png" alt="Image 2" width="300"/>
+      </td>
+    </tr>
+  </table>
+</div>
