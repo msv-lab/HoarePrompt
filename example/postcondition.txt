@@ -1,0 +1,1 @@
+The function accepts a non-negative integer `n` and returns 0 if `n` is less than or equal to 1. If `n` is greater than 1, it returns the `n`th Fibonacci number.
