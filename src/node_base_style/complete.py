@@ -8,6 +8,7 @@ from node_base_style.loop import complete_loop_triple, get_while_head, ForToWhil
 from node_base_style.loop_condition import get_precondition
 from node_base_style.try_statement import complete_try_triple
 from node_base_style.task_sorter import sort_tasks_by_depth, pretty_print_tasks
+from node_base_style.merger import merge_triple
 
 
 # This is a class responsible for analyzing the postcondition of a program given its precondition and source code
@@ -21,6 +22,9 @@ class PostconditionAnalyzer:
         self.got_return = False # Flag to check if a return statement was encountered in the same level of recursion
         self.last_return =""
         self.last_return_depth=0
+        #create a stack to store the current index
+        self.index_stack=[]
+        
     # Core recursive method to compute the postcondition of a Triple .
     def complete_triple_cot(self, triple: Triple, depth=0, type ="") -> str:
         assert triple.postcondition == State.UNKNOWN
@@ -67,8 +71,8 @@ class PostconditionAnalyzer:
         if isinstance(triple.command, ast.If):
             pre = triple.precondition
 
-            #keep the current index of the  self.collected list
-            current_index = len(self.collected)
+            #push the current index of the  self.collected list in the current stack
+            self.index_stack.append(len(self.collected))
             
             # Find the postcondition for the if body
             then_completion = self.complete_triple_cot(Triple(pre, triple.command.body, State.UNKNOWN), depth=depth+1, type="if part")
@@ -98,24 +102,33 @@ class PostconditionAnalyzer:
             if_triple = IfTriple(pre, triple.command, if_post, else_post, State.UNKNOWN)
             post = complete_if_triple(if_triple, self.model)
             #if this was an if -else statement keep the postcondition for the total if -else otherwise we insert it with type if-statement
+            
+            #if we wanna merge the output state of the if-else statement , currently not used
+            # merged_output = merge_triple(Triple(post, triple.command, State.UNKNOWN), self.model)
+            # post =merged_output
+            
+            #pop the current index from the stack
+            current_index = self.index_stack.pop()
             if triple.command.orelse:
                 self.collected.insert(current_index,(str(post), depth, "if-else statement", ""))
             else:
                 self.collected.insert(current_index,(str(post), depth, "if statement", ""))
+            
+           
             # If we are inside a function and there's a return statement, collect the postcondition and we are done for this recursion
             if depth == 1 and any(isinstance(node, ast.Return) for node in ast.walk(triple.command)) and self.got_return:
                 self.got_return = False
                 self.collected_returns.append((str(post),self.last_return_depth))
                 self.last_return_depth=0
-
                 # since the post condition has been appended as a return element we dont deal with it any more
                 return pre
             return post
 
         # Case for try except blocks
         if isinstance(triple.command, ast.Try):
-            #keep the current index of the  self.collected list
-            current_index = len(self.collected)
+            #push the current index of the  self.collected list in the stack
+            self.index_stack.append(len(self.collected))
+           
             
             pre = triple.precondition
             try_command = triple.command.body # Commands inside the try block
@@ -144,6 +157,12 @@ class PostconditionAnalyzer:
                                    State.UNKNOWN)
 
             post = complete_try_triple(try_triple, self.model)
+
+            #if we wanna merge the output state of the try catch block , currently not used
+            # merged_output = merge_triple(Triple(post, triple.command, State.UNKNOWN), self.model)
+            # post =merged_output
+
+            current_index = self.index_stack.pop()
             #add to the current_index of the self.collected
             self.collected.insert(current_index,(str(post), depth, "try-except block", ""))
 
@@ -167,7 +186,8 @@ class PostconditionAnalyzer:
             k = self.config["loop-unrolling-count"] # the unrolling param from the config
             body_command = triple.command.body
             while_head = get_while_head(triple.command)
-            current_index = len(self.collected)
+            #push the index of the current element in the collected list
+            self.index_stack.append(len(self.collected))
             examples = []
             pre = triple.precondition
             # Unroll the loop by simulating 'k' iterations
@@ -187,7 +207,13 @@ class PostconditionAnalyzer:
             for command in triple.command.body:
                 body_commands= body_commands + f"{indent}{pprint_cmd(command)}"
             body_commands = body_commands + "\n" + f"{indent}# In the following comments we are unrolling the loop {k} times to help you understand its functionality\n"
-                
+            
+
+            #if we wanna merge the output state of the if-else statement , currently not used
+            # merged_output = merge_triple(Triple(post, triple.command, State.UNKNOWN), self.model)
+            # post =merged_output
+
+            current_index = self.index_stack.pop()    
             self.collected.insert(current_index,(str(post), depth, "total loop", body_commands ))
             if depth >= 1 and any(isinstance(node, ast.Return) for node in ast.walk(triple.command)):
                 self.collected_returns.append((str(post),self.last_return_depth))
