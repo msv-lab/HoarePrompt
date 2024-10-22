@@ -1,0 +1,28 @@
+#This is a function and its postcondition is : The function accepts a non-negative integer `n` and potentially returns a result based on the value of `n`.
+def func(n):
+    #This is a simple command and its postcondition is : `n` is a non-negative integer, `i` is a non-negative integer with the same value as `n`
+    i = n
+    #This is a total loop and its postcondition is : `n` is a non-negative integer, and `i` is a non-negative integer with the same value as `n`.
+    while i < 0:
+        print(i)
+        i += 1
+
+        # In the following comments we are unrolling the loop 3 times to help you understand its functionality
+        #This is the Unrolled Loop 1
+        #This is a simple command in unrolled_loop_1 and its postcondition is : `n` is a non-negative integer, `i` is a non-negative integer with the same value as `n`, and `i` is printed
+        print(i)
+        #This is a simple command in unrolled_loop_1 and its postcondition is : `n` is a non-negative integer; `i` is `n + 1`, and `i` is printed
+        i += 1
+        #This is the summary of unrolled_loop_1 and its total postcondition is : `n` is a non-negative integer; `i` is `n + 1`, and `i` is printed
+        #This is the Unrolled Loop 2
+        #This is a simple command in unrolled_loop_2 and its postcondition is : `n` is a non-negative integer, `i` is -1, and -1 is printed
+        print(i)
+        #This is a simple command in unrolled_loop_2 and its postcondition is : `n` is a non-negative integer, `i` is 0, and -1 is printed
+        i += 1
+        #This is the summary of unrolled_loop_2 and its total postcondition is : `n` is a non-negative integer, `i` is 0, and -1 is printed
+        #This is the Unrolled Loop 3
+        #This is a simple command in unrolled_loop_3 and its postcondition is : `n` is a non-negative integer, `i` is -1, and -1 is printed
+        print(i)
+        #This is a simple command in unrolled_loop_3 and its postcondition is : `n` is a non-negative integer, `i` is 0, and -1 is printed
+        i += 1
+        #This is the summary of unrolled_loop_3 and its total postcondition is : `n` is a non-negative integer, `i` is 0, and -1 is printed
