@@ -1,5 +1,7 @@
 def f(n):
-    for i in range(n):
-        print(i)
+    if (n % 2) == 0:
+        return n
+    else:
+        return n + 1
     
     
