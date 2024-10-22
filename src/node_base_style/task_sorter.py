@@ -9,7 +9,7 @@ def sort_tasks_by_depth(elements_simple):
     """
     elements_processed_list = []
     elements_processed = 0
-    elements = [(elem[0], elem[1], idx, elem[2]) for idx, elem in enumerate(elements_simple)]
+    elements = [(elem[0], elem[1], idx, elem[2], elem[3]) for idx, elem in enumerate(elements_simple)]
     # Start from the second to last element and move towards the first
     while elements_processed < len(elements):
         # Iterate through the elements of the list from last to first
@@ -17,7 +17,7 @@ def sort_tasks_by_depth(elements_simple):
             if elements[i] not in elements_processed_list:
                 # print(f"Processing element {elements[i]}")
                 elements_processed_list.append(elements[i])
-                current_element, current_depth, current_id, type = elements[i]
+                current_element, current_depth, current_id, type, command = elements[i]
                 elements_processed += 1
                 break
 
@@ -32,7 +32,7 @@ def sort_tasks_by_depth(elements_simple):
             elements.insert(j, elements.pop(i))
             # print(f"New list: {elements}")
     #remove the third element from the tuple
-    elements = [(elem[0], elem[1], elem[3]) for elem in elements]
+    elements = [(elem[0], elem[1], elem[3], elem[4]) for elem in elements]
     return elements
 
 
@@ -67,9 +67,12 @@ def pretty_print_tasks(elements):
     :return: None
     """
     numbering = []  # Keeps track of the numbering for each depth level
-    current_depth = 0
+    current_depth = -1
+    # Clear the contents of the file
+    with open("tasks.txt", "w"):
+        pass
 
-    for element, depth, type in elements:
+    for element, depth, type, command in elements:
         # If the current task is at a higher depth (subtask), increase numbering levels
         if depth > current_depth:
             numbering.append(1)
@@ -86,7 +89,23 @@ def pretty_print_tasks(elements):
         indent = " " * (depth * 4)  # Indentation based on depth level
 
         # Print the task with the appropriate numbering and indentation
-        print(f"{indent} Task_{task_number}: Type: {type}. Postcondition: {element}")
+        #print them in a  file
+        #remove the \neline at the end of the command if it exists
+        if len(command)>0 and command[-1] == "\n":
+            command = command[:-1]
+        #here i want to open a file and clear it if it has content
+        with open("tasks.txt", "a") as f:
+            if len(command)>0:
+                print(f"{indent}#This is a {type} and its postcondition is : {element}", file=f)
+                print(f"{indent}{command}", file=f)
+            elif "summary" in type:
+                print(f"{indent}#This is the {type} and its total postcondition is : {element}", file=f)
+            elif len(element)==0:
+                print(f"{indent}#This is the {type}", file=f)
+            else :
+                print(f"{indent}#This is a {type} and its total postcondition is : {element}", file=f)
+        print(f"{indent} {command}")
+        print(f"#{indent} #Task_{task_number}: Type: {type}. Postcondition: {element}")
 
         # Update the current depth for the next iteration
         current_depth = depth

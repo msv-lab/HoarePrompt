@@ -85,3 +85,63 @@ def pprint_cmd(cmd: ast.AST | list) -> str:
         return "\n".join([astor.to_source(c) for c in cmd])
     else:
         return astor.to_source(cmd)
+    
+
+
+def pprint_if_stmt(cmd: ast.AST | list) -> str:
+    if isinstance(cmd, list):
+        for c in cmd:
+            if isinstance(c, ast.If):
+                # Return only the condition (test) of the if statement
+                if c.test:
+                    return astor.to_source(c.test).strip()
+        # If no 'If' block is found in the list, return an empty string or some indication
+        return "No if condition found"
+    else:
+
+        return "if " + astor.to_source(cmd.test).strip() +" :"
+
+            
+def pprint_else_stmt(cmd: ast.AST | list) -> str:
+    if isinstance(cmd, list):
+        for c in cmd:
+            
+            if isinstance(c, ast.If):
+                # Return the elif condition
+                return f"elif {astor.to_source(c.test).strip()}:"
+            else:
+                # If it's not an elif, return else
+                return "else:"
+        # If no elif or else block is found, return an empty string or some indication
+        return "No elif or else block found"
+    else:
+        return "else :"
+    
+def pprint_try_stmt(cmd: ast.AST | list) -> str:
+    if isinstance(cmd, list):
+        for c in cmd:
+            if isinstance(c, ast.Try):
+                return "try:"
+        return "No try block found"
+    else:
+        return "try:"
+    
+def pprint_except_stmt(cmd: ast.AST | list) -> str:
+    if isinstance(cmd, list):
+        for c in cmd:
+            if isinstance(c, ast.ExceptHandler):
+                # If there is an exception type, get its source code; otherwise, return a generic "except:"
+                if c.type:
+                    return f"except ({astor.to_source(c.type).strip()}):"
+                else:
+                    return "except:"
+        return "No except block found"
+    else:
+        if isinstance(cmd, ast.ExceptHandler):
+            if cmd.type:
+                return f"except ({astor.to_source(cmd.type).strip()}):"
+            else:
+                return "except:"
+        else:
+            return "No except block found"
+       
