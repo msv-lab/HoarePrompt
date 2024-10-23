@@ -106,24 +106,8 @@ def func(n):
         n -= 1
 
         # In the following comments we are unrolling the loop 3 times to help you understand its functionality
-    #This is a summary of the  whole if block and its total postcondition is : `total` is the sum of integers from the original `n` down to 0, and `n` is decremented to -1. If `total` is greater than 100, the function returns 'not enough resources'.
-        #This is Unrolled Loop 1
-        #This is simple command in unrolled_loop_1 and its postcondition is : `n` is an integer, `total` is `n`
-        total += n
-        #This is simple command in unrolled_loop_1 and its postcondition is : `n` is decremented by 1, `total` is the unchanged original value of `n`
-        n -= 1
         #This is the summary of unrolled_loop_1 and its total postcondition is : `n` is decremented by 1, `total` is the unchanged original value of `n`
-        #This is Unrolled Loop 2
-        #This is simple command in unrolled_loop_2 and its postcondition is : `n` is decremented by 1, `total` is increased by `n`
-        total += n
-        #This is simple command in unrolled_loop_2 and its postcondition is : `n` is decremented by a total of 2, `total` is increased by `n`
-        n -= 1
         #This is the summary of unrolled_loop_2 and its total postcondition is : `n` is decremented by a total of 2, `total` is increased by `n`
-        #This is Unrolled Loop 3
-        #This is simple command in unrolled_loop_3 and its postcondition is : `n` is at least 2, `total` is increased by `2n`
-        total += n
-        #This is simple command in unrolled_loop_3 and its postcondition is : `n` is at least 1, `total` is increased by `2n`
-        n -= 1
         #This is the summary of unrolled_loop_3 and its total postcondition is : `n` is at least 1, `total` is increased by `2n`
     #This is the if part of the statement and its postcondition is : `total` is the sum of integers from the original `n` down to 0, and `n` is decremented to -1, and the function returns 'not enough resources'
     if (total > 100) :
@@ -191,24 +175,9 @@ def func(numbers):
                 max_value = num
         except StopIteration:
             break
-    # In the following comments we are unrolling the loop 1 times to help you understand its functionality
-        #This is Unrolled Loop 1
-        #This is a summary of the whole try-except block and its total postcondition is : numbers is a list of integers, max_value is the maximum value in the list, iterator is an iterator object for numbers, and num is the first element of the list. If the first element of the list is greater than the current max_value, max_value is updated to be equal to the first element of the list.
-        #This is the try block and its postcondition is : `numbers` is a list of integers, `max_value` is the maximum value in the list, `iterator` is an iterator object for `numbers`, and `num` is the first element of the list. If the first element of the list is greater than the current `max_value`, `max_value` is updated to be equal to the first element of the list.
-        try:
-            #This is simple command in try block and its postcondition is : `numbers` is a list of integers, `max_value` is 0, `iterator` is an iterator object for `numbers`, and `num` is the first element of the list
-            num = next(iterator)
-            #This is a summary of the  whole if block and its total postcondition is : `numbers` is a list of integers, `max_value` is the maximum value in the list, `iterator` is an iterator object for `numbers`, and `num` is the first element of the list. If the first element of the list is greater than the current `max_value` of  0, `max_value` is updated to be equal to the first element of the list.
-            #This is the if part of the statement and its postcondition is : `numbers` is a list of integers, `max_value` is 0, `iterator` is an iterator object for `numbers`, and `num` is the first element of the list
-            if (num > max_value) :
-                #This is simple command in if part and its postcondition is : `numbers` is a list of integers, `max_value` is the first element of the list, `iterator` is an iterator object for `numbers`, and `num` is the first element of the list
-                max_value = num
-        #This is the except block 1 and its postcondition is : Unknown
-        except (StopIteration):
-            #This is simple command in except block_1 and its postcondition is : Unknown
-            break
+        # In the following comments we are unrolling the loop 1 times to help you understand its functionality
         #This is the summary of unrolled_loop_1 and its total postcondition is : numbers is a list of integers, max_value is the maximum value in the list, iterator is an iterator object for numbers, and num is the first element of the list. If the first element of the list is greater than the current max_value, max_value is updated to be equal to the first element of the list.
-     #This is return statement and its postcondition is : `numbers` is a list of integers, `max_value` is either the maximum value in the list or 0
+    #This is return statement and its postcondition is : `numbers` is a list of integers, `max_value` is either the maximum value in the list or 0
     return max_value
 ```
 Return Postconditions: numbers` is a list of integers, `max_value` is either the maximum value in the list or 0
@@ -220,12 +189,22 @@ The function func accepts a list of integers and finds the maximum value in the 
 
 Functionality: **The function accepts a list of integers and returns the maximum value in the list. If all the numbers are negative, it returns 0.**
 
+Your Task:
+Annotated Code:
+```
+{code}
+```
+
+Return Postconditions: {returns}
+
+Now, please think step by step: What are the parameters the function accepts, and what does it return? What is the functionality of the function? Make sure to notice any potential edge cases and missing logic. Make sure to Adhere to the format Functionality: **Your summary here**
 """
+
 
 def summarize_functionality_tree(annotated_code, return_postconditions, model):
     prompt = PROMPT.format(code=annotated_code, returns=return_postconditions)
     response = model.query(prompt)
-    post = extract_result(response, "Output State")
+    post = extract_result(response, "Functionality")
     return post
 
 def extract_functionality(response):

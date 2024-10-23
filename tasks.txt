@@ -1,70 +1,22 @@
-#This is the summary for the whole function and its postcondition is : The function accepts a parameter `numbers`, which is a list of integers. It updates `max_value` to the maximum value in the list, creates an iterator object from `numbers`, and assigns the next integer value from the list to `num`. If `num` is greater than the current `max_value`, it updates `max_value`. If a `StopIteration` exception is raised, the function breaks the loop and returns the final `max_value` after iterating through all numbers in the list.
+#This is the summary for the whole function and its postcondition is : The function accepts a list of integers, returns the maximum value found in the list, along with an iterator object for the list, the last element in the list, and indicates that the loop has terminated due to a StopIteration exception.
 def func(numbers):
-    #This is simple command and its postcondition is : `numbers` is a list of integers, `max_value` is 0
+    #This is simple command and its postcondition is : numbers is a list of integers, max_value is 0
     max_value = 0
-    #This is simple command and its postcondition is : `numbers` is a list of integers, `max_value` is 0, `iterator` is an iterator object created from `numbers`
+    #This is simple command and its postcondition is : numbers is a list of integers, max_value is 0, iterator is an iterator object for numbers
     iterator = iter(numbers)
-    #This is a summary of the total loop and its postcondition is : Based on the provided examples, the output state of the loop will be as follows:
-
-Output State: `numbers` is a list of integers, `max_value` is updated to the maximum value in the list, `iterator` is an iterator object created from `numbers`, and `num` is assigned the next integer value from the `numbers` list. If `num` is greater than the current `max_value`, then `max_value` is updated to `num`. If a `StopIteration` exception is raised, the loop will break.
+    #This is a summary of the total loop and its postcondition is : numbers is a list of integers, max_value is the maximum value found in the list, iterator is an iterator object for numbers, num is the last element in the list, and the loop has terminated due to a StopIteration exception.
     while True:
         try:
-    num = next(iterator)
-    if num > max_value:
-        max_value = num
-except StopIteration:
-    break
-
-        # In the following comments we are unrolling the loop 3 times to help you understand its functionality
-        #This is Unrolled Loop 1
-        #This is a summary of the whole try-except block and its total postcondition is : `numbers` is a list of integers, `max_value` is updated to the maximum value in the list, `iterator` is an iterator object created from `numbers`, and `num` is assigned the value returned by calling `next(iterator)`.
-        #This is the try block and its postcondition is : `numbers` is a list of integers. `max_value` is updated to the maximum value in the list. `iterator` is an iterator object created from `numbers`, and `num` is assigned the value returned by calling `next(iterator)`.
-        try:
-            #This is simple command in try block and its postcondition is : `numbers` is a list of integers, `max_value` is 0, `iterator` is an iterator object created from `numbers`, `num` is assigned the value returned by calling `next(iterator)`
             num = next(iterator)
-            #This is a summary of the  whole if block and its total postcondition is : `numbers` is a list of integers. `max_value` is updated to the maximum value in the list. `iterator` is an iterator object created from `numbers`, and `num` is assigned the value returned by calling `next(iterator)`.
-            #This is the if part of the statement and its postcondition is : `numbers` is a list of integers, `max_value` is the first element of `numbers`, `iterator` is an iterator object created from `numbers`, `num` is assigned the value returned by calling `next(iterator)`
-            if (num > max_value) :
-                #This is simple command in if part and its postcondition is : `numbers` is a list of integers, `max_value` is the first element of `numbers`, `iterator` is an iterator object created from `numbers`, `num` is assigned the value returned by calling `next(iterator)`
+            if num > max_value:
                 max_value = num
-        #This is the except block 1 and its postcondition is : SyntaxError: 'break' outside loop
-        except (StopIteration):
-            #This is simple command in except block_1 and its postcondition is : SyntaxError: 'break' outside loop
+        except StopIteration:
             break
-        #This is the summary of unrolled_loop_1 and its total postcondition is : `numbers` is a list of integers, `max_value` is updated to the maximum value in the list, `iterator` is an iterator object created from `numbers`, and `num` is assigned the value returned by calling `next(iterator)`.
-        #This is Unrolled Loop 2
-        #This is a summary of the whole try-except block and its total postcondition is : `numbers` is a list of integers, `max_value` is updated to the maximum value in the list, `iterator` is an iterator object created from `numbers`, and `num` is assigned the next integer value from the `numbers` list. If `num` is greater than the current `max_value`, then `max_value` is updated to `num`. If a `StopIteration` exception is raised, the loop will break.
-        #This is the try block and its postcondition is : `numbers` is a list of integers, `max_value` is updated to the maximum value in the list, `iterator` is an iterator object created from `numbers`, and `num` is assigned the next integer value from the `numbers` list. If `num` is greater than the current `max_value`, then `max_value` is updated to `num`.
-        try:
-            #This is simple command in try block and its postcondition is : `numbers` is a list of integers, `max_value` is updated to the maximum value in the list, `iterator` is an iterator object created from `numbers`, and `num` is assigned the next integer value from the `numbers` list
-            num = next(iterator)
-            #This is a summary of the  whole if block and its total postcondition is : `numbers` is a list of integers, `max_value` is updated to the maximum value in the list, `iterator` is an iterator object created from `numbers`, and `num` is assigned the next integer value from the `numbers` list. If `num` is greater than the current `max_value`, then `max_value` is updated to `num`.
-            #This is the if part of the statement and its postcondition is : `numbers` is a list of integers, `max_value` is the maximum value in the list, `iterator` is an iterator object created from `numbers`, and `num` is assigned the next integer value from the `numbers` list
-            if num > max_value :
-                #This is simple command in if part and its postcondition is : `numbers` is a list of integers, `max_value` is the maximum value in the list, `iterator` is an iterator object created from `numbers`, and `num` is assigned the next integer value from the `numbers` list
-                max_value = num
-        #This is the except block 1 and its postcondition is : Unknown
-        except (StopIteration):
-            #This is simple command in except block_1 and its postcondition is : Unknown
-            break
-        #This is the summary of unrolled_loop_2 and its total postcondition is : `numbers` is a list of integers, `max_value` is updated to the maximum value in the list, `iterator` is an iterator object created from `numbers`, and `num` is assigned the next integer value from the `numbers` list. If `num` is greater than the current `max_value`, then `max_value` is updated to `num`. If a `StopIteration` exception is raised, the loop will break.
-        #This is Unrolled Loop 3
-        #This is a summary of the whole try-except block and its total postcondition is : `numbers` is a list of integers. If `num` is greater than the current `max_value`, `max_value` is updated to `num`. The rest of the variables retain their initial states.
-        #This is the try block and its postcondition is : `numbers` is a list of integers. If `num` is greater than the current `max_value`, `max_value` is updated to `num`. The rest of the variables retain their initial states.
-        try:
-            #This is simple command in try block and its postcondition is : `numbers` is a list of integers, `max_value` is updated to the maximum value in the list, `iterator` is an iterator object created from `numbers`, and `num` is assigned the next integer value from the `numbers` list
-            num = next(iterator)
-            #This is a summary of the  whole if block and its total postcondition is : `numbers` is a list of integers. If `num` is greater than the current `max_value`, `max_value` is updated to `num`. The rest of the variables retain their initial states.
-            #This is the if part of the statement and its postcondition is : `numbers` is a list of integers, `max_value` is updated to the new maximum value in the list, `iterator` is an iterator object created from `numbers`, and `num` is assigned the next integer value from the `numbers` list
-            if num > max_value :
-                #This is simple command in if part and its postcondition is : `numbers` is a list of integers, `max_value` is updated to the new maximum value in the list, `iterator` is an iterator object created from `numbers`, and `num` is assigned the next integer value from the `numbers` list
-                max_value = num
-        #This is the except block 1 and its postcondition is : Unknown
-        except (StopIteration):
-            #This is simple command in except block_1 and its postcondition is : Unknown
-            break
-        #This is the summary of unrolled_loop_3 and its total postcondition is : `numbers` is a list of integers. If `num` is greater than the current `max_value`, `max_value` is updated to `num`. The rest of the variables retain their initial states.
-    #This is return statement and its postcondition is : Output State: `numbers` is a list of integers, `max_value` is updated to the maximum value in the list, `iterator` is an iterator object created from `numbers`, and `num` is assigned the next integer value from the `numbers` list. If `num` is greater than the current `max_value`, then `max_value` is updated to `num`. If a `StopIteration` exception is raised, the loop will break and the function will return the final `max_value` after iterating through all numbers in the list.
+                # In the following comments we are unrolling the loop 3 times to help you understand its functionality
+        #This is the summary of unrolled_loop_1 and its total postcondition is : numbers is a list of integers, max_value is the maximum value found in the list, iterator is an iterator object for numbers, num is the first integer value from the list. If there are no more elements in the iterator, the program encounters a StopIteration exception.
+        #This is the summary of unrolled_loop_2 and its total postcondition is : numbers is a list of integers (with at least one more element), max_value is the maximum value found in the list, iterator is an iterator object for numbers. If num is greater than the current max_value, then max_value is updated to num. If a `StopIteration` exception occurs, the loop breaks.
+        #This is the summary of unrolled_loop_3 and its total postcondition is : numbers is a list of integers (with at least one more element), max_value is the maximum value found in the list, iterator is an iterator object for numbers (has not reached the end of the list), and num is the next element in the list.
+    #This is return statement and its postcondition is : numbers is a list of integers, max_value is the maximum value found in the list, iterator is an iterator object for numbers, num is the last element in the list, and the loop has terminated due to a StopIteration exception. The function returns the max_value.
     return max_value
-Return: Output State: `numbers` is a list of integers, `max_value` is updated to the maximum value in the list, `iterator` is an iterator object created from `numbers`, and `num` is assigned the next integer value from the `numbers` list. If `num` is greater than the current `max_value`, then `max_value` is updated to `num`. If a `StopIteration` exception is raised, the loop will break and the function will return the final `max_value` after iterating through all numbers in the list.
+Return: numbers is a list of integers, max_value is the maximum value found in the list, iterator is an iterator object for numbers, num is the last element in the list, and the loop has terminated due to a StopIteration exception. The function returns the max_value.
 
