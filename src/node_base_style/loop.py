@@ -52,7 +52,6 @@ Therefore, the output state of the loop is that `factorial` is the factorial of 
 Output State: **`factorial` is the factorial of `n`, and `n` is decremented to 0.**
 
 Your Task:
-Example: 
 {loop_unrolled}
 
 The following provides the initial state of the loop and the loop's code.
@@ -60,7 +59,7 @@ Initial State: {pre}
 ```
 {loop_code}
 ```
-Now, please think step by step. Using the results from the first few iterations of the loop provided in the example, determine the loop's output state.
+Now, please think step by step. Using the results from the first few iterations of the loop provided in the example, determine the loop's output state. Make sure to include the values of the variables after the loop has finished especially the any loop control variables. Use the fomrat Output State: **the output state you calculate**
 """
 
 # Format examples of loop iterations into the text format required for the prompt.
@@ -78,6 +77,7 @@ def format_examples(examples: list[Triple]):
 
 # The model will compute the final state of the program after multiple iterations of the loop.
 def complete_loop_triple(incomplete_triple: Triple, model, examples: list[Triple]):
+    
     loop_unrolled = format_examples(examples)
     prompt = LOOP_PROMPT.format(loop_unrolled=loop_unrolled, pre=incomplete_triple.precondition,
                                 loop_code=pprint_cmd(incomplete_triple.command))
