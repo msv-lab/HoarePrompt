@@ -9,6 +9,7 @@ import precondition_extractor
 import entailment
 import comment_style
 import node_base_style.complete
+from  node_base_style.naive import naive_question
 import cex_generator
 
 
@@ -194,7 +195,8 @@ def main():
 
 # Assess if a program is consistent with the description using pre/postconditions and entailment checking
 def assess(description, program, module_name, config, log_directory, cex_path):
-
+    if config['assessment-mode'] == 'naive':
+        return compute_postcondition_naive(description, program, config, log_directory)
     # Ensure assessment mode is set to 'postcondition-entailment'
     assert config['assessment-mode'] == 'postcondition-entailment'
     
@@ -248,6 +250,10 @@ def extract_precondition(description, program, config, log_directory):
     
     # Use the precondition extractor model to generate the precondition
     return precondition_extractor.default(model, description, program)
+
+def compute_postcondition_naive(description, program, config, log_directory):
+    model = get_model(config["model"], config["temperature"], log_directory)
+    return naive_question(description, program, model) 
 
 # Compute the postcondition from a precondition and program
 def compute_postcondition(precondition, program, config, log_directory):

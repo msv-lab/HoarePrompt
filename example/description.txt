@@ -1,1 +1,1 @@
-implement a function computing the n-th Fibonacci's number.
+find the maximum number of a list of integers (negative or positive)

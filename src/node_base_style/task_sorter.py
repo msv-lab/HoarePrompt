@@ -9,7 +9,7 @@ def sort_tasks_by_depth(elements_simple):
     """
     elements_processed_list = []
     elements_processed = 0
-    elements = [(elem[0], elem[1], idx, elem[2], elem[3]) for idx, elem in enumerate(elements_simple)]
+    elements = [(elem[0], elem[1], idx, elem[2], elem[3], elem[4]) for idx, elem in enumerate(elements_simple)]
     # Start from the second to last element and move towards the first
     while elements_processed < len(elements):
         # Iterate through the elements of the list from last to first
@@ -17,26 +17,28 @@ def sort_tasks_by_depth(elements_simple):
             if elements[i] not in elements_processed_list:
                 # print(f"Processing element {elements[i]}")
                 elements_processed_list.append(elements[i])
-                current_element, current_depth, current_id, type, command = elements[i]
+                current_element, current_depth, current_id, type, command, movable = elements[i]
                 elements_processed += 1
                 break
+        #if we are allowed to move this element
+        if  movable:
+            # Move the current element leftwards until we encounter an element with a lower depth
+            j = i
+            while j > 0 and elements[j - 1][1] > current_depth:
+                j -= 1
 
-        # Move the current element leftwards until we encounter an element with a lower depth
-        j = i
-        while j > 0 and elements[j - 1][1] > current_depth:
-            j -= 1
-
-        # If we found a new position, move the element
-        if j != i:
-            # print(f"Moving element {elements[i]} to position {j}")
-            elements.insert(j, elements.pop(i))
-            # print(f"New list: {elements}")
+            # If we found a new position, move the element
+            if j != i:
+                # print(f"Moving element {elements[i]} to position {j}")
+                elements.insert(j, elements.pop(i))
+                # print(f"New list: {elements}")    
     #remove the third element from the tuple
     elements = [(elem[0], elem[1], elem[3], elem[4]) for elem in elements]
     return elements
 
 
 # Example list of tuples (string, depth)
+# elements = [g, depth)
 # elements = [
 #     ("A", 3, "aaa"),
 #     ("B", 1, "llll"),
@@ -73,19 +75,19 @@ def pretty_print_tasks(elements):
         pass
 
     for element, depth, type, command in elements:
-        # If the current task is at a higher depth (subtask), increase numbering levels
-        if depth > current_depth:
-            numbering.append(1)
-        # If the current task is at the same depth, increment the last numbering level
-        elif depth == current_depth:
-            numbering[-1] += 1
-        # If the current task is at a lower depth, backtrack the numbering levels
-        else:
-            numbering = numbering[:depth]
-            numbering[-1] += 1
+        # # If the current task is at a higher depth (subtask), increase numbering levels
+        # if depth > current_depth:
+        #     numbering.append(1)
+        # # If the current task is at the same depth, increment the last numbering level
+        # elif depth == current_depth:
+        #     numbering[-1] += 1
+        # # If the current task is at a lower depth, backtrack the numbering levels
+        # else:
+        #     numbering = numbering[:depth]
+        #     numbering[-1] += 1
 
-        # Format the task numbering based on its depth
-        task_number = ".".join(map(str, numbering))
+        # # Format the task numbering based on its depth
+        # task_number = ".".join(map(str, numbering))
         indent = " " * (depth * 4)  # Indentation based on depth level
 
         # Print the task with the appropriate numbering and indentation
@@ -96,19 +98,24 @@ def pretty_print_tasks(elements):
         #here i want to open a file and clear it if it has content
         with open("tasks.txt", "a") as f:
             if len(command)>0:
-                print(f"{indent}#This is a {type} and its postcondition is : {element}", file=f)
+                print(f"{indent}#This is {type} and its postcondition is : {element}", file=f)
                 print(f"{indent}{command}", file=f)
             elif "summary" in type:
-                print(f"{indent}#This is the {type} and its total postcondition is : {element}", file=f)
+                print(f"{indent}#This is {type} and its total postcondition is : {element}", file=f)
             elif len(element)==0:
-                print(f"{indent}#This is the {type}", file=f)
+                print(f"{indent}#This is {type}", file=f)
             else :
-                print(f"{indent}#This is a {type} and its total postcondition is : {element}", file=f)
-        print(f"{indent} {command}")
-        print(f"#{indent} #Task_{task_number}: Type: {type}. Postcondition: {element}")
+                print(f"{indent}#This is {type} and its total postcondition is : {element}", file=f)
+        #put all the contents of tasks.txt in a string
+        
+        # print(f"{indent} {command}")
+        # print(f"#{indent} #Task_{task_number}: Type: {type}. Postcondition: {element}")
 
         # Update the current depth for the next iteration
         current_depth = depth
+    with open("tasks.txt", "r") as f:
+            tasks = f.read()
+    return tasks
 
 
 # # Example sorted list of tuples (string, depth)
