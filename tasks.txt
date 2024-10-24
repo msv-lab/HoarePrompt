@@ -1,10 +1,10 @@
-#This is the summary for the whole function and its postcondition is : The function accepts a list of integers, returns the maximum value found in the list, along with an iterator object for the list, the last element in the list, and indicates that the loop has terminated due to a StopIteration exception.
+#This is the summary for the whole function and its postcondition is : The function accepts a parameter numbers, which is a list of integers. It returns the maximum integer value in the list and updates the output state with the current maximum value and the iterator at the end of the list.
 def func(numbers):
-    #This is simple command and its postcondition is : numbers is a list of integers, max_value is 0
+    #This is simple command and its postcondition is : numbers is a list of integers, `max_value` is 0
     max_value = 0
-    #This is simple command and its postcondition is : numbers is a list of integers, max_value is 0, iterator is an iterator object for numbers
+    #This is simple command and its postcondition is : numbers is a list of integers, max_value is 0, iterator is set to the beginning of the list
     iterator = iter(numbers)
-    #This is a summary of the total loop and its postcondition is : numbers is a list of integers, max_value is the maximum value found in the list, iterator is an iterator object for numbers, num is the last element in the list, and the loop has terminated due to a StopIteration exception.
+    #This is a summary of the total loop and its postcondition is : Output State: numbers is a list of integers, max_value is the maximum integer value in the list, iterator is set to the next element in the list, or the program breaks out of the loop if there are no more elements to iterate through. If a `StopIteration` exception occurs, the program breaks out of the loop. Once the loop finishes, the iterator is at the end of the list.
     while True:
         try:
             num = next(iterator)
@@ -12,11 +12,13 @@ def func(numbers):
                 max_value = num
         except StopIteration:
             break
-                # In the following comments we are unrolling the loop 3 times to help you understand its functionality
-        #This is the summary of unrolled_loop_1 and its total postcondition is : numbers is a list of integers, max_value is the maximum value found in the list, iterator is an iterator object for numbers, num is the first integer value from the list. If there are no more elements in the iterator, the program encounters a StopIteration exception.
-        #This is the summary of unrolled_loop_2 and its total postcondition is : numbers is a list of integers (with at least one more element), max_value is the maximum value found in the list, iterator is an iterator object for numbers. If num is greater than the current max_value, then max_value is updated to num. If a `StopIteration` exception occurs, the loop breaks.
-        #This is the summary of unrolled_loop_3 and its total postcondition is : numbers is a list of integers (with at least one more element), max_value is the maximum value found in the list, iterator is an iterator object for numbers (has not reached the end of the list), and num is the next element in the list.
-    #This is return statement and its postcondition is : numbers is a list of integers, max_value is the maximum value found in the list, iterator is an iterator object for numbers, num is the last element in the list, and the loop has terminated due to a StopIteration exception. The function returns the max_value.
+        # In the following comments we are unrolling the loop 3 times to help you understand its functionality
+        #This is the summary of unrolled_loop_1 and its total postcondition is : A `StopIteration` exception might be triggered at `num = next(iterator)` if there are no more elements left to iterate through in the list. If the `StopIteration` exception is raised, the program breaks out of the loop. Otherwise, if there are more elements in the list, `num` is assigned the next integer value, and if `num` is greater than the current `max_value`, `max_value` is updated to `num`. 
+
+Therefore, the output state is: **numbers is a list of integers, max_value is the maximum integer value in the list, iterator is set to the beginning of the list. If there are no more elements to iterate, the program breaks out of the loop.**
+        #This is the summary of unrolled_loop_2 and its total postcondition is : numbers is a list of integers, max_value is the maximum integer value in the list, iterator is set to the next element in the list, or the program breaks out of the loop if there are no more elements to iterate through.
+        #This is the summary of unrolled_loop_3 and its total postcondition is : numbers is a list of integers, max_value is the maximum integer value in the list, iterator is set to the next element in the list, or the program breaks out of the loop if there are no more elements to iterate through. If a `StopIteration` exception occurs, the program breaks out of the loop.
+    #This is return statement and its postcondition is : Output State: numbers is a list of integers, max_value is the maximum integer value in the list, iterator is at the end of the list, and the program returns the max_value.
     return max_value
-Return: numbers is a list of integers, max_value is the maximum value found in the list, iterator is an iterator object for numbers, num is the last element in the list, and the loop has terminated due to a StopIteration exception. The function returns the max_value.
+Return: Output State: numbers is a list of integers, max_value is the maximum integer value in the list, iterator is at the end of the list, and the program returns the max_value.
 

@@ -8,7 +8,10 @@ Precondition: describes the initial state of the program variables before the ex
 
 Program Fragment: This is a given part of the task and is not something you need to create or modify. If the program fragment contains nested if statements, you only need to focus on the outermost condition, as the postconditions for the nested if statements are included in the if postcondition and else postcondition.
 
-Postcondition: describes the state of the program variables after the execution of the program fragment with the initial state described in the precondition. This description should include both the values of the variables and the relationships between them. Similar to the precondition, avoid explaining how the program operates; concentrate solely on the variable values and their interrelations. Ensure that the postcondition retains the conditions stated in the precondition. You need to strictly follow the format and summarize the if statement in a coherent paragraph, rather than discussing it in separate paragraphs."""
+Postcondition: describes the state of the program variables after the execution of the program fragment with the initial state described in the precondition. This description should include both the values of the variables and the relationships between them. Similar to the precondition, avoid explaining how the program operates; concentrate solely on the variable values and their interrelations. Ensure that the postcondition retains the conditions stated in the precondition. You need to strictly follow the format and summarize the if statement in a coherent paragraph, rather than discussing it in separate paragraphs.
+Look if there is any missing logic or edge cases that the code is not handling esecially those concerning the boundary values of the different cases. Make sure to include these potential cases in the postcondition. 
+I am giving you some examples to understand the task better. Then I am giving you your task.
+Follow the format Postcondition: **the calculated postcondition**"""
 
 generic_if_ctx = [
     IfTriple(

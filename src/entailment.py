@@ -5,8 +5,10 @@ import re
 # satisfies the description and output specification, and asks it to return either "True" or "False".
 
 ENTAILMENT_CHECKING_PROMPT_TEMPLATE = """
-You have been assigned the role of a program verifier. Your task is to determineg the correctness of a given Python program based on the provided problem description and the description of program's output. If the program is correct, that is it meets the requirements in the problem description, print "True"; otherwise, print "False". Partially correct programs should be considered incorrect. You need to strictly follow the format. Follow the following examples:
-
+You have been assigned the role of a program verifier. Your task is to determineg the correctness of a given Python program based on the provided problem description and the description of program's output. If the program is correct, that is it meets the requirements in the problem description, print "True"; otherwise, print "False". Partially correct programs should be considered incorrect. You have to use the source code and the Output description to try to understand if there is any missing logic or edge cases that the code is not handling. 
+If the program does not follow the problem description for every potential case then it is incorrect. Then if even for one input or potential case the program does not work then Correctness **False** .You are trying to find any potential case that the porgram does not does what the descriptions says. The output description might give you examples of some of the cases that the code is not working corectly.
+You need to strictly follow the format Correctness: **True or False**.
+I am giving you some examples to understand the task better. Then I am giving you your task.
 # Example 1
 
 Problem description: Write a python function to identify non-prime numbers.
@@ -86,26 +88,39 @@ Correctness: **False**.
 
 # Example 5
 
-Problem description: Write a function to check if the given number is woodball or not.
+Problem description: Write a function to perform binary search of a number in an list
 Program:
 ```
-def is_woodall(n):
-    return n == (n*(2**(n-1)))
+def binary_search(arr, target):
+    left = 0
+    right = len(arr) - 1
+    while left < right:
+        mid = (left + right) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            left = mid
+        else:
+            right = mid - 1
+    if arr[left] == target:
+        return left
+    return -1
 ```
-Output description: The function returns a boolean value indicating whether n is a Woodall number (a number of the form n*2^(n-1) for some integer n > 0). Additionally, if the function returns True, then n has the value of a Woodall number, and if the function returns False, then n does not have the value of a Woodall number.
-
-Explanation: According to the output description, the function returns a boolean value indicating whether n is a Woodall number (a number of the form n*2^(n-1) for some integer n > 0). However, the formula `n * 2^(n-1)` is incorrect for determining Woodall numbers. The correct formula for a Woodall number is `n * 2^n - 1`, where `n` is a positive integer. To check if a given number `m` is a Woodall number, you should verify whether `m` equals `n * 2^n - 1` for some integer `n`. Therefore, the function does not correctly check for Woodall numbers.
-
+Output description: The function returns the index of the target number in the input list `arr` if it is present; otherwise, it returns -1. If the taget is at the last index it wont be found as the loop will break before reaching the last index.
+Explanation: According to the output description, the function returns the index of the target number in the input list `arr` if it is present; otherwise, it returns -1. The function uses a binary search algorithm to find the target number in the list. However, the termination condition of the while loop is `left < right`, which may cause the loop to terminate prematurely when `left` is equal to `right`. This condition can lead to missing the target element if it is at the last index of the list. Also when left and right are adjacent then mid will always be left leading to infinate loop.
 Correctness: **False**.
 
 # Your task:
-
 Problem description: {description}
-Program:
+Prograam:
 ```
 {program}
 ```
 Output description: {postcondition}
+
+If the program does not follow the problem description for every potential case then it is incorrect. Then if even for one input or potential case the program does not work then Correctness **False** .You are trying to find any potential case that the porgram does not does what the descriptions says.
+The output description might give you examples of some of the cases that the code is not working corectly.
+You need to strictly follow the format Correctness: **True or False**. Then if the program is correct you can add an explanation of why you think the code is correct in every case, if the program is incorrect you can mention a case when the program does not work correctly.
 """
 
 # Parses the model response to see if it responded True or False
@@ -124,7 +139,7 @@ def naive(model, description, postcondition, program, module_name, config, cex_p
     prompt = ENTAILMENT_CHECKING_PROMPT_TEMPLATE.format(program=program,
                                                         description=description,
                                                         postcondition=postcondition)
-
+    
     response = model.query(prompt)
     result = extract_correctness_from_response(response)
 
