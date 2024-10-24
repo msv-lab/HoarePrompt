@@ -1,0 +1,1 @@
+**Precondition**: birthdate is a date object representing someone's birthdate.
