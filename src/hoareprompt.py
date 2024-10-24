@@ -252,7 +252,9 @@ def extract_precondition(description, program, config, log_directory):
 
 def compute_postcondition_naive(description, program, config, log_directory):
     model = get_model(config["model"], config["temperature"], log_directory)
-    return naive_question(description, program, model) 
+    response = naive_question(description, program, model)
+    
+    return response
 
 # Compute the postcondition from a precondition and program
 def compute_postcondition(precondition, program, config, log_directory):
@@ -281,9 +283,10 @@ def check_entailment(description, postcondition, program, module_name, config, l
             correctness = entailment.naive(model, description, postcondition, program, module_name, config)
         else:
             correctness = entailment.naive(model, description, postcondition, program, module_name, config, cex_path)
-            if correctness is False:
-                cex_generator.output_cex(model, description, postcondition, program, config, cex_path, module_name)
-        return correctness
+            if not correctness[0] :
+                reason = correctness[1].replace("Correctness: **False**", "")
+                cex_generator.output_cex(model, description, postcondition, program, config, cex_path, module_name, reason)
+        return correctness[0]
 
     print(f"Entailment mode {config['entailment-mode']} not supported, only naive is currently implemented")
     raise NotImplementedError

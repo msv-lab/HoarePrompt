@@ -57,7 +57,7 @@ def test_count_Substring_With_Equal_Ends():
 
 # This function generates a template for the counterexample generation prompt.
 # It includes the instruction and an example, followed by a task specific to the given problem.
-def cex_generation_prompt_template(use_postcondition):
+def cex_generation_prompt_template(use_postcondition, reason):
     HEADER_TEMPLATE = """
 {instruction}
 
@@ -78,7 +78,7 @@ Program:
 ```
 """
     if use_postcondition:
-        TASK_TEMPLATE += "Output description: {postcondition}"
+        TASK_TEMPLATE += "Output description: {postcondition} \n And the explanation of the output: {reason}"
 
     header = HEADER_TEMPLATE.format(instruction=cex_generation_instruction(use_postcondition),
                                     example=cex_generation_example(use_postcondition))
@@ -89,6 +89,11 @@ Program:
 def extract_code_blocks(text, module_name):
     pattern = re.compile(r'```python(.*?)```', re.DOTALL)
     matches = pattern.findall(text)
+    if not matches:
+        pattern = re.compile(r'```(.*?)```', re.DOTALL)
+        matches = pattern.findall(text)
+    if not matches:
+        print("No code blocks found in the cex response.")
     updated_blocks = []
     for code in matches:
         updated_code = re.sub(rf'from\s+<module_name>\s+import', f'from {module_name} import', code)
@@ -100,7 +105,7 @@ def extract_code_blocks(text, module_name):
 # It ensures that the necessary directories exist and writes the extracted code to the specified path.
 def store_cex(response, cex_path, module_name):
     extract_code = extract_code_blocks(response, module_name)
-    print(extract_code)
+    
 
     directory = os.path.dirname(cex_path)
     if directory and not os.path.exists(directory):
@@ -113,18 +118,19 @@ def store_cex(response, cex_path, module_name):
 
 # This is the main function that interacts with the model to generate the counterexample.
 # It selects the appropriate prompt template, with or without postcondition, dpending on the input param, and stores the generated counterexample.
-def output_cex(model, description, postcondition, program, config, cex_path, module_name):
+def output_cex(model, description, postcondition, program, config, cex_path, module_name, reason):
     if config['cex-mode'] == "with-postcondition":
-        template = cex_generation_prompt_template(True)
+        template = cex_generation_prompt_template(True, reason)
     elif config['cex-mode'] == "without-postcondition":
-        template = cex_generation_prompt_template(False)
+        template = cex_generation_prompt_template(False, reason)
     else:
         raise NotImplementedError
     prompt = template.format(program=program,
                              description=description,
-                             postcondition=postcondition)
+                             postcondition=postcondition,
+                             reason=reason)
     response = model.query(prompt)
-    print(response)
+   
     
     store_cex(response, cex_path, module_name)
 

@@ -1,24 +1,10 @@
-#This is the summary for the whole function and its postcondition is : The function accepts a parameter numbers, which is a list of integers. It returns the maximum integer value in the list and updates the output state with the current maximum value and the iterator at the end of the list.
-def func(numbers):
-    #This is simple command and its postcondition is : numbers is a list of integers, `max_value` is 0
-    max_value = 0
-    #This is simple command and its postcondition is : numbers is a list of integers, max_value is 0, iterator is set to the beginning of the list
-    iterator = iter(numbers)
-    #This is a summary of the total loop and its postcondition is : Output State: numbers is a list of integers, max_value is the maximum integer value in the list, iterator is set to the next element in the list, or the program breaks out of the loop if there are no more elements to iterate through. If a `StopIteration` exception occurs, the program breaks out of the loop. Once the loop finishes, the iterator is at the end of the list.
-    while True:
-        try:
-            num = next(iterator)
-            if num > max_value:
-                max_value = num
-        except StopIteration:
-            break
-        # In the following comments we are unrolling the loop 3 times to help you understand its functionality
-        #This is the summary of unrolled_loop_1 and its total postcondition is : A `StopIteration` exception might be triggered at `num = next(iterator)` if there are no more elements left to iterate through in the list. If the `StopIteration` exception is raised, the program breaks out of the loop. Otherwise, if there are more elements in the list, `num` is assigned the next integer value, and if `num` is greater than the current `max_value`, `max_value` is updated to `num`. 
-
-Therefore, the output state is: **numbers is a list of integers, max_value is the maximum integer value in the list, iterator is set to the beginning of the list. If there are no more elements to iterate, the program breaks out of the loop.**
-        #This is the summary of unrolled_loop_2 and its total postcondition is : numbers is a list of integers, max_value is the maximum integer value in the list, iterator is set to the next element in the list, or the program breaks out of the loop if there are no more elements to iterate through.
-        #This is the summary of unrolled_loop_3 and its total postcondition is : numbers is a list of integers, max_value is the maximum integer value in the list, iterator is set to the next element in the list, or the program breaks out of the loop if there are no more elements to iterate through. If a `StopIteration` exception occurs, the program breaks out of the loop.
-    #This is return statement and its postcondition is : Output State: numbers is a list of integers, max_value is the maximum integer value in the list, iterator is at the end of the list, and the program returns the max_value.
-    return max_value
-Return: Output State: numbers is a list of integers, max_value is the maximum integer value in the list, iterator is at the end of the list, and the program returns the max_value.
+#This is the summary for the whole function and its postcondition is : The function accepts a parameter birthdate, returns birthdate, current date, and the calculated age based on the given birthdate and current date.
+def func(birthdate):
+    #This is simple command and its postcondition is : birthdate is a date object representing a valid date of birth; today is the current date
+    today = date.today()
+    #This is simple command and its postcondition is : birthdate is a date object representing a valid date of birth; today is the current date, age is the calculated age based on the given birthdate and current date
+    age = today.year - birthdate.year
+    #This is return statement and its postcondition is : birthdate is a date object representing a valid date of birth, today is the current date, and age is the calculated age based on the given birthdate and current date
+    return age
+Return: birthdate is a date object representing a valid date of birth, today is the current date, and age is the calculated age based on the given birthdate and current date
 
