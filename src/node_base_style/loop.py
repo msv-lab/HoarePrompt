@@ -7,9 +7,11 @@ from node_base_style.helper import extract_result
 # The prompt template instructs the model on how to analyze the state of the loop after several(k) iterations.
 LOOP_PROMPT = """
 You have been assigned the role of a program verifier, responsible for analyzing the program's state after the loop. The initial state of the code has already been provided. Additionally, you can see examples of the loop executing several times. The initial state includes the values and relationships of the variables before the program execution. The output state should include the values and relationships of the variables after the execution of the loop. Similar to the initial state, avoid explaining how the program operates; focus solely on the variable values and their interrelations. 
+Look if there is any missing logic or edge cases that the code is not handling esecially those concerning the values that cause the loop to end or not to start in the first place. Make sure to include these potential cases in the output state. 
 You must adhere to the text format: Output State: **output state.**
+I am giving you two examples to understand the task better. Then I am giving you your task.
 
-Example: 
+Example 1: 
 Loop executes 1 time:
 Initial State: `factorial` is 1, n is a positive integer.
 ```
@@ -51,6 +53,51 @@ If `n` is greater than 2, the loop will be executed at least three times. After 
 Therefore, the output state of the loop is that `factorial` is the factorial of `n`, and `n` is decremented to 0.
 Output State: **`factorial` is the factorial of `n`, and `n` is decremented to 0.**
 
+Example 2: 
+
+Loop executes 1 time:       
+Initial State: `total` is 0, 'students' can hold any value. 
+```
+total += students
+students -= 1
+```
+ 
+Output State: `total` is equal to the initial value of 'students', 'students' becomes 1 less than the initial value of 'students'
+
+Loop executes 2 time:       
+Initial State: total` is equal to the initial value of 'students', 'students' becomes 1 less than the initial value of 'students'
+```
+total += students
+students -= 1
+```
+ 
+Output State: `total` is equal to twice the initial value of 'students' minus 1, 'students' becomes 2 less than the initial value of 'students'
+
+Loop executes 3 time:       
+Initial State: `total` is equal to twice the initial value of 'students' minus 1, 'students' becomes 2 less than the initial value of 'students'
+```
+total += students
+students -= 1
+```
+ 
+Output State: `total` is equal to three times the initial value of 'students' minus 3, 'students' becomes 3 less than the initial value of 'students'
+
+
+The following provides the initial state of the loop and the loop's code.
+Initial State:  `total` is 0, 'students' can hold any value. 
+```
+while students >= 1:
+    total += students
+    students -= 1
+```
+Now, please think step by step. Using the results from the first few iterations of the loop provided in the example, determine the loop's output state.
+
+Example Answer:
+If students is positive the loop will be executed at least once and total will be equal to all the numbers form 1 to students and students will be 0. 
+If students is 0 or negative , the loop will not be executed and total will be 0 and students will have the same value as initially.
+Output State: **If students is positive total will be equal to the sum of all the numbers form 1 to students and students will be 0. If students is 0 or negative , the loop will not be executed and total will be 0 and students will have the same value as initially.**
+
+
 Your Task:
 {loop_unrolled}
 
@@ -59,7 +106,9 @@ Initial State: {pre}
 ```
 {loop_code}
 ```
-Now, please think step by step. Using the results from the first few iterations of the loop provided in the example, determine the loop's output state. Make sure to include the values of the variables after the loop has finished especially the any loop control variables. Use the fomrat Output State: **the output state you calculate**
+Now, please think step by step. Using the results from the first few iterations of the loop provided in the example, determine the loop's output state. Make sure to include the values of the variables after the loop has finished especially the any loop control variables. 
+Look if there is any missing logic or edge cases that the code is not handling esecially those concerning the values that cause the loop to end or not to start in the first place. Make sure to include these potential cases in the output state. 
+Use the fomrat Output State: **the output state you calculate**
 """
 
 # Format examples of loop iterations into the text format required for the prompt.

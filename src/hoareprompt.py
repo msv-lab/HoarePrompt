@@ -220,7 +220,6 @@ def assess(description, program, module_name, config, log_directory, cex_path):
     postcondition_log_dir = log_directory / 'compute-postcondition'
     postcondition_log_dir.mkdir()
     postcondition = compute_postcondition(precondition, program, config, postcondition_log_dir)
-
     # Save the computed postcondition
     with (log_directory / 'postcondition.txt').open("w", encoding="utf-8") as f:
         f.write(postcondition)

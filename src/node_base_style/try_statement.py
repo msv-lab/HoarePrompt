@@ -7,6 +7,7 @@ from node_base_style.helper import extract_result
 
 PROMPT = """
 You have been assigned the role of a program verifier, responsible for summarizing the state of the function after executing a Python `try` statement. You will be provided with the final state of the program after executing the `try` block, and the changes in the program after executing one or more `except` blocks in any situation. Please combine this information to summarize the program's state after the complete execution of the `try` statement. If there is a return always include it in the output sate. You must adhere to the text format: Output State: **output state**.
+I am giving you some examples to understand the task better. Then I am giving you your task.
 
 
 Example 1:
