@@ -1,0 +1,1 @@
+a function that normalizes a list of numbers so that they sum to 1. 

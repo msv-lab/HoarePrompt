@@ -1,10 +1,8 @@
-#This is the summary for the whole function and its postcondition is : The function accepts a parameter birthdate, returns birthdate, current date, and the calculated age based on the given birthdate and current date.
-def func(birthdate):
-    #This is simple command and its postcondition is : birthdate is a date object representing a valid date of birth; today is the current date
-    today = date.today()
-    #This is simple command and its postcondition is : birthdate is a date object representing a valid date of birth; today is the current date, age is the calculated age based on the given birthdate and current date
-    age = today.year - birthdate.year
-    #This is return statement and its postcondition is : birthdate is a date object representing a valid date of birth, today is the current date, and age is the calculated age based on the given birthdate and current date
-    return age
-Return: birthdate is a date object representing a valid date of birth, today is the current date, and age is the calculated age based on the given birthdate and current date
+#This is the summary for the whole function and its postcondition is : The function accepts a parameter `numbers`, which is a list of numbers. It calculates the total sum of all numbers in the list and returns a new list containing the proportions of each number in the total sum, along with the total sum itself.
+def func(numbers):
+    #This is simple command and its postcondition is : numbers is a list of numbers (integers or floats), total is the sum of all numbers in the list
+    total = sum(numbers)
+    #This is return statement and its postcondition is : numbers is a list of numbers (integers or floats), total is the sum of all numbers in the list, and the function returns a new list containing the proportions of each number in the total sum
+    return [(x / total) for x in numbers]
+Return: numbers is a list of numbers (integers or floats), total is the sum of all numbers in the list, and the function returns a new list containing the proportions of each number in the total sum
 

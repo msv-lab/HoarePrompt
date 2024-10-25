@@ -250,6 +250,10 @@ def extract_precondition(description, program, config, log_directory):
     # Use the precondition extractor model to generate the precondition
     return precondition_extractor.default(model, description, program)
 
+
+# if the assessment mode is set to 'naive', use the naive_question function to compute the postcondition
+# we just do an llm call to get if the oce is correct or not using the naive_question function from naive.py
+# the prompt and the response from the one API call we are performing are stored in the log dir
 def compute_postcondition_naive(description, program, config, log_directory):
     model = get_model(config["model"], config["temperature"], log_directory)
     response = naive_question(description, program, model)
