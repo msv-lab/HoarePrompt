@@ -14,6 +14,7 @@ Python Fucntion:
 {code}
 ```
 Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate the result.
+Use the format: RESULT: **Correct or Incorrect**.
 """
 
 # This is the main function, it completes the prompt, queries the model and extracts the result, meaining the output state of that program part
@@ -22,10 +23,15 @@ def naive_question(description, code, model):
     prompt = PROMPT.format(description=description, code=code)
     response = model.query(prompt)
     print(response)
-    post = extract_result(response, "Result")
+    post = extract_result(response, "RESULT")
     print("*" * 50)
     print(f"{description} \n {code}")
     print(f"LLM Reply: {post}")
+
+    if post.lower().strip() == 'correct':
+        return True
+    if post.lower().strip() == 'incorrect':
+        return False
     return post
 
 # def main():
