@@ -7,10 +7,41 @@ from model import get_model
 
 import precondition_extractor
 import entailment
+import entailment_mult_func
 import comment_style
 import node_base_style.complete
 from  node_base_style.naive import naive_question
 import cex_generator
+
+import re
+
+
+def remove_imports_and_comments(script: str) -> tuple:
+    # Extract import statements
+    imports = re.findall(r'^\s*(import .+|from .+ import .+)', script, flags=re.MULTILINE)
+    imports_str = "\n".join(imports)
+    
+    # Remove import statements from the script
+    script_no_imports = re.sub(r'^\s*import .*\n?|^\s*from .*\n?', '', script, flags=re.MULTILINE)
+    
+    # Remove single-line comments
+    script_no_comments = re.sub(r'#.*', '', script_no_imports)
+    
+    # Remove multi-line comments (both """ ... """ and ''' ... ''')
+    script_cleaned = re.sub(r'(""".*?"""|\'\'\'.*?\'\'\')', '', script_no_comments, flags=re.DOTALL)
+    
+    return script_cleaned.strip(), imports_str.strip()
+
+def extract_functions(script: str) -> list:
+    # Remove everything before the first function definition
+    script = re.sub(r'^(.*?)\bdef\b', 'def', script, flags=re.DOTALL)
+    
+    # Find all function definitions, capturing from one 'def' to the next
+    function_pattern = re.compile(r'(def .+?)(?=\ndef |\Z)', re.DOTALL)
+    functions = function_pattern.findall(script)
+    
+    return [func.strip() for func in functions]
+
 
 
 def main():
@@ -195,42 +226,68 @@ def main():
 
 # Assess if a program is consistent with the description using pre/postconditions and entailment checking
 def assess(description, program, module_name, config, log_directory, cex_path):
+    
+    cleaned_program, imports = remove_imports_and_comments(program)
+    
+    functions_list = extract_functions(cleaned_program)
+    postconditions_list =[]
+    
+    print(f"the imports are {imports}\n")
+    for index, func in enumerate(functions_list):
+        print(f"Function {index} is: \n{func}\n ")
+    
     if config['assessment-mode'] == 'naive':
-        return compute_postcondition_naive(description, program, config, log_directory)
+        return compute_postcondition_naive(description, cleaned_program, config, log_directory)
     # Ensure assessment mode is set to 'postcondition-entailment'
     assert config['assessment-mode'] == 'postcondition-entailment'
     
     # Save the program and description to the log directory
     with (log_directory / str(module_name + '.py')).open("w", encoding="utf-8") as f:
         f.write(program)
+    with (log_directory / str(module_name + '_cleaned.py')).open("w", encoding="utf-8") as f:
+        f.write(cleaned_program)
     with (log_directory / 'description.txt').open("w", encoding="utf-8") as f:
         f.write(description)
-
-    # Extract the precondition from the description and program
+    
     precondition_log_dir = log_directory / 'extract-precondition'
     precondition_log_dir.mkdir()
-    precondition = extract_precondition(description, program, config, precondition_log_dir)
-    
-    # Save the extracted precondition
-    with (log_directory / 'precondition.txt').open("w", encoding="utf-8") as f:
-        f.write(precondition)
 
-    # Compute the postcondition from the precondition and program
-    # This is where the important work gets done
     postcondition_log_dir = log_directory / 'compute-postcondition'
     postcondition_log_dir.mkdir()
-    postcondition = compute_postcondition(precondition, program, config, postcondition_log_dir)
-    # Save the computed postcondition
-    with (log_directory / 'postcondition.txt').open("w", encoding="utf-8") as f:
-        f.write(postcondition)
+    
+    for index, func in enumerate(functions_list):
+        # Extract the precondition from the description and program
+        
+        precondition = extract_precondition(description, imports+'\n'+func, config, precondition_log_dir)
+        
+        # Save the extracted precondition
+        with (log_directory / f'precondition_func_{index}.txt').open("w", encoding="utf-8") as f:
+            f.write(precondition)
+
+        # Compute the postcondition from the precondition and program
+        # This is where the important work gets done
+        postcondition = compute_postcondition(precondition, func, config, postcondition_log_dir)
+
+        # Save the computed postcondition
+        with (log_directory / f'postcondition_func_{index}.txt').open("w", encoding="utf-8") as f:
+            f.write(postcondition)
+        postconditions_list.append(postcondition)
+
 
     # Check entailment to verify consistency with the description
     entailment_log_dir = log_directory / 'check_entailment'
     entailment_log_dir.mkdir()
-    if cex_path:
-        result = check_entailment(description, postcondition, program, module_name, config, entailment_log_dir, cex_path)
+    if len(postconditions_list)==1:
+        if cex_path:
+            result = check_entailment(description, postcondition, imports + cleaned_program, module_name, config, entailment_log_dir, cex_path)
+        else:
+            result = check_entailment(description, postcondition, imports + cleaned_program, module_name, config, entailment_log_dir)
     else:
-        result = check_entailment(description, postcondition, program, module_name, config, entailment_log_dir)
+        if cex_path:
+            result = check_entailment_mult_func(description, postconditions_list, functions_list, imports, module_name, config, entailment_log_dir, cex_path)
+        else:
+            result = check_entailment_mult_func(description, postconditions_list, functions_list, imports, module_name, config, entailment_log_dir)
+
     
     # Print result (CORRECT or INCORRECT) and log counterexample if provided
     if result:
@@ -290,6 +347,34 @@ def check_entailment(description, postcondition, program, module_name, config, l
             if not correctness[0] :
                 reason = correctness[1].replace("Correctness: **False**", "")
                 cex_generator.output_cex(model, description, postcondition, program, config, cex_path, module_name, reason)
+        return correctness[0]
+
+    print(f"Entailment mode {config['entailment-mode']} not supported, only naive is currently implemented")
+    raise NotImplementedError
+
+# Check if the postcondition implies compliance with the description using entailment
+def check_entailment_mult_func(description, postconditions_list, functions_list, imports, module_name, config, log_directory, cex_path=None):
+    model = get_model(config["model"], config["temperature"], log_directory)
+    program= imports+"\n"
+    total_post=""
+    functions =""
+    # for func in functions_list:
+    #     program += func
+    for index, post in enumerate(postconditions_list):
+        program += f"#Function {index+1}:\n" + functions_list[index]+"\n\n"
+        total_post+= f"Postcondition for function number {index+1} : {post}+\n"
+        functions += f"Function number {index+1} :\n Code:\n '''\n{functions_list[index]}\n''' \n\n Output decription for function{index+1}:  {post}\n"
+    
+
+    # Perform naive entailment checking, generating counterexamples if necessary
+    if config['entailment-mode'] == 'naive':
+        if not cex_path:
+            correctness = entailment_mult_func.naive_mult_func(model, description, functions, module_name, config)
+        else:
+            correctness = entailment_mult_func.naive_mult_func(model, description, functions, module_name, config, cex_path)
+            if not correctness[0] :
+                reason = correctness[1].replace("Correctness: **False**", "")
+                cex_generator.output_cex(model, description, total_post, program, config, cex_path, module_name, reason)
         return correctness[0]
 
     print(f"Entailment mode {config['entailment-mode']} not supported, only naive is currently implemented")

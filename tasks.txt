@@ -1,8 +1,43 @@
-#This is the summary for the whole function and its postcondition is : The function accepts a parameter `numbers`, which is a list of numbers. It calculates the total sum of all numbers in the list and returns a new list containing the proportions of each number in the total sum, along with the total sum itself.
+#This is the summary for the whole function and its postcondition is : The function `func` accepts a parameter `numbers`, which is a list of integers. After executing the function body, the function returns:
+- `total`: the sum of all integers greater than 1 in the list.
+- `count`: the number of integers greater than 1 in the list.
+- `iterator`: at a valid position within `numbers`.
+- `num`: the next integer after the last processed one.
+- `average`: the division of `total` by `count` if `count` is not 0, otherwise `average` is `None`.
+
+Therefore, the functionality of the function func is to accept a list of integers `numbers`, calculate the total sum and count of integers greater than 1, determine the next integer after the last processed one, and calculate the average of the integers greater than 1 in the list.
 def func(numbers):
-    #This is simple command and its postcondition is : numbers is a list of numbers (integers or floats), total is the sum of all numbers in the list
-    total = sum(numbers)
-    #This is return statement and its postcondition is : numbers is a list of numbers (integers or floats), total is the sum of all numbers in the list, and the function returns a new list containing the proportions of each number in the total sum
-    return [(x / total) for x in numbers]
-Return: numbers is a list of numbers (integers or floats), total is the sum of all numbers in the list, and the function returns a new list containing the proportions of each number in the total sum
+    #This is simple command and its postcondition is : numbers is a list of integers, total is 0
+    total = 0
+    #This is simple command and its postcondition is : numbers is a list of integers, total is 0, count is 0
+    count = 0
+    #This is simple command and its postcondition is : numbers is a list of integers, total is 0, count is 0, iterator is the iterator of numbers
+    iterator = iter(numbers)
+    #This is a summary of the total loop and its postcondition is : numbers is a list of integers, total is the sum of all integers greater than 1 in the list, count is the number of integers greater than 1 in the list, iterator is at a valid position within numbers, and num is the next integer after the last processed one. If a StopIteration exception occurs, no variables are affected as the break statement is used to exit the loop.
+    while True:
+        try:
+            num = next(iterator)
+            if num > 1:
+                total += num
+                count += 1
+            else:
+                print('Skipping non-positive number:', num)
+        except StopIteration:
+            break
+        # In the following comments we are unrolling the loop 3 times to help you understand its functionality
+        #This is the summary of unrolled_loop_1 and its total postcondition is : numbers is a list of integers, total is the sum of all integers greater than 1 in the list, count is the number of integers greater than 1 in the list, iterator is at a valid position within numbers, and num is the next integer after the last processed one. If a StopIteration exception occurs, no variables are affected as the break statement is used to exit the loop.
+        #This is the summary of unrolled_loop_2 and its total postcondition is : numbers is a list of integers, total is the sum of all integers greater than 1 in the list, count is the number of integers greater than 1 in the list, iterator is at a valid position within numbers, and num is the next integer after the last processed one. If num is greater than 1, total is increased by num and count is increased by 1. If num is less than or equal to 1, the program prints 'Skipping non-positive number: num'. If a StopIteration exception occurs, the loop breaks.
+        #This is the summary of unrolled_loop_3 and its total postcondition is : `numbers` is a list of integers, `total` is the sum of all integers greater than 1 in the list, `count` is the number of integers greater than 1 in the list, `iterator` is at a valid position within `numbers`, and `num` is the next integer after the last processed one. If `num` is greater than 1, `total` is increased by `num` and `count` is increased by 1. Otherwise, if `num` is not greater than 1, the function prints 'Skipping non-positive number: num'.
+    #This is a summary of the whole try-except block and its total postcondition is : `numbers` is a list of integers, `total` is the sum of all integers greater than 1 in the list, `count` is the number of integers greater than 1 in the list, `iterator` is at a valid position within `numbers`, `num` is the next integer after the last processed one, and `average` is the division of `total` by `count` if `count` is not 0, otherwise `average` is `None`.
+    #This is the try block and its postcondition is : numbers is a list of integers, total is the sum of all integers greater than 1 in the list, count is the number of integers greater than 1 in the list, iterator is at a valid position within numbers, num is the next integer after the last processed one, and average is the division of total by count
+    try:
+        #This is simple command in try block and its postcondition is : numbers is a list of integers, total is the sum of all integers greater than 1 in the list, count is the number of integers greater than 1 in the list, iterator is at a valid position within numbers, num is the next integer after the last processed one, and average is the division of total by count
+        average = get_division(total, count)
+    #This is the except block 1 and its postcondition is : `average` is `None`
+    except (ZeroDivisionError):
+        #This is simple command in except block_1 and its postcondition is : `average` is `None`
+        average = None
+    #This is return statement and its postcondition is : `numbers` is a list of integers, `total` is the sum of all integers greater than 1 in the list, `count` is the number of integers greater than 1 in the list, `iterator` is at a valid position within `numbers`, `num` is the next integer after the last processed one, and `average` is the division of `total` by `count` if `count` is not 0, otherwise `average` is `None`
+    return average
+`numbers` is a list of integers, `total` is the sum of all integers greater than 1 in the list, `count` is the number of integers greater than 1 in the list, `iterator` is at a valid position within `numbers`, `num` is the next integer after the last processed one, and `average` is the division of `total` by `count` if `count` is not 0, otherwise `average` is `None`
 

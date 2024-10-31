@@ -84,7 +84,7 @@ def complete_if_triple(incomplete_triple: IfTriple, model, context_triples=gener
     prompt = VERIFYER_SYSTEM_PROMPT_IF
     for ctx in context_triples:  # Add examples of IfTriple contexts to the prompt
         prompt = prompt + "\n" + format_prompt(ctx) + "\n" + f"Postcondition: **{ctx.postcondition}**"
-    prompt = prompt + "\n" + format_prompt(incomplete_triple) # add the incpmplete triple in the end
+    prompt = prompt + "\n\n" +"Your task:\n"+ format_prompt(incomplete_triple) # add the incpmplete triple in the end
     response = model.query(prompt)
     post = extract_postcondition(response)
     # print("*" * 50)
