@@ -243,6 +243,13 @@ class PostconditionAnalyzer:
 
         # Case for function definitions
         if isinstance(triple.command, ast.FunctionDef):
+            self.collected_returns = []
+            self.collected=[]
+            self.got_return = False # Flag to check if a return statement was encountered in the same level of recursion
+            self.last_return ="" # the last return statement
+            self.last_return_depth=0 # the depth of the last return statement
+            self.index_stack=[] #creates a stack to store the current index
+            self.inside_loop= False #flag to check if we are inside a loop
             pre = triple.precondition
             def_str = get_func_def(triple.command) # Get the function signature (the name plus input params of the func) as a string
             

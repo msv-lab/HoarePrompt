@@ -101,7 +101,6 @@ The program could raise a `FileNotFoundError` if the file is not found at the sp
 
 
 Your Task:
-Program state after fully executing the `try` block:
 Initial State: {pre}
 ```
 {try_code}
