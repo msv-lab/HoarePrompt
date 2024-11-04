@@ -47,11 +47,9 @@ while n > 0:
 Now, please think step by step. Using the results from the first few iterations of the loop provided in the example, determine the loop's output state.
 
 Example Answer:
-`n` is a positive integer, so the loop will be executed at least once. After 1 iteration, factorial is `n`, and `n` is decremented to n-1.
-If `n` is greater than 1, the loop will be executed at least twice. After 2 iterations, factorial is `n * (n - 1)`, and `n` is decremented to `n-2`.
-If `n` is greater than 2, the loop will be executed at least three times. After 3 iterations, factorial is `n * (n - 1) * (n - 2)`, and `n` is decremented to `n-3`.
-Therefore, the output state of the loop is that `factorial` is the factorial of `n`, and `n` is decremented to 0.
-Output State: **`factorial` is the factorial of `n`, and `n` is decremented to 0.**
+if n is greater than 0 the loop will execute at least once and factorial will contain the factorial of n and n will be 0. If n is 0 or lower than one then the loop wont execute and factorial will remain 1 and the value of n wont change.
+Therefore, the output state of the loop is that `factorial` is the factorial of `n`, i equals n
+Output State: **`if n is at least 1 then factorial` is the factorial of `n`, n is 0. if i is lower than 1 the loop doesnt execute and factorial is 1**
 
 Example 2: 
 
@@ -91,13 +89,8 @@ while students >= 1:
     students -= 1
 ```
 Now, please think step by step. Using the results from the first few iterations of the loop provided in the example, determine the loop's output state.
-
-Example Answer:
-If students is positive the loop will be executed at least once and total will be equal to all the numbers form 1 to students and students will be 0. 
-If students is 0 or negative , the loop will not be executed and total will be 0 and students will have the same value as initially.
-Output State: **If students is positive total will be equal to the sum of all the numbers form 1 to students and students will be 0. If students is 0 or negative , the loop will not be executed and total will be 0 and students will have the same value as initially.**
-
-
+The loop calculates the sum of all numbers from 1 to students and stores it in total . The loop will be executed at least once if students is greater or equal to 1 and in thethe end students will be 0. if studenmts is less thn 1 then the loop will not execute and the value of total will remain 0.
+Output State: **`if students is greater or equal to 1 then total` is the sum of all numbers from 1 to students, students is 0 at the end. if students is less than 1 the loop doesnt execute and total is 0**
 Your Task:
 {loop_unrolled}
 
