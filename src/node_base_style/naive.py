@@ -17,20 +17,126 @@ Now, please think step by step: List the impact of the code on the program, chec
 Use the format: RESULT: **Correct or Incorrect**.
 """
 
+PROMPT_COMPLEX = """
+You have been assigned the role of a program verifier. Your task is to determineg the correctness of a given Python program based on the provided problem description and the program code. If the program is correct, that is it meets the requirements in the problem description, print "True"; otherwise, print "False". Partially correct programs should be considered incorrect. You have to use the source code and the Output description to try to understand if there is any missing logic or edge cases that the code is not handling. 
+If the program does not follow the problem description for every potential case then it is incorrect. Then if even for one input or potential case the program does not work then Correctness **False** .You are trying to find any potential case that the porgram does not does what the descriptions says. The output description might give you examples of some of the cases that the code is not working corectly.
+If the description describes certain edge cases thast the code does not cover then the code is incorrect. But for those edge cases you must think of an example where the program does not work correctly. if you can think of an example then the code is correct.
+You need to strictly follow the format Correctness: **True or False**.
+I am giving you some examples to understand the task better. Then I am giving you your task.
+# Example 1
+
+Problem description: Write a python function to identify non-prime numbers.
+Program:
+```
+def is_not_prime(n):
+    if n < 2:
+        return True
+    for i in range(2, n):
+        if n % i == 0:
+            return True
+    return False
+```
+Example Answer 1:
+Correctness: **True**.
+
+# Example 2
+
+Problem description: Write a python function to count all the substrings starting and ending with same characters.
+Program:
+```
+def count_Substring_With_Equal_Ends(s):
+    count = 0
+    for i in range(len(s)-1):
+        for j in range(i,len(s)-1):
+            if s[i] == s[j+1]:
+                count += 1
+    return count
+```
+
+Example Answer 2:
+Correctness: **False**.
+
+# Example 3
+
+Problem description: Write a python function to check whether the given number can be represented as difference of two squares or not.
+Program:
+```
+import math
+def dif_Square(n):
+    for i in range(int(math.sqrt(n)), -1, -1):
+        for j in range(i, -1, -1):
+            if i*i - j*j == n:
+                return True
+    return False
+```
+
+Example answer 3:
+Correctness: **False**.
+
+# Example 4
+
+Problem description: Write a python function to find the minimum number of rotations (greater than 0) required to get the same string.
+Code:
+```
+def find_Rotations(str1):
+    n = len(str1)
+    for i in range(1,n+1):
+        if str1[i:] + str1[:i] == str1:
+            return i
+```
+
+Example answer 4:
+Correctness: **False**.
+
+# Example 5
+
+Problem description: Write a function to perform binary search of a number in an list
+Program:
+```
+def binary_search(arr, target):
+    left = 0
+    right = len(arr) - 1
+    while left < right:
+        mid = (left + right) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            left = mid
+        else:
+            right = mid - 1
+    if arr[left] == target:
+        return left
+    return -1
+```
+Example answer 5:
+Correctness: **False**.
+
+# Your task:
+Problem description: {description}
+Program:
+```
+{code}
+```
+
+
+If the program does not follow the problem description for every potential case then it is incorrect. Then if even for one input or potential case the program does not work then Correctness **False** .You are trying to find any potential case that the porgram does not does what the descriptions says. But if you cant find an example where the program does not work as expected in the description and all the examples you think work correctly then the program is correct.
+You need to strictly follow the format Correctness: **True or False**. Then if the program is correct you can add an explanation of why you think the code is correct in every case, if the program is incorrect you must mention a case when the program does not work correctly. If you cant find a single case then the program is correct.
+"""
+
 # This is the main function, it completes the prompt, queries the model and extracts the result, meaining the output state of that program part
 def naive_question(description, code, model):
    
-    prompt = PROMPT.format(description=description, code=code)
+    prompt = PROMPT_COMPLEX.format(description=description, code=code)
     response = model.query(prompt)
     print(response)
-    post = extract_result(response, "RESULT")
+    post = extract_result(response, "Correctness")
     print("*" * 50)
     print(f"{description} \n {code}")
     print(f"LLM Reply: {post}")
 
-    if post.lower().strip() == 'correct':
+    if 'true' in post.lower().strip() :
         return True
-    if post.lower().strip() == 'incorrect':
+    if "false" in post.lower().strip() :
         return False
     return post
 

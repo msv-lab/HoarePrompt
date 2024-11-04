@@ -6,96 +6,92 @@ from node_base_style.helper import extract_result
 
 # The prompt template instructs the model on how to analyze the state of the loop after several(k) iterations.
 LOOP_PROMPT = """
-You have been assigned the role of a program verifier, responsible for analyzing the program's state after the loop. The initial state of the code has already been provided. Additionally, you can see examples of the loop executing several times. The initial state includes the values and relationships of the variables before the program execution. The output state should include the values and relationships of the variables after the execution of the loop. Similar to the initial state, avoid explaining how the program operates; focus solely on the variable values and their interrelations. 
+You have been assigned the role of a program verifier, responsible for analyzing the program's state after the for loop. The initial state of the code has already been provided. Additionally, you can see examples of the loop executing several times. The initial state includes the values and relationships of the variables before the program execution. The output state should include the values and relationships of the variables after the execution of the for loop. Similar to the initial state, avoid explaining how the program operates; focus solely on the variable values and their interrelations. 
 Look if there is any missing logic or edge cases that the code is not handling esecially those concerning the values that cause the loop to end or not to start in the first place. Make sure to include these potential cases in the output state. 
 You must adhere to the text format: Output State: **output state.**
 I am giving you two examples to understand the task better. Then I am giving you your task.
 
 Example 1: 
 Loop executes 1 time:
-Initial State: `factorial` is 1, n is a positive integer.
+Initial State: ``factorial` is `1`, 'i' is 1 , n is at least 1.
 ```
-factorial *= n
-n -= 1
+factorial *= i
 ```
-Output State: `factorial` is `n`, `n` is decremented to `n-1`.
+Output State: `factorial` is `1`, 'i' is 1 , n is at least 1.
 
 Loop executes 2 time:
-Initial State: `factorial` is `n`, `n` is decremented to `n-1`, `n` is greater than 1.
+Initial State: '`factorial` is `1`, 'i' is 2 , n is at least 2.
 ```
-factorial *= n
-n -= 1
+factorial *= i
 ```
-Output State: `factorial` is `n * (n - 1)`, `n` is decremented to `n-2`, `n` is greater than 1.
+Output State: `factorial` is 2, 'i' is 2 , n is at least 2.
 
 Loop executes 3 time:
-Initial State: `factorial` is `n * (n - 1)`, `n` is decremented to `n-2`, `n` is greater than 2.
+Initial State:  `factorial` is 2, 'i' is 3 , n is at least 3.
 ```
-factorial *= n
-n -= 1
+factorial *= i
 ```
-Output State: `factorial` is `n * (n - 1) * (n - 2)`, `n` is decremented to `n-3`, `n` is greater than 2.
+Output State: `factorial` is 6 , 'i' is 3 , n is at least 3.
 
 
 The following provides the initial state of the loop and the loop's code.
 Initial State: `n` is a positive integer, `factorial` is 1.
 ```
-while n > 0:
-    factorial *= n
-    n -= 1
+for i in range(1, n + 1):
+    factorial *= i
 ```
 Now, please think step by step. Using the results from the first few iterations of the loop provided in the example, determine the loop's output state.
 
 Example Answer:
-`n` is a positive integer, so the loop will be executed at least once. After 1 iteration, factorial is `n`, and `n` is decremented to n-1.
-If `n` is greater than 1, the loop will be executed at least twice. After 2 iterations, factorial is `n * (n - 1)`, and `n` is decremented to `n-2`.
-If `n` is greater than 2, the loop will be executed at least three times. After 3 iterations, factorial is `n * (n - 1) * (n - 2)`, and `n` is decremented to `n-3`.
-Therefore, the output state of the loop is that `factorial` is the factorial of `n`, and `n` is decremented to 0.
-Output State: **`factorial` is the factorial of `n`, and `n` is decremented to 0.**
+`n` is a positive integer, so the loop will be executed at least once. After 1 iteration, factorial is `1`, and i is 1
+If `n` is greater or equal to 2, the loop will be executed at least twice. After 2 iterations, factorial is `2`, and `i' is 2.
+If `n` is greater or equal to 3, the loop will be executed at least three times. After 3 iterations, factorial is `6`, and i is 3.
+Therefore, the output state of the loop is that `factorial` is the factorial of `n`, i equals n
+Output State: **`factorial` is the factorial of `n`, and i equals n**
 
 Example 2: 
 
 Loop executes 1 time:       
-Initial State: `total` is 0, 'students' can hold any value. 
+Initial State: `total` is 0, 'students_num' is 0, students is a list with at least one student, student is the first student in the list. 
 ```
-total += students
-students -= 1
+total += student
+students_num += 1
 ```
  
-Output State: `total` is equal to the initial value of 'students', 'students' becomes 1 less than the initial value of 'students'
+Output State: `total` is equal to the first student, 'students_num' is 1, students is a list with at least one student, student is the first student in the list. 
 
 Loop executes 2 time:       
-Initial State: total` is equal to the initial value of 'students', 'students' becomes 1 less than the initial value of 'students'
+Initial State: `total` is equal to the first student, 'students_num' is 1, students is a list with at least 2 students, student is the second student in the list. 
 ```
-total += students
-students -= 1
+total += student
+students_num += 1
 ```
  
-Output State: `total` is equal to twice the initial value of 'students' minus 1, 'students' becomes 2 less than the initial value of 'students'
+Output State: `total` is equal to the first student plus the second student, 'students_num' is 2, students is a list with at least 2 students, student is the second student in the list. 
 
 Loop executes 3 time:       
-Initial State: `total` is equal to twice the initial value of 'students' minus 1, 'students' becomes 2 less than the initial value of 'students'
+Initial State: `total` is equal to the first student plus the second student, 'students_num' is 2, students is a list with at least 3 students, student is the third student in the list. 
 ```
-total += students
-students -= 1
+total += student
+students_num += 1
 ```
  
-Output State: `total` is equal to three times the initial value of 'students' minus 3, 'students' becomes 3 less than the initial value of 'students'
+Output State: `total` is equal to the first student plus the second student plus the third student, 'students_num' is 3, students is a list with at least 3 students, student is the third student in the list. 
 
 
 The following provides the initial state of the loop and the loop's code.
-Initial State:  `total` is 0, 'students' can hold any value. 
+Initial State:  `total` is 0,'students_num' is 0, students is a list of students.
 ```
-while students >= 1:
-    total += students
-    students -= 1
+for student in students:
+    total += student
+    students_num += 1
 ```
 Now, please think step by step. Using the results from the first few iterations of the loop provided in the example, determine the loop's output state.
 
 Example Answer:
-If students is positive the loop will be executed at least once and total will be equal to all the numbers form 1 to students and students will be 0. 
-If students is 0 or negative , the loop will not be executed and total will be 0 and students will have the same value as initially.
-Output State: **If students is positive total will be equal to the sum of all the numbers form 1 to students and students will be 0. If students is 0 or negative , the loop will not be executed and total will be 0 and students will have the same value as initially.**
+If students is a list with at least one student the loop will be executed at least once and total will be equal to the sum of the students and students_num will be equal to the number of students in the list and student will be the last student in the list.
+If students is 0 or negative , the loop will not be executed and total will be 0 and students will have the same value as initially and students_num will be 0.
+Output State: **If students is a list with at least one student the loop will be executed at least once and total will be equal to the sum of the students and students_num will be equal to the number of students in the list and student will be the last student in the list. If students is 0 or negative , the loop will not be executed and total will be 0 and students will have the same value as initially and students_num will be 0.**
 
 
 Your Task:
@@ -125,7 +121,7 @@ def format_examples(examples: list[Triple]):
     return s
 
 # The model will compute the final state of the program after multiple iterations of the loop.
-def complete_loop_triple(incomplete_triple: Triple, model, examples: list[Triple]):
+def complete_for_triple(incomplete_triple: Triple, model, examples: list[Triple]):
     
     loop_unrolled = format_examples(examples)
     prompt = LOOP_PROMPT.format(loop_unrolled=loop_unrolled, pre=incomplete_triple.precondition,

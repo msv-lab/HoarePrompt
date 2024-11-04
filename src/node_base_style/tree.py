@@ -29,16 +29,18 @@ Example 1:
 
 Annotated Code:
 ```
-# This is a function and its postcondition is: The function accepts a parameter `number`, returns True if `number` is even; otherwise, it returns False.
 def func(number):
-    # This is an if statement and its postcondition is: If `number` is even, the function returns True.
-    if number % 2 == 0:
-        # This is a return statement in the if part and its postcondition is: Returns True if `number` is even.
+    if (number % 2 == 0) :
         return True
-    # This is an else statement and its postcondition is: If `number` is not even, the function returns False.
-    else:
-        # This is a return statement in the else part and its postcondition is: Returns False if `number` is not even.
+        #State of the program after the return statement: number is an integer
+    #State of the program after the if part has been executed: number is an integer
+    else :
         return False
+        #State of the program after the return statement: `number` is an integer, and the function returns False
+    #State of the program after the else part has been executed: `number` is an integer, and the function returns False
+    #State of the program after the if-else block has been executed: number is an integer. If number is divisible by 2, the function returns True. Otherwise, the function returns False.
+#Overall this is what the function does: The function accepts a parameter `number` and returns `True` if `number` is divisible by 2. If `number` is not divisible by 2, it returns `False`.
+number is an integer. If number is divisible by 2, the function returns True. Otherwise, the function returns False.
 ```
 
 Return Postconditions: The function accepts a parameter `number` and returns True if `number` is even; otherwise, it returns False.
@@ -56,30 +58,32 @@ Example 2:
 
 Annotated Code:
 ```
-#This is the summary for the whole function and its postcondition is : The function accepts a dictionary `data`, returns `'Key not found'` if the key `'value'` is missing. If the value is not comparable, returns `'Invalid data type'`. If the value is greater than 10, returns `'High'`; otherwise, returns `'Low'`.
 def func(data):
-    #This is a summary of the whole try-except block and its total postcondition is : `data` is a dictionary that may contain a key `'value'` mapped to a comparable value. If the key `'value'` is not found, the function returns `'Key not found'`. If the value associated with `'value'` cannot be compared with an integer, the function returns `'Invalid data type'`. If the key exists and the value is comparable, the function returns `'High'` if the value is greater than 10, otherwise it returns `'Low'`.
-    #This is the try block and its postcondition is : `data` is a dictionary that may contain a key 'value' mapped to a comparable value, and `val` is the value associated with the key 'value' in `data`. If `val` is greater than 10, the function returns 'High'. Otherwise, the function returns 'Low'.
     try:
-        #This is simple command in try block and its postcondition is : `data` is a dictionary that may contain a key 'value' mapped to a comparable value, `val` is the value associated with the key 'value' in `data`
         val = data['value']
-        #This is a summary of the whole if-else block and its total postcondition is : `data` is a dictionary that may contain a key 'value' mapped to a comparable value, and `val` is the value associated with the key 'value' in `data`. If `val` is greater than 10, the function returns 'High'. Otherwise, the function returns 'Low'.
-        #This is the if part of the statement and its postcondition is : `data` is a dictionary that may contain a key 'value' mapped to a comparable value, `val` is the value associated with the key 'value' in `data`, and the function returns 'High'
+        #State of the program here: data is a dictionary with a key 'value' containing an integer value, `val` is assigned the integer value from the dictionary
         if (val > 10) :
-            #This is return statement in if part and its postcondition is : `data` is a dictionary that may contain a key 'value' mapped to a comparable value, `val` is the value associated with the key 'value' in `data`, and the function returns 'High'
             return 'High'
-        #This is the else statement of the if-else block and its postcondition is : `data` is a dictionary that may contain a key 'value' mapped to a comparable value, `val` is the value associated with the key 'value' in `data`, and the function returns 'Low'
+            #State of the program after the return statement: data is a dictionary with a key 'value' containing an integer value, `val` is assigned that integer value, and the function returns 'High'
+        #State of the program after the if part has been executed: data is a dictionary with a key 'value' containing an integer value, `val` is assigned that integer value, and the function returns 'High'
         else :
-            #This is return statement in else part and its postcondition is : `data` is a dictionary that may contain a key 'value' mapped to a comparable value, `val` is the value associated with the key 'value' in `data`, and the function returns 'Low'
             return 'Low'
-    #This is the except block 1 and its postcondition is : the function returns 'Key not found'
+            #State of the program after the return statement: data is a dictionary with a key 'value' containing an integer value, `val` is assigned the integer value from the dictionary, and the function returns 'Low'
+        #State of the program after the else part has been executed: data is a dictionary with a key 'value' containing an integer value, `val` is assigned the integer value from the dictionary, and the function returns 'Low'
+        #State of the program after the if-else block has been executed: data is a dictionary with a key 'value' containing an integer value, `val` is assigned the integer value from the dictionary. If the value of `val` is greater than 10, the function returns 'High'. Otherwise, the function returns 'Low'.
+    #State of the program after the try block has been executed: data is a dictionary with a key 'value' containing an integer value, `val` is assigned the integer value from the dictionary. If the value of `val` is greater than 10, the function returns 'High'. Otherwise, the function returns 'Low'.
     except (KeyError):
-        #This is return statement in except block_1 and its postcondition is : the function returns 'Key not found'
         return 'Key not found'
-    #This is the except block 2 and its postcondition is : the state is unknown, and the function returns 'Invalid data type'
+        #State of the program after the return statement: The function returns 'Key not found'
+    #State of the program after the except block has been executed: The function returns 'Key not found'
     except (TypeError):
-        #This is return statement in except block_2 and its postcondition is : the state is unknown, and the function returns 'Invalid data type'
         return 'Invalid data type'
+        #State of the program after the return statement: function returns 'Invalid data type'
+    #State of the program after the except block has been executed: function returns 'Invalid data type'
+    #State of the program after the try-except block has been executed: A `KeyError` could be triggered at `val = data['value']` if the key 'value' is not found in the dictionary. If a `TypeError` occurs, it would be due to the data type mismatch when trying to access the 'value' key. If neither exception occurs, the function checks the value of `val` and returns 'High' if it's greater than 10, otherwise 'Low'. Therefore, the output state is: **data is a dictionary with a key 'value' containing an integer value. If the key 'value' is not found, the function returns 'Key not found'. If there is a data type mismatch, the function returns 'Invalid data type'. If the value of 'value' is greater than 10, the function returns 'High', otherwise, it returns 'Low'.**
+#Overall this is what the function does: data is a dictionary with a key 'value' containing an integer value. If the key 'value' is not found, the function returns 'Key not found'. If there is a data type mismatch, the function returns 'Invalid data type'. If the value of 'value' is greater than 10, the function returns 'High', otherwise, it returns 'Low'.
+A `KeyError` could be triggered at `val = data['value']` if the key 'value' is not found in the dictionary. If a `TypeError` occurs, it would be due to the data type mismatch when trying to access the 'value' key. If neither exception occurs, the function checks the value of `val` and returns 'High' if it's greater than 10, otherwise 'Low'. Therefore, the output state is: **data is a dictionary with a key 'value' containing an integer value. If the key 'value' is not found, the function returns 'Key not found'. If there is a data type mismatch, the function returns 'Invalid data type'. If the value of 'value' is greater than 10, the function returns 'High', otherwise, it returns 'Low'.**
+
 ```
 
 Return Postconditions: `data` is a dictionary that may contain a key `'value'` mapped to a comparable value. If the key `'value'` is not found, the function returns `'Key not found'`. If the value associated with `'value'` cannot be compared with an integer, the function returns `'Invalid data type'`. If the key exists and the value is comparable, the function returns `'High'` if the value is greater than 10, otherwise it returns `'Low'`.
@@ -98,34 +102,34 @@ Example 3:
 
 Annotated Code:
 ```
-#This is the summary for the whole function and its postcondition is : The function accepts a parameter students, calculates the sum of all  integers up to the initial value of students. If the total amount exceeds 100, it returns 'not enough money'. If a ZeroDivisionError occurs due to trying to divide total by students, it returns 'Division by zero error'.
 def func(students):
-    #This is simple command and its postcondition is : `students` is an integer, `total` is 0
     total = 0
-    #This is a summary of the total loop and its postcondition is : `students` is 0, `total` is the sum of all integers up to the initial value of `students`.
+    #State of the program here: `students` is a positive integer, `total` is 0
     while students >= 1:
         total += students
         students -= 1
         # In the following comments we are unrolling the loop 3 times to help you understand its functionality
-        #This is the summary of unrolled_loop_1 and its total postcondition is : `students` is one less than the initial value, `total` is the same as `students`
-        #This is the summary of unrolled_loop_2 and its total postcondition is : `students` is equal to the initial value, `total` is 2 more than the initial value of `students`
-        #This is the summary of unrolled_loop_3 and its total postcondition is : `students` is one less than the initial value, `total` is 3 times the new value of `students`
-    #This is a summary of the  whole if block and its total postcondition is : `students` is 0, `total` is the sum of all integers up to the initial value of `students`. If the total amount exceeds 100, the function returns 'not enough money'.
-    #This is the if part of the statement and its postcondition is : `students` is 0, `total` is the sum of all integers up to the initial value of `students`
+         #state of the program after unrolled loop 1: `students` is 1 less than the initial value of `total` 
+        #state of the program after unrolled loop 2: `students` is 1 less than the new value of `total` and greater or equal to 1; `total` is 2 times the initial value of `total` minus 1 
+        #state of the program after unrolled loop 3: `students` is 2, `total` is 2 
+    #State of the program after the loop has been executed: If students is a positive integer, the loop will be executed at least once, and total will be equal to the sum of all the numbers from 1 to students, while students will be 0. If students is 0 or negative, the loop will not be executed, and total will remain 0, and students will have the same value as initially.
     if (total > 100) :
-        #This is return statement in if part and its postcondition is : `students` is 0, `total` is the sum of all integers up to the initial value of `students`
         return 'not enough money'
-    #This is a summary of the whole try-except block and its total postcondition is : A `ZeroDivisionError` could occur when trying to divide `total` by `students` since `students` is 0. In this case, the function will return 'Division by zero error'. Therefore, the output state is: **`students` is 0, `total` is 0. If the division by zero error occurs, the function returns 'Division by zero error'.**
-    #This is the try block and its postcondition is : `students` is 0, `total` is 0, and an error occurred during the calculation of `cost_per_student`
+        #State of the program after the return statement: If students is a positive integer, the loop will be executed at least once, and total will be equal to the sum of all the numbers from 1 to students, while students will be 0. If students is 0 or negative, the loop will not be executed, and total will remain 0, and students will have the same value as initially. The function returns 'not enough money'.
+    #State of the program after the if part has been executed: If students is a positive integer, the loop will be executed at least once, and total will be equal to the sum of all the numbers from 1 to students, while students will be 0. If students is 0 or negative, the loop will not be executed, and total will remain 0, and students will have the same value as initially. The function returns 'not enough money'.
+    #State of the program after the if block has been executed: If students is a positive integer, the loop will be executed at least once, and total will be equal to the sum of all the numbers from 1 to students, while students will be 0. If students is 0 or negative, the loop will not be executed, and total will remain 0, and students will have the same value as initially. Additionally, if the total is greater than 100, the function returns 'not enough money'.
     try:
-        #This is simple command in try block and its postcondition is : `students` is 0, `total` is 0, and an error occurs during the calculation of `cost_per_student`
         cost_per_student = total / students
-        #This is return statement in try block and its postcondition is : `students` is 0, `total` is 0, and an error occurred during the calculation of `cost_per_student`
+        #State of the program here: If students is a positive integer, total will be equal to the sum of all numbers from 1 to students, cost_per_student will be calculated as the total divided by students. If students is 0 or negative, total will remain 0, and students will have the same value as initially.
         return cost_per_student
-    #This is the except block 1 and its postcondition is : The function returns 'Division by zero error'
+        #State of the program after the return statement: If students is a positive integer, total will be the sum from 1 to students, cost_per_student will be calculated accordingly. If students is 0 or negative, total will remain 0, and students will retain their initial value. The function returns cost_per_student.
+    #State of the program after the try block has been executed: If students is a positive integer, total will be the sum from 1 to students, cost_per_student will be calculated accordingly. If students is 0 or negative, total will remain 0, and students will retain their initial value. The function returns cost_per_student.
     except (ZeroDivisionError):
-        #This is return statement in except block_1 and its postcondition is : The function returns 'Division by zero error'
         return 'Division by zero error'
+        #State of the program after the return statement: unknown, and the function returns 'Division by zero error'
+    #State of the program after the except block has been executed: unknown, and the function returns 'Division by zero error'
+    #State of the program after the try-except block has been executed: If `students` is a positive integer, the function returns the cost per student calculated based on the sum from 1 to `students`. If `students` is 0 or negative, the function returns 'Division by zero error'.
+#Overall this is what the function does: The function accepts a positive integer students and returns 'not enough money', cost per student, or 'Division by zero error' based on certain conditions.
 
 ```
 
@@ -144,14 +148,16 @@ Functionality: ** The function accepts an integer `n`, calculates the sum of int
 Example 4:
 Annotated Code:
 ```
-#This is the summary for the whole function and its postcondition is : The function accepts a list of integers, sorts the list in ascending order, calculates the index of the middle element, and returns the middle element.
 def func(numbers):
-    #This is simple command and its postcondition is : numbers list is sorted in ascending order
     numbers.sort()
-    #This is simple command and its postcondition is : numbers list is sorted in ascending order, `mid` is the index of the middle element in the list
+    #State of the program here: numbers is a sorted list of integers
     mid = len(numbers) // 2
-    #This is return statement and its postcondition is : numbers list is sorted in ascending order, `mid` is the index of the middle element in the list, and the function returns the middle element
+    #State of the program here: numbers is a sorted list of integers, `mid` is the index of the middle element in the list
     return numbers[mid]
+    #State of the program after the return statement: numbers is a sorted list of integers, mid is the index of the middle element in the list, and the function returns the element at the middle index
+#Overall this is what the function does: The function accepts a list of integers, sorts the list, calculates the middle index, and returns the element at the middle index.
+numbers is a sorted list of integers, mid is the index of the middle element in the list, and the function returns the element at the middle index
+
 ```
 Return Postconditions: numbers list is sorted in ascending order, `mid` is the index of the middle element in the list, and the function returns the middle element
 
@@ -172,13 +178,11 @@ Functionality: **The function accepts a list of integers, sorts it in ascending 
 Example 5:
 Annotated Code:
 ```
-#This is the summary for the whole function and its postcondition is : The function accepts a parameter numbers, returns the list of integers numbers, and the maximum value in the list or 0.
 def func(numbers):
-    #This is simple command and its postcondition is : `numbers` is a list of integers, `max_value` is 0
     max_value = 0
-    #This is simple command and its postcondition is : `numbers` is a list of integers, `max_value` is 0, `iterator` is an iterator object for `numbers`
+    #State of the program here: `numbers` is a list of integers, `max_value` is 0
     iterator = iter(numbers)
-    #This is a summary of the total loop and its postcondition is : `numbers` is a list of integers, `max_value` is either the maximum value in the list or 0. If any `num` in the list is greater than `max_value`, `max_value` is updated to `num`. If a `StopIteration` exception is raised, the program breaks out of the loop.
+    #State of the program here: `numbers` is a list of integers, `max_value` is 0, and an iterator is created
     while True:
         try:
             num = next(iterator)
@@ -186,10 +190,16 @@ def func(numbers):
                 max_value = num
         except StopIteration:
             break
-        # In the following comments we are unrolling the loop 1 times to help you understand its functionality
-        #This is the summary of unrolled_loop_1 and its total postcondition is : numbers is a list of integers, max_value is the maximum value in the list, iterator is an iterator object for numbers, and num is the first element of the list. If the first element of the list is greater than the current max_value, max_value is updated to be equal to the first element of the list.
-    #This is return statement and its postcondition is : `numbers` is a list of integers, `max_value` is either the maximum value in the list or 0
+        # In the following comments we are unrolling the loop 3 times to help you understand its functionality
+         #state of the program after unrolled loop 1: `numbers` is a list of integers, `max_value` is the maximum value between its current value and the value of `num`, and an iterator has been created where `num` is assigned the next value from the iterator. If a `StopIteration` occurs, the program breaks without affecting any variables. 
+        #state of the program after unrolled loop 2: `numbers` is a list of integers, `max_value` is the maximum value between its current value and the value of `num`, and `num` has been updated to the next value from the iterator. If `num` is greater than the current value of `max_value`, then `max_value` is updated to `num`. If a `StopIteration` exception is raised, the program breaks. 
+        #state of the program after unrolled loop 3: `numbers` is a list of integers, `max_value` is the maximum value between its current value and the value of `num`, and `num` has been updated to the next value from the iterator. If a `StopIteration` exception occurs, the loop breaks. 
+    #State of the program after the loop has been executed: Output State: `numbers` is a list of integers, `max_value` is the maximum value among all integers in the list, and the iterator has reached the end. If the list is empty, `max_value` remains 0 and the loop breaks without any changes to the variables. If the iterator is not properly initialized or the `next` function is called beyond the end of the list, an exception will occur.
     return max_value
+    #State of the program after the return statement: `numbers` is a list of integers, `max_value` is the maximum value among all integers in the list, and the iterator has reached the end. If the list is empty, `max_value` remains 0 and the loop breaks without any changes to the variables. If the iterator is not properly initialized or the `next` function is called beyond the end of the list, an exception will occur. The function returns the `max_value`.
+#Overall this is what the function does: The function accepts a parameter `numbers`, which is a list of integers, and returns the maximum value among all integers in the list. If the list is empty, the `max_value` remains 0.
+`numbers` is a list of integers, `max_value` is the maximum value among all integers in the list, and the iterator has reached the end. If the list is empty, `max_value` remains 0 and the loop breaks without any changes to the variables. If the iterator is not properly initialized or the `next` function is called beyond the end of the list, an exception will occur. The function returns the `max_value`.
+
 ```
 Return Postconditions: numbers` is a list of integers, `max_value` is either the maximum value in the list or 0
 
