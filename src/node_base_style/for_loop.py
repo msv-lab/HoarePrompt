@@ -43,11 +43,9 @@ for i in range(1, n + 1):
 Now, please think step by step. Using the results from the first few iterations of the loop provided in the example, determine the loop's output state.
 
 Example Answer:
-`n` is a positive integer, so the loop will be executed at least once. After 1 iteration, factorial is `1`, and i is 1
-If `n` is greater or equal to 2, the loop will be executed at least twice. After 2 iterations, factorial is `2`, and `i' is 2.
-If `n` is greater or equal to 3, the loop will be executed at least three times. After 3 iterations, factorial is `6`, and i is 3.
+If n is greater than 0 the loop will execute at least once and factorial will contain the factorial of n and i will be n. If n is 0 or lower then the loop wont execute and factorial will remain 1.
 Therefore, the output state of the loop is that `factorial` is the factorial of `n`, i equals n
-Output State: **`factorial` is the factorial of `n`, and i equals n**
+Output State: **`if n is at least 1 then factorial` is the factorial of `n`, and i equals n. if i is lower than 1 the loop doesnt execute and factorial is 1**
 
 Example 2: 
 
@@ -89,11 +87,8 @@ for student in students:
 Now, please think step by step. Using the results from the first few iterations of the loop provided in the example, determine the loop's output state.
 
 Example Answer:
-If students is a list with at least one student the loop will be executed at least once and total will be equal to the sum of the students and students_num will be equal to the number of students in the list and student will be the last student in the list.
-If students is 0 or negative , the loop will not be executed and total will be 0 and students will have the same value as initially and students_num will be 0.
-Output State: **If students is a list with at least one student the loop will be executed at least once and total will be equal to the sum of the students and students_num will be equal to the number of students in the list and student will be the last student in the list. If students is 0 or negative , the loop will not be executed and total will be 0 and students will have the same value as initially and students_num will be 0.**
-
-
+The loop calculates the sum of a list students and stores it in total and the number of students in students_num. The loop will be executed at least once if students is a list with at least one student. If the list is empty the loop does not execute and total and students_num are 0.
+Output State: **total is equal to the sum of all students, students_num is the number of students, students is a list of students.**
 Your Task:
 {loop_unrolled}
 
@@ -102,8 +97,8 @@ Initial State: {pre}
 ```
 {loop_code}
 ```
-Now, please think step by step. Using the results from the first few iterations of the loop provided in the example, determine the loop's output state. Make sure to include the values of the variables after the loop has finished especially the any loop control variables. 
-Look if there is any missing logic or edge cases that the code is not handling esecially those concerning the values that cause the loop to end or not to start in the first place. Make sure to include these potential cases in the output state. 
+Now, please think step by step. Using the results from the first few iterations of the loop provided in the example, determine the loop's output state. Try to understand what the loops functionality is and what will be the values of the variables after it executes. Are there cases where the loop wont execute?
+Look if there is any missing logic or edge cases that the code is not handling. Make sure to include these potential cases in the output state. As the output state have a summary of what the loop does what are the values of the variables after the loop executes as well as the cases where the loop does not execute and the values of the variables in those cases.
 Use the fomrat Output State: **the output state you calculate**
 """
 

@@ -9,7 +9,7 @@ You are a program verifier responsible for summarizing the functionality of a Py
 
 You are provided with:
 
-1. Annotated Code: The function code with comments that include postconditions at various points.
+1. Annotated Code: The function code with comments that include postconditions at various points.These annotations describe the state of the program at different stages of execution but they may not be accurate or complete. So make sure to consider the actual code as the truth.
 2. Return Postconditions: The overall postcondition(s) of the function's execution.
 
 Your Task:
@@ -54,51 +54,9 @@ The function func accepts an integer parameter number. According to the annotati
 Functionality: ** The function accepts an integer number and returns True if it is even and False if it is odd. **
 
 
+
+
 Example 2:
-
-Annotated Code:
-```
-def func(data):
-    try:
-        val = data['value']
-        #State of the program here: data is a dictionary with a key 'value' containing an integer value, `val` is assigned the integer value from the dictionary
-        if (val > 10) :
-            return 'High'
-            #State of the program after the return statement: data is a dictionary with a key 'value' containing an integer value, `val` is assigned that integer value, and the function returns 'High'
-        #State of the program after the if part has been executed: data is a dictionary with a key 'value' containing an integer value, `val` is assigned that integer value, and the function returns 'High'
-        else :
-            return 'Low'
-            #State of the program after the return statement: data is a dictionary with a key 'value' containing an integer value, `val` is assigned the integer value from the dictionary, and the function returns 'Low'
-        #State of the program after the else part has been executed: data is a dictionary with a key 'value' containing an integer value, `val` is assigned the integer value from the dictionary, and the function returns 'Low'
-        #State of the program after the if-else block has been executed: data is a dictionary with a key 'value' containing an integer value, `val` is assigned the integer value from the dictionary. If the value of `val` is greater than 10, the function returns 'High'. Otherwise, the function returns 'Low'.
-    #State of the program after the try block has been executed: data is a dictionary with a key 'value' containing an integer value, `val` is assigned the integer value from the dictionary. If the value of `val` is greater than 10, the function returns 'High'. Otherwise, the function returns 'Low'.
-    except (KeyError):
-        return 'Key not found'
-        #State of the program after the return statement: The function returns 'Key not found'
-    #State of the program after the except block has been executed: The function returns 'Key not found'
-    except (TypeError):
-        return 'Invalid data type'
-        #State of the program after the return statement: function returns 'Invalid data type'
-    #State of the program after the except block has been executed: function returns 'Invalid data type'
-    #State of the program after the try-except block has been executed: A `KeyError` could be triggered at `val = data['value']` if the key 'value' is not found in the dictionary. If a `TypeError` occurs, it would be due to the data type mismatch when trying to access the 'value' key. If neither exception occurs, the function checks the value of `val` and returns 'High' if it's greater than 10, otherwise 'Low'. Therefore, the output state is: **data is a dictionary with a key 'value' containing an integer value. If the key 'value' is not found, the function returns 'Key not found'. If there is a data type mismatch, the function returns 'Invalid data type'. If the value of 'value' is greater than 10, the function returns 'High', otherwise, it returns 'Low'.**
-#Overall this is what the function does: data is a dictionary with a key 'value' containing an integer value. If the key 'value' is not found, the function returns 'Key not found'. If there is a data type mismatch, the function returns 'Invalid data type'. If the value of 'value' is greater than 10, the function returns 'High', otherwise, it returns 'Low'.
-A `KeyError` could be triggered at `val = data['value']` if the key 'value' is not found in the dictionary. If a `TypeError` occurs, it would be due to the data type mismatch when trying to access the 'value' key. If neither exception occurs, the function checks the value of `val` and returns 'High' if it's greater than 10, otherwise 'Low'. Therefore, the output state is: **data is a dictionary with a key 'value' containing an integer value. If the key 'value' is not found, the function returns 'Key not found'. If there is a data type mismatch, the function returns 'Invalid data type'. If the value of 'value' is greater than 10, the function returns 'High', otherwise, it returns 'Low'.**
-
-```
-
-Return Postconditions: `data` is a dictionary that may contain a key `'value'` mapped to a comparable value. If the key `'value'` is not found, the function returns `'Key not found'`. If the value associated with `'value'` cannot be compared with an integer, the function returns `'Invalid data type'`. If the key exists and the value is comparable, the function returns `'High'` if the value is greater than 10, otherwise it returns `'Low'`.
-
-Now, please think step by step: What are the parameters the function accepts, and what does it return? What is the functionality of the function? Make sure to notice any potential edge cases and missing logic. Make sure to adhere to the format Functionality: ** Your summary here **
-
-Example Answer 2:  
-The function func accepts a single parameter data, which should be a dictionary containing a key 'value' with an integer value. It then attempt to access data['value'] and checks if it is greater than 10. If yes, the function returns 'High'.If no,  the function returns 'Low'. By using exceptions if 'value' key is missing the function returns 'Key not found' and if value is not the correct type for the dictionary key , it returns 'Invalid data type'.
-Functionality: The function accepts a dictionary data and returns 'High' if data['value'] is greater than 10, 'Low' if data['value'] is 10 or less, 'Key not found' if the key 'value' is absent, and 'Invalid data type' if a type error occurs.
-
-Functionality: ** The function accepts a dictionary data and returns 'High' if data['value'] is greater than 10, 'Low' if data['value'] is 10 or less, 'Key not found' if the key 'value' is absent, and 'Invalid data type' if a type error occurs.**
-
-
-
-Example 3:
 
 Annotated Code:
 ```
@@ -141,68 +99,6 @@ Example Answer 3: The function func accepts an integer n and calculates the sum 
 
 Functionality: ** The function accepts an integer `n`, calculates the sum of integers from `n` to 0, and returns 'not enough resources' if the sum exceeds 100, or 'Division by zero error' otherwise **
 
-Example 4:
-Annotated Code:
-```
-def func(numbers):
-    numbers.sort()
-    #State of the program here: numbers is a sorted list of integers
-    mid = len(numbers) // 2
-    #State of the program here: numbers is a sorted list of integers, `mid` is the index of the middle element in the list
-    return numbers[mid]
-    #State of the program after the return statement: numbers is a sorted list of integers, mid is the index of the middle element in the list, and the function returns the element at the middle index
-#Overall this is what the function does: The function accepts a list of integers, sorts the list, calculates the middle index, and returns the element at the middle index.
-numbers is a sorted list of integers, mid is the index of the middle element in the list, and the function returns the element at the middle index
-
-```
-Return Postconditions: numbers list is sorted in ascending order, `mid` is the index of the middle element in the list, and the function returns the middle element
-
-Now, please think step by step: What are the parameters the function accepts, and what does it return? What is the functionality of the function? Make sure to notice any potential edge cases and missing logic. Make sure to adhere to the format Functionality: ** Your summary here **
-
-Example Answer 4:
-The function func accepts a list of integers and sorts the list in ascending order. It then calculates the index of the middle element and returns that element. But if the function has an even number of elements at index mid, but the median should be the average of the two middle elements. Also if the list is empty an out ob bounds error will occur. The functionality of the function is to find and return the middle element of the sorted list of integers but if the number of elemnts is even it returns one of the middle elements instead of their average and if the list is empty an error occurs.
-
-Functionality: ** The function accepts a list of integers, sorts it in ascending order, and returns the middle element. If the list has an even number of elements, it returns one of the middle elements. If the list is empty an error occurs **
-
-
-
-The function func accepts a list of integers and sorts the list in ascending order. It then calculates the index of the middle element and returns that element. But if the function has an even number of elements at index mid, but the median should be the average of the two middle elements. The functionality of the function is to find and return the middle element of the sorted list of integers but if the number of elemnts is even it returns one of the middle elements instead of their average.
-
-Functionality: **The function accepts a list of integers, sorts it in ascending order, and returns the middle element. If the list has an even number of elements, it returns one of the middle elements.**
-
-
-Example 5:
-Annotated Code:
-```
-def func(numbers):
-    max_value = 0
-    #State of the program here: `numbers` is a list of integers, `max_value` is 0
-    iterator = iter(numbers)
-    #State of the program here: `numbers` is a list of integers, `max_value` is 0, and an iterator is created
-    while True:
-        try:
-            num = next(iterator)
-            if num > max_value:
-                max_value = num
-        except StopIteration:
-            break
-        #State of the program after the loop has been executed: Output State: `numbers` is a list of integers, `max_value` is the maximum value among all integers in the list, and the iterator has reached the end. If the list is empty, `max_value` remains 0 and the loop breaks without any changes to the variables. If the iterator is not properly initialized or the `next` function is called beyond the end of the list, an exception will occur.
-    return max_value
-    #State of the program after the return statement: `numbers` is a list of integers, `max_value` is the maximum value among all integers in the list, and the iterator has reached the end. If the list is empty, `max_value` remains 0 and the loop breaks without any changes to the variables. If the iterator is not properly initialized or the `next` function is called beyond the end of the list, an exception will occur. The function returns the `max_value`.
-#Overall this is what the function does: The function accepts a parameter `numbers`, which is a list of integers, and returns the maximum value among all integers in the list. If the list is empty, the `max_value` remains 0.
-`numbers` is a list of integers, `max_value` is the maximum value among all integers in the list, and the iterator has reached the end. If the list is empty, `max_value` remains 0 and the loop breaks without any changes to the variables. If the iterator is not properly initialized or the `next` function is called beyond the end of the list, an exception will occur. The function returns the `max_value`.
-
-```
-Return Postconditions: numbers` is a list of integers, `max_value` is either the maximum value in the list or 0
-
-Now, please think step by step: What are the parameters the function accepts, and what does it return? What is the functionality of the function? Make sure to notice any potential edge cases and missing logic. Make sure to Adhere to the format Functionality: ** Your summary here **
-
-Example Answer 5:
-The function func accepts a list of integers and finds the maximum value in the list. It initializes max_value to 0 and iterates over the list to find the maximum value. If no number in the list is greater than 0 so if all the numbers are negative the function returns 0. The functionality of the function is to return the maximum value in the list. The function does not handle the case where the list is empty, which could be a potential edge case. And also if all the numbers are negative the function returns 0 which is not the maximum value in the list.
-
-Functionality: ** The function accepts a list of integers and returns the maximum value in the list. If all the numbers are negative, it returns 0 instead of the maximum **
-
-
 Your Task:
 Annotated Code:
 ```
@@ -211,9 +107,12 @@ Annotated Code:
 
 Return Postconditions: {returns}
 
-Now, please think step by step: What are the parameters the function accepts, and what does it return? What is the functionality of the function? Make sure to notice any potential edge cases and missing logic. Make sure to adhere to the format Functionality: ** Your summary here **
-Look if there is any missing logic or edge cases that the code is not handling. If the code does not do what the annotations say for every potential case make sure to include these potential cases in the functionality. 
-You are trying to find any potential case that the porgram does not does what the descriptions says. 
+Now, please think step by step: 
+What is the functionality of the function? Make sure to notice any potential edge cases and missing logic.
+Look at the code line by line and see if the code does what the annotations say.
+If the code does not do what the annotations say for every potential case make sure to include these potential cases in the functionality. 
+You are trying to understand what the code does and the annotations are there to help you but if the code does not do what the annotations then in the functionality say what the code does not what the anotations say.
+The anotation is there to help you understand the code but the code is the truth. Only include in the functionality what the code does covering all potential cases.
 Include all potential edge cases and missing functionality if it exists inside your summary with the format . Functionality: ** your summary here **"""
 
 
