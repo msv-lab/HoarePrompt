@@ -127,12 +127,11 @@ class PostconditionAnalyzer:
             
            
             # If we are inside a function and there's a return statement, collect the postcondition and we are done for this recursion
-            if depth == 1 and any(isinstance(node, ast.Return) for node in ast.walk(triple.command)) and self.got_return:
+            if any(isinstance(node, ast.Return) for node in ast.walk(triple.command)) and self.got_return and depth ==1:
                 self.got_return = False
                 self.collected_returns.append((str(post),self.last_return_depth))
                 self.last_return_depth=0
-                # since the post condition has been appended as a return element we dont deal with it any more
-                return pre
+                
             return post
 
         # Case for try except blocks
@@ -178,12 +177,11 @@ class PostconditionAnalyzer:
                 self.collected.append((str(post), depth, "a summary of the whole try-except block", "", False))
 
             # If we are inside a function and there's a return statement, collect the postcondition and we are done for this recursion
-            if depth >= 1 and any(isinstance(node, ast.Return) for node in ast.walk(triple.command)):
+            if any(isinstance(node, ast.Return) for node in ast.walk(triple.command)) and self.got_return and depth ==1:
                 self.collected_returns.append((str(post),self.last_return_depth))
                 self.last_return_depth=0
                 self.got_return = False
-                # since the post condition has been appended as a return element we dont deal with it any more
-                return pre
+                
             return post
         
 
@@ -233,19 +231,19 @@ class PostconditionAnalyzer:
             body_commands = pprint_cmd(body_command)
             body_commands = body_commands.replace("\n", "\n" + indent)
             # Insert comments for unrolled states within the code tree
-            body_commands = loop_head + "\n" + indent + body_commands + f"# Unrolling the for loop {k} times for comprehension\n{unrolled_post}"
-
+            #uncomment the following line if you want the unrolled postconditions to be in the code tree
+            # body_commands = loop_head + "\n" + indent + body_commands + f"# Unrolling the for loop {k} times for comprehension\n{unrolled_post}"
+            body_commands = loop_head + "\n" + indent + body_commands 
             # Store the summary of the whole loop in the code tree at the correct index
             current_index = self.index_stack.pop()
             self.collected.append((str(post), depth, "summary of total for loop", body_commands, False))
 
             # Handle any return statements found within the loop
-            if depth >= 1 and any(isinstance(node, ast.Return) for node in ast.walk(triple.command)):
+            if  any(isinstance(node, ast.Return) for node in ast.walk(triple.command)) and self.got_return and depth ==1:
                 self.collected_returns.append((str(post), self.last_return_depth))
                 self.last_return_depth = 0
                 self.got_return = False
-                return pre  # End further processing after capturing return postcondition
-
+                
             return post
 
 
@@ -283,8 +281,9 @@ class PostconditionAnalyzer:
             
             body_commands = body_commands.replace("\n", "\n"+indent) #replace all nwe lines with indent + new line
             # we are creating the whole loop for the code tree, with postconditions of every total unroll but without the code of the loop unrolled
-            body_commands = while_head + "\n" +indent+ body_commands + f"# In the following comments we are unrolling the loop {k} times to help you understand its functionality\n {unrolled_post}"
-          
+            #uncomment the following line if you want the unrolled postconditions to be in the code tree
+            # body_commands = while_head + "\n" +indent+ body_commands + f"# In the following comments we are unrolling the loop {k} times to help you understand its functionality\n {unrolled_post}"
+            body_commands = while_head + "\n" +indent+ body_commands 
             #if we wanna merge the output state of the if-else statement , currently not used
             # merged_output = merge_triple(Triple(post, triple.command, State.UNKNOWN), self.model)
             # post =merged_output
@@ -292,12 +291,11 @@ class PostconditionAnalyzer:
             # store the summary of the whole loop in the code tree at the correct index
             current_index = self.index_stack.pop()    
             self.collected.append((str(post), depth, "a summary of the total loop", body_commands , False))
-            if depth >= 1 and any(isinstance(node, ast.Return) for node in ast.walk(triple.command)):
+            if any(isinstance(node, ast.Return) for node in ast.walk(triple.command)) and self.got_return and depth ==1:
                 self.collected_returns.append((str(post),self.last_return_depth))
                 self.last_return_depth=0
                 self.got_return = False
-                 # since the post condition has been appended as a return element we dont deal with it any more
-                return pre
+                
 
             return post
 

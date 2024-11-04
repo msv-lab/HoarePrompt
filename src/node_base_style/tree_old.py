@@ -108,6 +108,10 @@ def func(students):
     while students >= 1:
         total += students
         students -= 1
+        # In the following comments we are unrolling the loop 3 times to help you understand its functionality
+         #state of the program after unrolled loop 1: `students` is 1 less than the initial value of `total` 
+        #state of the program after unrolled loop 2: `students` is 1 less than the new value of `total` and greater or equal to 1; `total` is 2 times the initial value of `total` minus 1 
+        #state of the program after unrolled loop 3: `students` is 2, `total` is 2 
     #State of the program after the loop has been executed: If students is a positive integer, the loop will be executed at least once, and total will be equal to the sum of all the numbers from 1 to students, while students will be 0. If students is 0 or negative, the loop will not be executed, and total will remain 0, and students will have the same value as initially.
     if (total > 100) :
         return 'not enough money'
@@ -186,7 +190,11 @@ def func(numbers):
                 max_value = num
         except StopIteration:
             break
-        #State of the program after the loop has been executed: Output State: `numbers` is a list of integers, `max_value` is the maximum value among all integers in the list, and the iterator has reached the end. If the list is empty, `max_value` remains 0 and the loop breaks without any changes to the variables. If the iterator is not properly initialized or the `next` function is called beyond the end of the list, an exception will occur.
+        # In the following comments we are unrolling the loop 3 times to help you understand its functionality
+         #state of the program after unrolled loop 1: `numbers` is a list of integers, `max_value` is the maximum value between its current value and the value of `num`, and an iterator has been created where `num` is assigned the next value from the iterator. If a `StopIteration` occurs, the program breaks without affecting any variables. 
+        #state of the program after unrolled loop 2: `numbers` is a list of integers, `max_value` is the maximum value between its current value and the value of `num`, and `num` has been updated to the next value from the iterator. If `num` is greater than the current value of `max_value`, then `max_value` is updated to `num`. If a `StopIteration` exception is raised, the program breaks. 
+        #state of the program after unrolled loop 3: `numbers` is a list of integers, `max_value` is the maximum value between its current value and the value of `num`, and `num` has been updated to the next value from the iterator. If a `StopIteration` exception occurs, the loop breaks. 
+    #State of the program after the loop has been executed: Output State: `numbers` is a list of integers, `max_value` is the maximum value among all integers in the list, and the iterator has reached the end. If the list is empty, `max_value` remains 0 and the loop breaks without any changes to the variables. If the iterator is not properly initialized or the `next` function is called beyond the end of the list, an exception will occur.
     return max_value
     #State of the program after the return statement: `numbers` is a list of integers, `max_value` is the maximum value among all integers in the list, and the iterator has reached the end. If the list is empty, `max_value` remains 0 and the loop breaks without any changes to the variables. If the iterator is not properly initialized or the `next` function is called beyond the end of the list, an exception will occur. The function returns the `max_value`.
 #Overall this is what the function does: The function accepts a parameter `numbers`, which is a list of integers, and returns the maximum value among all integers in the list. If the list is empty, the `max_value` remains 0.

@@ -1,23 +1,27 @@
 def func(numbers):
-    max_value = 0
-    #State of the program here: numbers is a list of integers, `max_value` is 0
-    for i in range(len(numbers)):
-        num = numbers[i]
+    total = 0
+    #State of the program here: numbers is a list of integers, total is 0
+    count = 0
+    #State of the program here: numbers is a list of integers, total is 0, count is 0
+    for num in numbers:
+        if num > 1:
+            total += num
+            count += 1
+        else:
+            print('Skipping non-positive number:', num)
         
-        if num > max_value:
-            max_value = num
-        # Unrolling the for loop 3 times for comprehension
-        #state of the program after unrolled loop 1: `numbers` is a list of integers with at least one element, `max_value` is the maximum value among the elements of the list, `i` is 0, `num` is the first element of the list. If the first element of the list is greater than `max_value`, then `max_value` is updated to be the value of the first element. 
-        #state of the program after unrolled loop 2: `numbers` is a list of integers with at least one element, `max_value` is the maximum value among the elements of the list or the value of the second element of the list if it is greater, `i` is 1, `num` is the second element of the list. If the second element of the list is greater than `max_value`, then `max_value` is updated to be equal to the second element of the list. 
-        #state of the program after unrolled loop 3: `numbers` is a list of integers with at least 2 elements, `max_value` is the maximum value among the elements of the list or the value of the second element of the list if it is greater, `i` is 2, and `num` is the third element of the list if it exists. If `num` is greater than `max_value`, then `max_value` is updated to `num`. 
-    #State of the program after the  for loop has been executed: If numbers is an empty list, the loop will not be executed, and max_value will remain 0. If numbers has at least one element, max_value will be updated to the maximum value among the elements of the list, and i will be equal to the length of the list. num will be the last element of the list.
-    return max_value
-    #State of the program after the return statement: If numbers is an empty list, max_value is 0. If numbers has at least one element, max_value is updated to the maximum value in the list, i is equal to the length of the list, and num is the last element of the list. The function returns max_value.
-#Overall this is what the function does: The function `func` accepts a parameter `numbers`, which is a list of integers. 
-#After executing the function body, if the input list `numbers` is empty, the `max_value` is set to 0. 
-#If the input list `numbers` has at least one element, the `max_value` is updated to the maximum value in the list, `i` is equal to the length of the list, and `num` is set to the last element of the list. 
-#The function then returns the `max_value`. 
-#
-#Therefore, the functionality of the function `func` is to accept a list of integers `numbers`, and return the maximum value in the list. If the list is empty, it returns 0.
-If numbers is an empty list, max_value is 0. If numbers has at least one element, max_value is updated to the maximum value in the list, i is equal to the length of the list, and num is the last element of the list. The function returns max_value.
+    #State of the program after the  for loop has been executed: Output State: `numbers` is a list of integers, `total` is the sum of all integers greater than 1 in the list, `count` is the total number of integers greater than 1 in the list, `num` is the last integer in the list. If `num` is greater than 1, `total` is incremented by `num` and `count` is increased by 1. If `num` is less than or equal to 1, no changes are made to the list or the count. If the list is empty, `total` and `count` remain 0.
+    try:
+        average = total / count
+        #State of the program here: `numbers` is a list of integers, `total` is the sum of all integers greater than 1 in the list, `count` is the total number of integers greater than 1 in the list, `num` is the last integer in the list. If `num` is greater than 1, `total` is incremented by `num` and `count` is increased by 1. If `num` is less than or equal to 1, no changes are made to the list or the count. If the list is empty, `total` and `count` remain 0, and `average` is calculated based on the existing values of `total` and `count
+    #State of the program after the try block has been executed: `numbers` is a list of integers, `total` is the sum of all integers greater than 1 in the list, `count` is the total number of integers greater than 1 in the list, `num` is the last integer in the list. If `num` is greater than 1, `total` is incremented by `num` and `count` is increased by 1. If `num` is less than or equal to 1, no changes are made to the list or the count. If the list is empty, `total` and `count` remain 0, and `average` is calculated based on the existing values of `total` and `count
+    except (ZeroDivisionError):
+        average = None
+        #State of the program here: `average` is None
+    #State of the program after the except block has been executed: `average` is None
+    #State of the program after the try-except block has been executed: `numbers` is a list of integers, `total` is the sum of all integers greater than 1 in the list, `count` is the total number of integers greater than 1 in the list, `num` is the last integer in the list. If `num` is greater than 1, `total` is incremented by `num` and `count` is increased by 1. If `num` is less than or equal to 1, no changes are made to the list or the count. If the list is empty, `total` and `count` remain 0. The `average` is calculated based on the existing values of `total` and `count`, unless `count` is 0, in which case `average` is set to None.
+    return average
+    #State of the program after the return statement: The `average` is calculated based on the values of `total` and `count`, unless `count` is 0, then `average` is set to None.
+#Overall this is what the function does: The function accepts a list of integers `numbers` and calculates the average based on the values of `total` and `count`. If `count` is 0, the average is set to None.
+The `average` is calculated based on the values of `total` and `count`, unless `count` is 0, then `average` is set to None.
 

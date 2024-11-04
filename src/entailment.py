@@ -6,9 +6,11 @@ import re
 
 ENTAILMENT_CHECKING_PROMPT_TEMPLATE = """
 You have been assigned the role of a program verifier. Your task is to determineg the correctness of a given Python program based on the provided problem description and the description of program's output. If the program is correct, that is it meets the requirements in the problem description, print "True"; otherwise, print "False". Partially correct programs should be considered incorrect. You have to use the source code and the Output description to try to understand if there is any missing logic or edge cases that the code is not handling. 
-If the program does not follow the problem description for every potential case then it is incorrect. Then if even for one input or potential case the program does not work then Correctness **False** .You are trying to find any potential case that the porgram does not does what the descriptions says. The output description might give you examples of some of the cases that the code is not working corectly.
-If the description describes certain edge cases thast the code does not cover then the code is incorrect. But for those edge cases you must think of an example where the program does not work correctly. if you can think of an example then the code is correct.
+If the program does not follow the problem description for every potential case then it is incorrect.Since if for at least one input or potential case the program does not work then Correctness **False**.
+You are trying to find any potential case that the porgram does not does what the descriptions says. The output description might give you examples of some of the cases that the code is not working corectly.
+If the description describes certain edge cases that you think the code does not cover then the code is incorrect. If you can't think of an example of the ocde not working as expected then the code is correct.
 You need to strictly follow the format Correctness: **True or False**.
+
 I am giving you some examples to understand the task better. Then I am giving you your task.
 # Example 1
 
@@ -126,9 +128,12 @@ Program:
 ```
 Output description: {postcondition}
 
-If the program does not follow the problem description for every potential case then it is incorrect. Then if even for one input or potential case the program does not work then Correctness **False** .You are trying to find any potential case that the porgram does not does what the descriptions says. But if you cant find an example where the program does not work as expected in the description and all the examples you think work correctly then the program is correct.
+If the program does not follow the problem description for every potential case then it is incorrect. 
+Then if even for one input or potential case the program does not work then Correctness **False**.
+You are trying to find any potential cases that the porgram does not does what the descriptions says. 
+But if you can't find an example where the program does not work as expected in the description and all the examples you think work correctly then then Correctness **True**
 The output description might give you examples of some of the cases that the code is not working corectly, but make sure that the stuff the output description says are indeed valid and make sense.
-You need to strictly follow the format Correctness: **True or False**. Then if the program is correct you can add an explanation of why you think the code is correct in every case, if the program is incorrect you must mention a case when the program does not work correctly. If you cant find a single case then the program is correct.
+You need to strictly follow the format Correctness: **True or False**. Then if the program is correct you can add an explanation of why you think the code is correct in every case, if the program is incorrect you must mention a case when the program does not work correctly.
 """
 
 # Parses the model response to see if it responded True or False

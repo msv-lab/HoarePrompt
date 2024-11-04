@@ -16,7 +16,7 @@ import json
 class State(Enum):
     TOP = auto() # Variables can hold any values
     BOTTOM = auto() # Unreachable state
-    UNKNOWN = auto() # The psotcondition is unknown and needs to be determined by the model
+    UNKNOWN = auto() # The postcondition is unknown and needs to be determined by the model
 
 
 # Function to print the state in human-readable form

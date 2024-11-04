@@ -89,7 +89,7 @@ Initial State: {pre}
 ```
 {program}
 ```
-Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate the result. ou must adhere to the text format: Output State: **output state**.
+Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate the result. You must adhere to the text format: Output State: **output state**.
 """
 
 # This is the main function, it completes the prompt, queries the model and extracts the result, meaining the output state of that program part
