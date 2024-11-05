@@ -19,7 +19,8 @@ def get_model(name: str, temperature: float, log_directory: Path = None):
         "gpt-4o-2024-05-13",
         "gpt-4o-mini-2024-07-18",
         "gpt-4-turbo-2024-04-09",
-        "gpt-3.5-turbo-0125"
+        "gpt-3.5-turbo-0125",
+        "gpt-3.5-turbo-1106"
     }
 
     if name in openai_models:
