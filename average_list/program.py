@@ -11,7 +11,8 @@ def calculate_average(numbers):
     count = 0
     
     # Iterate through the list
-    for num in numbers:
+    while numbers:
+        num = numbers.pop()
         # Only consider positive numbers
         if num > 1:
             total += num

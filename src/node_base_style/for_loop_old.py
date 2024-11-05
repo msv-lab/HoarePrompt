@@ -12,53 +12,92 @@ You must adhere to the text format: Output State: **output state.**
 I am giving you two examples to understand the task better. Then I am giving you your task.
 
 Example 1: 
+Loop executes 1 time:
+Initial State: ``factorial` is `1`, 'i' is 1 , n is at least 1.
+```
+factorial *= i
+```
+Output State: `factorial` is `1`, 'i' is 1 , n is at least 1.
 
+Loop executes 2 time:
+Initial State: '`factorial` is `1`, 'i' is 2 , n is at least 2.
+```
+factorial *= i
+```
+Output State: `factorial` is 2, 'i' is 2 , n is at least 2.
+
+Loop executes 3 time:
+Initial State:  `factorial` is 2, 'i' is 3 , n is at least 3.
+```
+factorial *= i
+```
+Output State: `factorial` is 6 , 'i' is 3 , n is at least 3.
+
+
+The following provides the initial state of the loop and the loop's code.
 Initial State: `n` is a positive integer, `factorial` is 1.
-Code of the loop:
 ```
 for i in range(1, n + 1):
     factorial *= i
 ```
-Output state after the loop executes 1 times:  `factorial` is `1`, 'i' is 1 , n is at least 1.
-Output state after the loop executes 2 times: `factorial` is 2, 'i' is 2 , n is at least 2.
-Output state after the loop executes 3 times: `factorial` is 6 , 'i' is 3 , n is at least 3.
+Now, please think step by step. Using the results from the first few iterations of the loop provided in the example, determine the loop's output state.
 
-Now, please think step by step. Using the results from the first few iterations of the loop provided in the example as hints but  mostly from the loop code, determine the loop's output state.
-
-Example Answer 1:
+Example Answer:
 If n is greater than 0 the loop will execute at least once and factorial will contain the factorial of n and i will be n. If n is 0 or lower then the loop wont execute and factorial will remain 1.
-Therefore, the output state of the loop is that `factorial` is the factorial of `n`
-Output State: **`if n is at least 1 then factorial` is the factorial of `n`. if i is lower than 1 the loop doesnt execute and factorial is 1**
+Therefore, the output state of the loop is that `factorial` is the factorial of `n`, i equals n
+Output State: **`if n is at least 1 then factorial` is the factorial of `n`, and i equals n. if i is lower than 1 the loop doesnt execute and factorial is 1**
 
 Example 2: 
 
+Loop executes 1 time:       
+Initial State: `total` is 0, 'students_num' is 0, students is a list with at least one student, student is the first student in the list. 
+```
+total += student
+students_num += 1
+```
+ 
+Output State: `total` is equal to the first student, 'students_num' is 1, students is a list with at least one student, student is the first student in the list. 
+
+Loop executes 2 time:       
+Initial State: `total` is equal to the first student, 'students_num' is 1, students is a list with at least 2 students, student is the second student in the list. 
+```
+total += student
+students_num += 1
+```
+ 
+Output State: `total` is equal to the first student plus the second student, 'students_num' is 2, students is a list with at least 2 students, student is the second student in the list. 
+
+Loop executes 3 time:       
+Initial State: `total` is equal to the first student plus the second student, 'students_num' is 2, students is a list with at least 3 students, student is the third student in the list. 
+```
+total += student
+students_num += 1
+```
+ 
+Output State: `total` is equal to the first student plus the second student plus the third student, 'students_num' is 3, students is a list with at least 3 students, student is the third student in the list. 
+
+
+The following provides the initial state of the loop and the loop's code.
 Initial State:  `total` is 0,'students_num' is 0, students is a list of students.
-Code of the loop:
 ```
 for student in students:
     total += student
     students_num += 1
 ```
-Output State after the loop executes 1 times:  `total` is equal to the first student, 'students_num' is 1, students is a list with at least one student, student is the first student in the list.
-Output State after the loop executes 2 times: `total` is equal to the first student plus the second student, 'students_num' is 2, students is a list with at least 2 students, student is the second student in the list.
-Output State after the loop executes 3 times: `total` is equal to the first student plus the second student plus the third student, 'students_num' is 3, students is a list with at least 3 students, student is the third student in the list.
+Now, please think step by step. Using the results from the first few iterations of the loop provided in the example, determine the loop's output state.
 
-
-Now, please think step by step. Using the results from the first few iterations of the loop provided in the example as hints but  mostly from the loop code, determine the loop's output state.
-
-Example Answer 2:
+Example Answer:
 The loop calculates the sum of a list students and stores it in total and the number of students in students_num. The loop will be executed at least once if students is a list with at least one student. If the list is empty the loop does not execute and total and students_num are 0.
 Output State: **total is equal to the sum of all students, students_num is the number of students, students is a list of students.**
 Your Task:
+{loop_unrolled}
 
+The following provides the initial state of the loop and the loop's code.
 Initial State: {pre}
-Code of the loop:
 ```
 {loop_code}
 ```
-{loop_unrolled}
-
-Now, please think step by step. Use the results from the first few iterations of the loop provided in the example to help you, but mostly focus on the loop code to  determine the loop's output state. Try to understand what the loops functionality is and what will be the values of the variables after it executes. Are there cases where the loop wont execute?
+Now, please think step by step. Using the results from the first few iterations of the loop provided in the example, determine the loop's output state. Try to understand what the loops functionality is and what will be the values of the variables after it executes. Are there cases where the loop wont execute?
 Look if there is any missing logic or edge cases that the code is not handling. Make sure to include these potential cases in the output state. As the output state have a summary of what the loop does what are the values of the variables after the loop executes as well as the cases where the loop does not execute and the values of the variables in those cases.
 Use the fomrat Output State: **the output state you calculate**
 """
@@ -69,8 +108,10 @@ def format_examples(examples: list[Triple]):
     s = ""
     i = 1
     for e in examples:
+        pre = e.precondition
+        code = pprint_cmd(e.command)
         post = e.postcondition
-        s = s + f"Output State after the loop executes {i} times: {post}\n"
+        s = s + f"Loop executes {i} time:" + "\n" + f"Initial State: {pre}" + "\n```\n" + code + "\n```\n" + f"Output State: {post}" + "\n\n"
         i += 1
     return s
 

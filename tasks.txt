@@ -2,26 +2,28 @@ def func(numbers):
     total = 0
     #State of the program here: numbers is a list of integers, total is 0
     count = 0
-    #State of the program here: numbers is a list of integers, total is 0, count is 0
-    for num in numbers:
+    #State of the program here: `numbers` is a list of integers, `total` is 0, `count` is 0
+    while numbers:
+        num = numbers.pop()
+        
         if num > 1:
             total += num
             count += 1
         else:
             print('Skipping non-positive number:', num)
         
-    #State of the program after the  for loop has been executed: If numbers contain at least one number greater than 1, total will be the sum of all numbers greater than 1, count will be the count of such numbers, and num will remain the first number in the list. If all numbers are less than or equal to 1 or the list is empty, total will be 0, count will be 0, and num will remain the first number in the list.
+    #State of the program after the loop has been executed: If numbers is not empty, `total` is the sum of all removed integers greater than 1, `count` is the number of removed integers greater than 1. If numbers is empty, `total` and `count` remain unchanged. If a non-positive integer is removed, the program prints a message and does not modify `total` or `count`. After the loop, `numbers` is an empty list.
     try:
         average = total / count
-        #State of the program here: If numbers contain at least one number greater than 1, total will be the sum of all numbers greater than 1, count will be the count of such numbers, num will remain the first number in the list, and the average is total divided by count. If all numbers are less than or equal to 1 or the list is empty, total will be 0, count will be 0, num will remain the first number in the list, and the average is undefined.
-    #State of the program after the try block has been executed: If numbers contain at least one number greater than 1, total will be the sum of all numbers greater than 1, count will be the count of such numbers, num will remain the first number in the list, and the average is total divided by count. If all numbers are less than or equal to 1 or the list is empty, total will be 0, count will be 0, num will remain the first number in the list, and the average is undefined.
+        #State of the program here: If numbers is not empty, `total` is the sum of all removed integers greater than 1, `count` is the number of removed integers greater than 1. If numbers is empty, `total` and `count` remain unchanged. If a non-positive integer is removed, the program prints a message and does not modify `total` or `count`. After the loop, `numbers` is an empty list, and `average` is the calculated average of `total` and `count
+    #State of the program after the try block has been executed: If numbers is not empty, `total` is the sum of all removed integers greater than 1, `count` is the number of removed integers greater than 1. If numbers is empty, `total` and `count` remain unchanged. If a non-positive integer is removed, the program prints a message and does not modify `total` or `count`. After the loop, `numbers` is an empty list, and `average` is the calculated average of `total` and `count
     except (ZeroDivisionError):
         average = None
-        #State of the program here: `average` is `None`
-    #State of the program after the except block has been executed: `average` is `None`
-    #State of the program after the try-except block has been executed: If numbers contain at least one number greater than 1, `total` will be the sum of all numbers greater than 1, `count` will be the count of such numbers, `num` will remain the first number in the list, and the `average` is the result of `total` divided by `count`. If all numbers are less than or equal to 1 or the list is empty, `total` will be 0, `count` will be 0, `num` will remain the first number in the list, and the `average` is undefined. If a `ZeroDivisionError` occurs, `average` becomes `None`.
+        #State of the program here: `average` is assigned the value `None`
+    #State of the program after the except block has been executed: `average` is assigned the value `None`
+    #State of the program after the try-except block has been executed: If numbers is not empty, `total` is the sum of all removed integers greater than 1, `count` is the number of removed integers greater than 1. If numbers is empty, `total` and `count` remain unchanged. If a non-positive integer is removed, the program prints a message and does not modify `total` or `count`. After the loop, `numbers` is an empty list, and `average` is the calculated average of `total` and `count, or `None` if `count` is 0.
     return average
-    #State of the program after the return statement: If numbers contain at least one number greater than 1, `total` will be the sum of all numbers greater than 1, `count` will be the count of such numbers, `num` will remain the first number in the list, and the `average` is the result of `total` divided by `count`. If all numbers are less than or equal to 1 or the list is empty, `total` will be 0, `count` will be 0, `num` will remain the first number in the list, and the `average` is undefined. If a `ZeroDivisionError` occurs, `average` becomes `None`.
-#Overall this is what the function does: The function accepts a parameter numbers, which is a list of integers. If the list contains at least one number greater than 1, it calculates and returns the total, count, num, and average based on the specified conditions. If all numbers are less than or equal to 1 or the list is empty, it returns specific values, and in case of a ZeroDivisionError, it returns None for the average.
-If numbers contain at least one number greater than 1, `total` will be the sum of all numbers greater than 1, `count` will be the count of such numbers, `num` will remain the first number in the list, and the `average` is the result of `total` divided by `count`. If all numbers are less than or equal to 1 or the list is empty, `total` will be 0, `count` will be 0, `num` will remain the first number in the list, and the `average` is undefined. If a `ZeroDivisionError` occurs, `average` becomes `None`.
+    #State of the program after the return statement: If numbers is not empty, `total` is the sum of all removed integers greater than 1, `count` is the number of removed integers greater than 1. If numbers is empty, `total` and `count` remain unchanged. If a non-positive integer is removed, the program prints a message and does not modify `total` or `count`. After the loop, `numbers` is an empty list, and `average` is the calculated average of `total` and `count, or `None` if `count` is 0, and the function returns the value of `average`
+#Overall this is what the function does: The function accepts a parameter `numbers`, performs specific operations on the list, and returns the calculated average if it is not empty. If the list is empty, it returns None.
+If numbers is not empty, `total` is the sum of all removed integers greater than 1, `count` is the number of removed integers greater than 1. If numbers is empty, `total` and `count` remain unchanged. If a non-positive integer is removed, the program prints a message and does not modify `total` or `count`. After the loop, `numbers` is an empty list, and `average` is the calculated average of `total` and `count, or `None` if `count` is 0, and the function returns the value of `average`
 
