@@ -12,6 +12,8 @@ from tenacity import (
     wait_random_exponential,
 )  # for exponential backoff
 
+import requests
+
 # Returns the appropriate model object based on the model name. Supports OpenAI, Groq, DeepSeek, and Qwen models.
 def get_model(name: str, temperature: float, log_directory: Path = None):
     openai_models = {
@@ -39,6 +41,13 @@ def get_model(name: str, temperature: float, log_directory: Path = None):
         "deepseek-chat",
         "deepseek-coder"
     }
+
+    deepinfra_models = {
+        "meta-llama/Meta-Llama-3.1-70B-Instruct"
+    }
+
+    if name in deepinfra_models:
+        return DeepInfraModel(name, temperature, log_directory)
 
     if name in deepseek_models:
         return DeepSeekModel(name, temperature, log_directory)
@@ -185,4 +194,38 @@ class QwenModel(Model):
             temperature=self.temperature
         )
         return response.choices[0].message.content
+
+
+class DeepInfraModel(Model):
+
+    def __init__(self, name, temperature, log_directory):
+        self.log_directory = log_directory
+        if log_directory:
+            self.log_counter = 0
+        self.name = name
+        self.temperature = temperature
+        self.api_key = os.environ.get("DEEPINFRA_API_KEY")
+
+    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
+    def _query(self, prompt):
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        data = {
+            "model": self.name,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": self.temperature
+        }
+
+        response = requests.post(
+            "https://api.deepinfra.com/v1/openai/chat/completions",
+            headers=headers,
+            json=data
+        )
+        
+        if response.status_code == 200:
+            return response.json()["choices"][0]["message"]["content"]
+        else:
+            raise Exception(f"Request failed: {response.status_code}, {response.text}")
 
