@@ -32,7 +32,10 @@ def remove_imports_and_comments(script: str) -> tuple:
     
     return script_cleaned.strip(), imports_str.strip()
 
+
+
 def extract_functions(script: str) -> list:
+    import re
     # Remove everything before the first function definition
     script = re.sub(r'^(.*?)\bdef\b', 'def', script, flags=re.DOTALL)
     
@@ -40,7 +43,16 @@ def extract_functions(script: str) -> list:
     function_pattern = re.compile(r'(def .+?)(?=\ndef |\Z)', re.DOTALL)
     functions = function_pattern.findall(script)
     
-    return [func.strip() for func in functions]
+    if not functions:
+        # Add 'def func():\n' at the beginning and indent the rest of the script
+        lines = script.strip().split('\n')
+        indented_lines = ['    ' + line for line in lines]
+        script = 'def func():\n' + '\n'.join(indented_lines)
+        return [script]
+    else:
+        return [func.strip() for func in functions]
+
+
 
 
 

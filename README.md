@@ -195,6 +195,7 @@ HoarePrompt allows users to configure its behavior through a JSON configuration 
 ```bash
 python src/hoareprompt.py --config <FILE>
 ```
+ Normally we suggest using  default-config.json for normal HoarePrompt operations. Additionally, for a simpler, naive approach to verification, config_naive.json is available, which performs a single api call to the LLM.This is our baseline.
 
 ### Main Configuration Options:
 
