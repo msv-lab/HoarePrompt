@@ -6,5 +6,6 @@
     "postcondition-cot-prompt": "node-based-style",
     "loop-unrolling-count": 3,
     "entailment-mode": "naive",
-    "cex-mode": "with-postcondition"
+    "cex-mode": "with-postcondition",
+    "annotated" : false
 }

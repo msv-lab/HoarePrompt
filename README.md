@@ -217,7 +217,12 @@ python src/hoareprompt.py --config <FILE>
 - **cex-mode**:
   - `without-postcondition`: Generate a counterexample based on the program and problem description only.
   - `with-postcondition`: Generate a counterexample based on the program, description, and inferred postcondition.
-
+- **fsl**: Only to be used in combination with assesment mode: naive
+  - `True`: The default option. It uses few shot learning in the entailement.
+  - `False`: It does not use few shot learning in the entailement.
+- **annotated**: Only to be used in combination with assesment mode: naive
+  - `True`:  It uses the the annotated code tree in the entailement.
+  - `False`: The default option. It uses the original code plus the calculated functionality in the entailement.
 ## Implementation Details
 
 HoarePrompt's reasoning process revolves around breaking down programs into smaller components and analyzing the behavior of each component in isolation:

@@ -6,6 +6,8 @@ from node_base_style.helper import extract_result
 
 # This script's responsible for executing small code snippets and determining the resulting program state based on the provided initial state and program code. It is the general script for a simple program statement (not loops or ifs, try etc)
 PROMPT = """
+
+
 You have been assigned the role of a program verifier, responsible for simulating the execution of Python code. You will be provided with a function description and a Python function code snippet. You need to provide if the code does what the function description says. Please avoid describing how the program runs. If the code satisfies the description reply CORRECT, otherwise reply INCORRECT with an explanation. You must adhere to the text format: RESULT: **Correct or Incorrect**.
 
 Description: {description}
@@ -18,10 +20,11 @@ Use the format: RESULT: **Correct or Incorrect**.
 """
 
 PROMPT_COMPLEX = """
-You have been assigned the role of a program verifier. Your task is to determineg the correctness of a given Python program based on the provided problem description and the program code. If the program is correct, that is it meets the requirements in the problem description, print "True"; otherwise, print "False". Partially correct programs should be considered incorrect. You have to use the source code and the Output description to try to understand if there is any missing logic or edge cases that the code is not handling. 
-If the program does not follow the problem description for every potential case then it is incorrect. Then if even for one input or potential case the program does not work then Correctness **False** .You are trying to find any potential case that the porgram does not does what the descriptions says. The output description might give you examples of some of the cases that the code is not working corectly.
-If the description describes certain edge cases thast the code does not cover then the code is incorrect. But for those edge cases you must think of an example where the program does not work correctly. if you can think of an example then the code is correct.
+You have been assigned the role of a program verifier. Your task is to determine the correctness of a given Python program based on the provided problem description. If the program is correct, that is it meets the requirements in the problem description, print "True"; otherwise, print "False". Partially correct programs should be considered incorrect. You have to use the source code to try to understand if there is any missing logic or edge cases that the code is not handling. 
+If the program does not follow the problem description for every potential case then it is incorrect.Since if for at least one input or potential case the program does not work then Correctness **False**.
+You are trying to find any potential case that the porgram does not does what the descriptions says.  If you can't think of an example of the ocde not working as expected then the code is correct.
 You need to strictly follow the format Correctness: **True or False**.
+
 I am giving you some examples to understand the task better. Then I am giving you your task.
 # Example 1
 
