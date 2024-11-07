@@ -28,9 +28,10 @@ class PostconditionAnalyzer:
         self.last_return_depth=0 # the depth of the last return statement
         self.index_stack=[] #creates a stack to store the current index
         self.inside_loop= False #flag to check if we are inside a loop
+        self.last_loop_depth = 1000 # the depth of the last loop statement
         
     # Core recursive method to compute the postcondition of a Triple .
-    def complete_triple_cot(self, triple: Triple, depth=0, type ="") -> str:
+    def complete_triple_cot(self, triple: Triple, depth=0, type ="") :
         assert triple.postcondition == State.UNKNOWN
 
         #generic easy case
@@ -212,8 +213,10 @@ class PostconditionAnalyzer:
             original_pre =get_for_precondition_first(self.model, pre, loop_head)
             indent = " " * ((depth + 1) * 4)
             unrolled_post = ""
-            depth += 1  # Increase depth since we’re inside the loop
+            
             self.inside_loop = True  # Mark that we are inside a loop to avoid annotation in the code tree
+            self.last_loop_depth = min(self.last_loop_depth, depth)
+            depth += 1  # Increase depth since we’re inside the loop
             for i in range(k):
                 post = self.complete_triple_cot(Triple(original_pre, body_command, State.UNKNOWN), depth=depth, type=f"unrolled_loop_{i+1}")
                 unrolled_post = unrolled_post+f"{indent}#state of the program after unrolled loop {i+1}: {post} \n"
@@ -221,7 +224,9 @@ class PostconditionAnalyzer:
                 original_pre = get_for_precondition(self.model, post, loop_head)
 
             depth -= 1  # Done with the loop, decrease depth
-            self.inside_loop = False  # Mark as no longer inside a loop
+            if self.last_loop_depth == depth:
+                self.last_loop_depth = 1000
+                self.inside_loop =  False # we are no longer inside a high level loop
 
             # Create a Triple for the entire for loop
             triple = Triple(triple.precondition, triple.command, State.UNKNOWN)
@@ -236,7 +241,9 @@ class PostconditionAnalyzer:
             body_commands = loop_head + "\n" + indent + body_commands 
             # Store the summary of the whole loop in the code tree at the correct index
             current_index = self.index_stack.pop()
-            self.collected.append((str(post), depth, "summary of total for loop", body_commands, False))
+            
+            if not self.inside_loop: # if we are not inside a loop 
+                self.collected.append((str(post), depth, "summary of total for loop", body_commands, False))
 
             # Handle any return statements found within the loop
             if  any(isinstance(node, ast.Return) for node in ast.walk(triple.command)) and self.got_return and depth ==1:
@@ -260,6 +267,7 @@ class PostconditionAnalyzer:
             
             pre = triple.precondition
             # Unroll the loop by simulating 'k' iterations
+            self.last_loop_depth = min(self.last_loop_depth, depth)
             self.inside_loop = True # we are inside a loop, so any postocnditions of the unrolled code should not be appended as annotations in the code tree
             unrolled_post=""
             indent = " " * ((depth+1) * 4)
@@ -271,7 +279,9 @@ class PostconditionAnalyzer:
                 pre = get_precondition(self.model, post, while_head)
                 
             depth = depth -1 # we are done with the loop so decrease the depth by 1
-            self.inside_loop =  False # we are no longer inside a loop
+            if self.last_loop_depth == depth:
+                self.last_loop_depth = 1000
+                self.inside_loop =  False # we are no longer inside a high level loop
 
             # Create a Triple for the entire 'while' loop
             triple = Triple(triple.precondition, triple.command, State.UNKNOWN)
@@ -290,7 +300,8 @@ class PostconditionAnalyzer:
 
             # store the summary of the whole loop in the code tree at the correct index
             current_index = self.index_stack.pop()    
-            self.collected.append((str(post), depth, "a summary of the total loop", body_commands , False))
+            if not self.inside_loop: # if we are not inside a loop 
+                self.collected.append((str(post), depth, "a summary of the total loop", body_commands , False))
             if any(isinstance(node, ast.Return) for node in ast.walk(triple.command)) and self.got_return and depth ==1:
                 self.collected_returns.append((str(post),self.last_return_depth))
                 self.last_return_depth=0
@@ -350,7 +361,7 @@ class PostconditionAnalyzer:
                 print(return_conditions_str, file =f)
             
             final = summarize_functionality_tree(total_code, return_conditions_str, self.model)
-            return final
+            return (final, return_conditions_str, total_code)
          
         # Handle import statements and assertions as they dont change the state
         if isinstance(triple.command, (ast.Import, ast.ImportFrom, ast.Assert)):

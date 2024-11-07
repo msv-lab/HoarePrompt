@@ -8,53 +8,218 @@ from model import get_model
 import precondition_extractor
 import entailment
 import entailment_mult_func
+import entailment_annotated
+import entailement_mult_func_annotated
 import comment_style
 import node_base_style.complete
 from  node_base_style.naive import naive_question
+from node_base_style.naive_no_fsl import naive_question_no_fsl
 import cex_generator
+from textwrap import dedent
+import ast
 
 import re
 
 
+# def remove_imports_and_comments(script: str) -> tuple:
+#     # Extract import statements
+#     imports = re.findall(r'^\s*(import .+|from .+ import .+)', script, flags=re.MULTILINE)
+#     imports_str = "\n".join(imports)
+    
+#     # Remove import statements from the script
+#     script_no_imports = re.sub(r'^\s*import .*\n?|^\s*from .*\n?', '', script, flags=re.MULTILINE)
+    
+#     # Remove single-line comments
+#     script_no_comments = re.sub(r'#.*', '', script_no_imports)
+    
+#     # Remove multi-line comments (both """ ... """ and ''' ... ''')
+#     script_cleaned = re.sub(r'(""".*?"""|\'\'\'.*?\'\'\')', '', script_no_comments, flags=re.DOTALL)
+    
+    
+#     function_pattern = re.compile(r'\bdef\s+(\w+)\s*\([^)]*\)\s*(->\s*[\w\[\], ]+)?\s*:')
+
+#     function_names = function_pattern.findall(script_cleaned)
+#     name_mapping = {name: f'func_{i+1}' for i, name in enumerate(function_names)}
+    
+#     # Replace each function name in the script with its generic name
+#     for original_name, generic_name in name_mapping.items():
+#         script_cleaned = re.sub(rf'\b{original_name}\b', generic_name, script_cleaned)
+
+
+#     return script_cleaned.strip(), imports_str.strip()
+
+
+
 def remove_imports_and_comments(script: str) -> tuple:
-    # Extract import statements
-    imports = re.findall(r'^\s*(import .+|from .+ import .+)', script, flags=re.MULTILINE)
+    # Parse the script into an AST
+    tree = ast.parse(script)
+
+    # Initialize storage for import statements and function name mapping
+    imports = []
+    function_names = []
+    function_mapping = {}
+
+    # Separate imports from global code and collect function names
+    filtered_body = []
+    for node in tree.body:
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            # Collect the import statements separately
+            imports.append(ast.get_source_segment(script, node))
+        else:
+            # Keep non-import nodes in the body for global code processing
+            filtered_body.append(node)
+            # Collect function names
+            if isinstance(node, ast.FunctionDef):
+                function_names.append(node.name)
+
+    # Update the tree with non-import nodes only
+    tree.body = filtered_body
+
+    # Generate a name mapping for generic function names
+    function_mapping = {name: f'func_{i + 1}' for i, name in enumerate(function_names)}
+
+    # Custom NodeTransformer to replace function names
+    class FunctionRenamer(ast.NodeTransformer):
+        def visit_FunctionDef(self, node):
+            # Rename the function in the definition
+            if node.name in function_mapping:
+                node.name = function_mapping[node.name]
+            self.generic_visit(node)
+            return node
+
+        def visit_Call(self, node):
+            # Rename function in function calls
+            if isinstance(node.func, ast.Name) and node.func.id in function_mapping:
+                node.func.id = function_mapping[node.func.id]
+            self.generic_visit(node)
+            return node
+
+    # Apply renaming transformation
+    renamer = FunctionRenamer()
+    tree = renamer.visit(tree)
+    ast.fix_missing_locations(tree)
+
+    # Generate cleaned script without comments and renamed functions
+    script_no_comments = "\n".join(
+        line for line in script.splitlines() if not line.strip().startswith("#")
+    )
+    cleaned_script = ast.unparse(tree)
+
+    # Join imports as a separate string
     imports_str = "\n".join(imports)
-    
-    # Remove import statements from the script
-    script_no_imports = re.sub(r'^\s*import .*\n?|^\s*from .*\n?', '', script, flags=re.MULTILINE)
-    
-    # Remove single-line comments
-    script_no_comments = re.sub(r'#.*', '', script_no_imports)
-    
-    # Remove multi-line comments (both """ ... """ and ''' ... ''')
-    script_cleaned = re.sub(r'(""".*?"""|\'\'\'.*?\'\'\')', '', script_no_comments, flags=re.DOTALL)
-    
-    return script_cleaned.strip(), imports_str.strip()
+
+    return cleaned_script.strip(), imports_str.strip()
+
+# def extract_functions(script: str) -> dict:
+#     # Initialize storage for functions and global code
+#     functions = []
+#     global_code = ""
+#     function_pattern = re.compile(r'\bdef\s+(\w+)\s*\([^)]*\)\s*(->\s*[\w\[\], ]+)?\s*:', re.MULTILINE)
+
+#     # Recursively extract functions until no more matches are found
+#     while True:
+#         matches = list(function_pattern.finditer(script))
+        
+#         # If no functions are found, break the loop
+#         if not matches:
+#             break
+
+#         # Process matches in reverse order to handle nested functions correctly
+#         for match in reversed(matches):
+#             func_indent = len(match.group(1))  # Indentation level of this function
+#             func_start = match.start()
+#             func_line_num = script[:func_start].count("\n")
+            
+#             # Split the script into lines for easier processing
+#             remaining_script = script.splitlines()
+            
+#             # Start collecting function body
+#             func_body = []
+#             func_body.append(remaining_script[func_line_num])
+
+#             # Gather all indented lines that belong to this function
+#             for i in range(func_line_num + 1, len(remaining_script)):
+#                 line = remaining_script[i]
+#                 line_indent = len(line) - len(line.lstrip())
+                
+#                 if line_indent > func_indent:
+#                     func_body.append(line)
+#                 else:
+#                     #if the line is not empty
+#                     if not line.strip():
+#                         break
+
+#             # Add the captured function, stripping any excess indentation
+#             functions.append(dedent("\n".join(func_body)))
+
+#             # Remove the processed function from the script
+#             script_lines = script.splitlines()
+#             del script_lines[func_line_num:func_line_num + len(func_body)]
+#             script = "\n".join(script_lines)
+
+#     # Any remaining script after function extraction is considered global code
+#     global_code = script.strip()
+
+#     # If no functions were found initially, wrap everything in a dummy function
+#     if not functions:
+#         dummy_function = "def func():\n    " + "\n    ".join(global_code.splitlines())
+#         functions.append(dummy_function)
+#         global_code = ""
+
+#     return {"global_code": global_code, "functions":  functions[::-1]}
 
 
 
-def extract_functions(script: str) -> list:
-    import re
-    # Remove everything before the first function definition
-    script = re.sub(r'^(.*?)\bdef\b', 'def', script, flags=re.DOTALL)
+def extract_functions(script: str) -> dict:
+    # Parse the script into an AST
+    tree = ast.parse(script)
+    functions = []
+    global_code_lines = []
+
+    # Recursive function to capture functions, including nested ones, and strip nested code
+    def capture_functions(node, lines):
+        if isinstance(node, ast.FunctionDef):
+            # Get the source lines for this function
+            func_start_line = node.lineno - 1  # Adjust for 1-based indexing
+            func_end_line = node.end_lineno    # End line provided by AST
+            function_source = lines[func_start_line:func_end_line]
+
+            # Strip out nested function lines within the outer function
+            nested_function_lines = set()
+            for child in ast.walk(node):
+                if isinstance(child, ast.FunctionDef) and child != node:
+                    nested_start = child.lineno - 1
+                    nested_end = child.end_lineno
+                    for i in range(nested_start, nested_end):
+                        nested_function_lines.add(i)
+
+            # Remove nested function lines from the outer function
+            function_body = [line for i, line in enumerate(function_source) if func_start_line + i not in nested_function_lines]
+            functions.append(dedent("\n".join(function_body)))
+        
+        # Recur through child nodes to capture nested functions
+        for child in ast.iter_child_nodes(node):
+            capture_functions(child, lines)
     
-    # Find all function definitions, capturing from one 'def' to the next
-    function_pattern = re.compile(r'(def .+?)(?=\ndef |\Z)', re.DOTALL)
-    functions = function_pattern.findall(script)
+    # Capture functions and non-function global code
+    script_lines = script.splitlines()
+    for node in tree.body:
+        if isinstance(node, ast.FunctionDef):
+            capture_functions(node, script_lines)
+        else:
+            # Collect lines for non-function nodes as global code
+            global_code_lines.extend(ast.get_source_segment(script, node).splitlines())
     
+    # Join the remaining lines as global code
+    global_code = "\n".join(global_code_lines).strip()
+
+    # If no functions are found, wrap the entire code in a dummy function
     if not functions:
-        # Add 'def func():\n' at the beginning and indent the rest of the script
-        lines = script.strip().split('\n')
-        indented_lines = ['    ' + line for line in lines]
-        script = 'def func():\n' + '\n'.join(indented_lines)
-        return [script]
-    else:
-        return [func.strip() for func in functions]
+        dummy_function = "def func():\n    " + "\n    ".join(global_code.splitlines())
+        functions = [dummy_function]
+        global_code = ""
 
-
-
-
+    return {"global_code": global_code, "functions": functions}
 
 def main():
     # Initialize argument parser with description of the tool
@@ -75,6 +240,7 @@ def main():
     parser.add_argument('--precondition', type=str, help="Path to the precondition file")
     parser.add_argument('--postcondition', type=str, help="Path to the postcondition file")
     parser.add_argument('--cex', type=str, help="Output file for the counterexample")
+    
 
     # Parse the command-line arguments
     args = parser.parse_args()
@@ -92,7 +258,24 @@ def main():
     with config_file.open() as f:
         config = json.load(f)
 
-    
+    #if config annotated is true and  config  "assessment-mode": "naive" print error thaty they are noit compatible and that annotated only with postcondition-entailment
+    if "annotated" in config:
+        if config["annotated"] and config["assessment-mode"] == "naive":
+            print("Error: Annotated mode is only compatible with 'postcondition-entailment' assessment mode")
+            return
+    else :
+        config["annotated"] = False
+    #if in the configuration we have the config option fsl and we have it set to true
+    #first check if the fsl option exists in config
+    if "fsl" in config:
+        if not config["fsl"]:
+            #if fsl is set to true then we have to check if the assessment mode is set to postcondition-entailment
+            if config["assessment-mode"] != "naive":
+                print("Error: FSL mode as False  is only compatible with 'naive' assessment mode")
+                return
+    else:
+        #if the fsl option does not exist in the config file then we have to set it to false
+        config["fsl"] = True
     # Setup log directory if provided
     # If it is not provided, create the log_temporary directory
     # If the log directory already exists, delete it and recreate it
@@ -241,14 +424,20 @@ def assess(description, program, module_name, config, log_directory, cex_path):
     
     cleaned_program, imports = remove_imports_and_comments(program)
     
-    functions_list = extract_functions(cleaned_program)
+    functions_dict = extract_functions(cleaned_program)
+    functions_list= functions_dict["functions"]
+    global_code = functions_dict["global_code"]
     postconditions_list =[]
+    return_list=[]
+    annotated_func_list = []
     
-    print(f"the imports are {imports}\n")
+    print(f"the imports are\n{imports}\n")
+    print(f"the global code is\n{global_code}\n")
     for index, func in enumerate(functions_list):
         print(f"Function {index} is: \n{func}\n ")
     
     if config['assessment-mode'] == 'naive':
+        print("Using naive assessment mode")
         return compute_postcondition_naive(description, cleaned_program, config, log_directory)
     # Ensure assessment mode is set to 'postcondition-entailment'
     assert config['assessment-mode'] == 'postcondition-entailment'
@@ -262,10 +451,10 @@ def assess(description, program, module_name, config, log_directory, cex_path):
         f.write(description)
     
     precondition_log_dir = log_directory / 'extract-precondition'
-    precondition_log_dir.mkdir()
+    precondition_log_dir.mkdir(parents=True, exist_ok=True)
 
     postcondition_log_dir = log_directory / 'compute-postcondition'
-    postcondition_log_dir.mkdir()
+    postcondition_log_dir.mkdir(parents=True, exist_ok=True)
     
     for index, func in enumerate(functions_list):
         # Extract the precondition from the description and program
@@ -278,27 +467,40 @@ def assess(description, program, module_name, config, log_directory, cex_path):
 
         # Compute the postcondition from the precondition and program
         # This is where the important work gets done
-        postcondition = compute_postcondition(precondition, func, config, postcondition_log_dir)
+        postcondition_total = compute_postcondition(precondition, func, config, postcondition_log_dir)
+        if len(postcondition_total) == 3:
+            postcondition = postcondition_total[0]
+            return_str = postcondition_total[1]
+            annotated_func = postcondition_total[2]
+            postconditions_list.append(postcondition)
+            return_list.append(return_str)
+            annotated_func_list.append(annotated_func)
+        else:
+            postcondition = postcondition_total
+            postconditions_list.append(postcondition)
 
         # Save the computed postcondition
         with (log_directory / f'postcondition_func_{index}.txt').open("w", encoding="utf-8") as f:
             f.write(postcondition)
-        postconditions_list.append(postcondition)
 
+        
 
+    # print(f"the postconditions are\n {postconditions_list}\n")
+    # print(f"the return values are\n {return_list}\n")
+    # print(f"the annotated functions are\n {annotated_func_list}\n")
     # Check entailment to verify consistency with the description
     entailment_log_dir = log_directory / 'check_entailment'
-    entailment_log_dir.mkdir()
+    entailment_log_dir.mkdir(parents=True, exist_ok=True)
     if len(postconditions_list)==1:
         if cex_path:
-            result = check_entailment(description, postcondition, imports+"\n" + cleaned_program, module_name, config, entailment_log_dir, cex_path)
+            result = check_entailment(description, postcondition, imports+"\n" + global_code+"\n"+cleaned_program, module_name, config, entailment_log_dir, return_str, annotated_func,cex_path, )
         else:
-            result = check_entailment(description, postcondition, imports+"\n"  + cleaned_program, module_name, config, entailment_log_dir)
+            result = check_entailment(description, postcondition, imports+"\n" + global_code+"\n" + cleaned_program, module_name, config, entailment_log_dir, return_str, annotated_func)
     else:
         if cex_path:
-            result = check_entailment_mult_func(description, postconditions_list, functions_list, imports, module_name, config, entailment_log_dir, cex_path)
+            result = check_entailment_mult_func(description, postconditions_list, functions_list, imports,global_code, module_name, config, entailment_log_dir, return_list, annotated_func_list,cex_path)
         else:
-            result = check_entailment_mult_func(description, postconditions_list, functions_list, imports, module_name, config, entailment_log_dir)
+            result = check_entailment_mult_func(description, postconditions_list, functions_list, imports, global_code, module_name, config, entailment_log_dir, return_list, annotated_func_list)
 
     
     # Print result (CORRECT or INCORRECT) and log counterexample if provided
@@ -311,7 +513,7 @@ def assess(description, program, module_name, config, log_directory, cex_path):
                 cex_code = f.read()
             with (log_directory / os.path.basename(cex_path)).open("w", encoding="utf-8") as f:
                 f.write(cex_code)
-
+    return result
 # Extract the precondition from a description and program using a model
 def extract_precondition(description, program, config, log_directory):
     model = get_model(config["model"], config["temperature"], log_directory)
@@ -325,7 +527,12 @@ def extract_precondition(description, program, config, log_directory):
 # the prompt and the response from the one API call we are performing are stored in the log dir
 def compute_postcondition_naive(description, program, config, log_directory):
     model = get_model(config["model"], config["temperature"], log_directory)
-    response = naive_question(description, program, model)
+    if not config["fsl"]:
+        print("FSL is set to False, using naive_question_no_fsl")
+        #dont use few shot learning
+        response = naive_question_no_fsl(description, program, model)
+    else:
+        response = naive_question(description, program, model)
     
     return response
 
@@ -347,15 +554,21 @@ def compute_postcondition(precondition, program, config, log_directory):
         raise NotImplementedError
 
 # Check if the postcondition implies compliance with the description using entailment
-def check_entailment(description, postcondition, program, module_name, config, log_directory, cex_path=None):
+def check_entailment(description, postcondition, program, module_name, config, log_directory, return_str, annotated_func, cex_path=None):
     model = get_model(config["model"], config["temperature"], log_directory)
 
     # Perform naive entailment checking, generating counterexamples if necessary
     if config['entailment-mode'] == 'naive':
         if not cex_path:
-            correctness = entailment.naive(model, description, postcondition, program, module_name, config)
+            if config["annotated"]:
+                correctness = entailment_annotated.naive(model, description, return_str, annotated_func, module_name, config)
+            else:
+                correctness = entailment.naive(model, description, postcondition, program, module_name, config)
         else:
-            correctness = entailment.naive(model, description, postcondition, program, module_name, config, cex_path)
+            if config["annotated"]:
+                correctness = entailment_annotated.naive(model, description, return_str, annotated_func, module_name, config, cex_path)
+            else:
+                correctness = entailment.naive(model, description, postcondition, program, module_name, config, cex_path)
             if not correctness[0] :
                 reason = correctness[1].replace("Correctness: **False**", "")
                 cex_generator.output_cex(model, description, postcondition, program, config, cex_path, module_name, reason)
@@ -365,25 +578,35 @@ def check_entailment(description, postcondition, program, module_name, config, l
     raise NotImplementedError
 
 # Check if the postcondition implies compliance with the description using entailment
-def check_entailment_mult_func(description, postconditions_list, functions_list, imports, module_name, config, log_directory, cex_path=None):
+def check_entailment_mult_func(description, postconditions_list, functions_list, imports, global_code, module_name, config, log_directory, return_list, annotated_func_list,cex_path=None):
     model = get_model(config["model"], config["temperature"], log_directory)
     program= imports+"\n"
     total_post=""
     functions =""
+    annotated_program=""
     # for func in functions_list:
     #     program += func
+    #add the global code to the last function in function list
+    functions_list[-1] += "\n" +global_code
     for index, post in enumerate(postconditions_list):
         program += f"#Function {index+1}:\n" + functions_list[index]+"\n\n"
-        total_post+= f"Postcondition for function number {index+1} : {post}+\n"
+        total_post+= f"Output Description for function number {index+1} : {post}+\n"
         functions += f"Function number {index+1} :\n Code:\n '''\n{functions_list[index]}\n''' \n\n Output decription for function{index+1}:  {post}\n"
+        annotated_program += f"#Function {index+1}:\n" + annotated_func_list[index]+"\n\n"
     
-
+    
     # Perform naive entailment checking, generating counterexamples if necessary
     if config['entailment-mode'] == 'naive':
         if not cex_path:
-            correctness = entailment_mult_func.naive_mult_func(model, description, functions, module_name, config)
+            if config["annotated"]:
+                correctness = entailement_mult_func_annotated.naive_mult_func(model, description, annotated_program, module_name, config)
+            else:
+                correctness = entailment_mult_func.naive_mult_func(model, description, functions, module_name, config)
         else:
-            correctness = entailment_mult_func.naive_mult_func(model, description, functions, module_name, config, cex_path)
+            if config["annotated"]:
+                correctness = entailement_mult_func_annotated.naive_mult_func(model, description, annotated_program, module_name, config, cex_path)
+            else:
+                correctness = entailment_mult_func.naive_mult_func(model, description, functions, module_name, config, cex_path)
             if not correctness[0] :
                 reason = correctness[1].replace("Correctness: **False**", "")
                 cex_generator.output_cex(model, description, total_post, program, config, cex_path, module_name, reason)

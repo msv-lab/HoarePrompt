@@ -58,7 +58,7 @@ def complete_func_triple(incomplete_triple: FuncTriple, model):
 # This function extracts the function definition (signature) from an AST node 
 # It returns the function name and the list of parameters as a formatted string
 def get_func_def(node: ast.FunctionDef):
-    name = "func"
+    name = node.name
     args = [arg.arg for arg in node.args.args]
     args_str = ", ".join(args)
     return f"def {name}({args_str}):"

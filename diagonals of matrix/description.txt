@@ -1,1 +1,0 @@
-Write a function matrix_diagonal_sum(matrix) that calculates the sum of all elements along the diagonals of a square matrix. The matrix may be of any dimension n×n. When the sum is calculated no element of the matrix can be added twice.

@@ -1,16 +1,16 @@
-def func(matrix):
+def func_1(matrix):
     n = len(matrix)
-    #State of the program here: `matrix` is a 2D list (square matrix) where each sublist has the same length as the number of sublists, and all elements are integers; `n` is the number of sublists in `matrix`
+    #State of the program here: `matrix` is a square 2D list of integers of dimension n x n, where n is a non-negative integer; `n` is the dimension of the square matrix
     total = 0
-    #State of the program here: `matrix` is a 2D list (square matrix) where each sublist has the same length as the number of sublists, and all elements are integers; `n` is the number of sublists in `matrix`; `total` is 0
+    #State of the program here: `matrix` is a square 2D list of integers of dimension n x n, where n is a non-negative integer; `n` is the dimension of the square matrix, `total` is 0
     for i in range(n):
         total += matrix[i][i]
         
         total += matrix[i][n - i - 1]
         
-    #State of the program after the  for loop has been executed: If `n` is greater than 0, `total` is the sum of the elements on the main diagonal and the anti-diagonal of the `matrix`. If `n` is 0, the loop does not execute and `total` remains 0.
+    #State of the program after the  for loop has been executed: If n is 0, the loop does not execute, and total remains 0. If n is greater than 0, the loop calculates the sum of the diagonal elements of the square matrix and updates total accordingly.
     return total
-    #State of the program after the return statement: If `n` is greater than 0, `total` is the sum of the elements on the main diagonal and the anti-diagonal of the `matrix`. If `n` is 0, `total` is 0, and the function returns `total`.
-#Overall this is what the function does: The function accepts a parameter `matrix`, calculates the sum of elements on the main diagonal and anti-diagonal if the matrix is non-empty, and returns this sum. If the matrix is empty, it returns 0.
-If `n` is greater than 0, `total` is the sum of the elements on the main diagonal and the anti-diagonal of the `matrix`. If `n` is 0, `total` is 0, and the function returns `total`.
+    #State of the program after the return statement: If n is 0, total remains 0. If n is greater than 0, total is updated with the sum of diagonal elements of the square matrix, and the function returns the final value of total.
+#Overall this is what the function does: The function accepts a square 2D list of integers of dimension n x n, calculates the sum of diagonal elements if n is greater than 0, and returns the final total. If n is 0, the total remains 0.
+If n is 0, total remains 0. If n is greater than 0, total is updated with the sum of diagonal elements of the square matrix, and the function returns the final value of total.
 
