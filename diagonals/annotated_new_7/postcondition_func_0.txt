@@ -1,0 +1,1 @@
+The function func_1 accepts a square 2D list of integers matrix with dimensions n x n. It calculates the sum of values at the diagonals of the matrix and returns the total. If n is less than or equal to 0, the function still returns 0 as the total.

@@ -361,7 +361,8 @@ class PostconditionAnalyzer:
                 print(return_conditions_str, file =f)
             
             final = summarize_functionality_tree(total_code, return_conditions_str, self.model)
-            return (final, return_conditions_str, total_code)
+            updated_total_code = replace_functionality(total_code, final)
+            return (final, return_conditions_str, updated_total_code)
          
         # Handle import statements and assertions as they dont change the state
         if isinstance(triple.command, (ast.Import, ast.ImportFrom, ast.Assert)):
@@ -377,3 +378,22 @@ def compute_postcondition(model, precondition, program, config):
     triple = Triple(precondition, parsed_code, State.UNKNOWN)
     postcondition = analyzer.complete_triple_cot(triple)
     return postcondition
+
+def replace_functionality(tree: str, functionality: str) -> str:
+    # Define the marker line after which we want to replace content
+    marker = "#Overall this is what the function does:"
+    
+    # Find the position of the marker in the tree
+    marker_pos = tree.find(marker)
+    
+    # If the marker is not found, return the original tree without modifications
+    if marker_pos == -1:
+        return tree
+    
+    # Extract the part of the tree up to (and including) the marker
+    before_marker = tree[:marker_pos + len(marker)]
+    
+    # Combine the content before the marker with the new functionality
+    modified_tree = before_marker + "\n" + functionality.strip()
+    
+    return modified_tree

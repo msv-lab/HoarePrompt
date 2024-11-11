@@ -61,38 +61,6 @@ Correctness: **False**.
 
 # Example 3
 
-Problem description: Write a python function to check whether the given number can be represented as difference of two squares or not.
-Program:
-```
-import math
-def dif_Square(n):
-    for i in range(int(math.sqrt(n)), -1, -1):
-        for j in range(i, -1, -1):
-            if i*i - j*j == n:
-                return True
-    return False
-```
-
-Example answer 3:
-Correctness: **False**.
-
-# Example 4
-
-Problem description: Write a python function to find the minimum number of rotations (greater than 0) required to get the same string.
-Code:
-```
-def find_Rotations(str1):
-    n = len(str1)
-    for i in range(1,n+1):
-        if str1[i:] + str1[:i] == str1:
-            return i
-```
-
-Example answer 4:
-Correctness: **False**.
-
-# Example 5
-
 Problem description: Write a function to perform binary search of a number in an list
 Program:
 ```
@@ -111,7 +79,7 @@ def binary_search(arr, target):
         return left
     return -1
 ```
-Example answer 5:
+Example answer 3:
 Correctness: **False**.
 
 # Your task:
