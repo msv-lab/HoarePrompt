@@ -2,6 +2,7 @@ import re
 
 from node_base_style.hoare_triple import Triple, IfTriple, FuncTriple, print_state, pprint_cmd
 
+#This script helps in constructing prompts depending on the AST node type (for example and if triple) and parsing the language model's output to find the postcondition
 
 def format_prompt(triple: Triple | IfTriple | FuncTriple) -> str:
     # This function generates prompts for the LLM based on different AST nodes.
@@ -16,18 +17,29 @@ def format_prompt(triple: Triple | IfTriple | FuncTriple) -> str:
 
     return format_str
 
+# Extracts the postcondition from the model's response
+import re
 
 def extract_postcondition(s: str) -> str:
     pattern = r"Postcondition:\s*\*\*(.*?)\*\*"
-    match = re.search(pattern, s, re.DOTALL)
-    if match:
-        return match.group(1)
+    matches = re.findall(pattern, s, re.DOTALL)
+    if matches:
+        # Select the last match
+        res = matches[-1]
+        # Clean up the beginning and end of the string for any weird characters like * or newlines
+        return res.strip()
     return s
 
 
+# Extracts the result from the model's response given a keyword . For example the keyword can be "Output State"
+# Same as extact_postcondition if the keyword is "Postcondition"
 def extract_result(s: str, keyword: str) -> str:
     pattern = fr"{keyword}:\s*\*\*(.*?)\*\*"
-    match = re.search(pattern, s, re.DOTALL)
-    if match:
-        return match.group(1)
+    matches = re.findall(pattern, s, re.DOTALL)
+    if matches:
+        # Select the last match
+        res = matches[-1]
+        # Clean up the beginning and end of the string for any weird characters like * or newlines
+        return res.strip()
     return s
+

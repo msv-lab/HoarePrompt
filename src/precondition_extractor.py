@@ -1,5 +1,12 @@
 import re
 
+# This is the template for the prompt that will be used to extract the precondition.
+# It is pretty straight forward
+# The user is given a problem description and a program that supposedely solves the problem.
+# The LLM is then asked to extract the precondition from the problem description.
+# The precondition is then surrounded by double asterisks (**)
+
+
 PRECONDITION_EXTRACTION_PROMPT_TEMPLATE = """
 You are given a programming problem description and a program that solves to this problem. From the problem description, extract a description of the values of the program's input variables and relationship between these variables. We refer to this description as precondition. Print the precondition following the word "Precondition", and surrounded with double asterisks (**). Follow these examples:
 
