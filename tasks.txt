@@ -1,0 +1,16 @@
+def func_1(matrix):
+    n = len(matrix)
+    #State of the program here: `matrix` is a 2D list representing a square matrix, `n` is the number of rows (or columns) in the matrix
+    total = 0
+    #State of the program here: `matrix` is a 2D list representing a square matrix, `n` is the number of rows (or columns) in the matrix, `total` is 0
+    for i in range(n):
+        total += matrix[i][i]
+        
+        total += matrix[i][n - i - 1]
+        
+    #State of the program after the  for loop has been executed: `total` is the sum of the elements on the main diagonal and the anti-diagonal of the matrix if `n` is greater than 0, otherwise `total` is 0. `matrix` is a 2D list representing a square matrix, `n` is the number of rows (or columns) in the matrix. If `n` is 0, the loop does not execute, and `total` is 0.
+    return total
+    #State of the program after the return statement: `total` is the sum of the elements on the main diagonal and the anti-diagonal of the matrix if `n` is greater than 0, otherwise `total` is 0, `matrix` is a 2D list representing a square matrix, `n` is the number of rows (or columns) in the matrix, and the function returns `total`.
+#Overall this is what the function does: The function accepts a square matrix and returns the sum of its main diagonal and anti-diagonal elements if the matrix is not empty; otherwise, it returns 0.
+`total` is the sum of the elements on the main diagonal and the anti-diagonal of the matrix if `n` is greater than 0, otherwise `total` is 0, `matrix` is a 2D list representing a square matrix, `n` is the number of rows (or columns) in the matrix, and the function returns `total`.
+

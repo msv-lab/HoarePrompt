@@ -1,9 +1,6 @@
-def f(n):
-    if n <= 1:
-        return n
-
-    prev, curr = 0, 1
-    for i in range(2, n + 1):
-        prev, curr = curr, prev * curr
-
-    return curr
+def find_max(numbers):
+    max_value = 0
+    for num in numbers:
+        if num > max_value:
+            max_value = num
+    return max_value

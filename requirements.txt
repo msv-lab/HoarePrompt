@@ -3,3 +3,5 @@ tenacity
 astor
 groq
 pytest
+requests
+textwrap
