@@ -120,7 +120,7 @@ def print_tree(elements):
                 # elif "simple command" in type:
                 #     print(f"{indent}#State of the program here: {element}", file=f)
                 elif "return statement" in type:
-                    print(f"{indent}#State of the program after the return statement: {element}", file=f)
+                    print(f"{indent}#{element}", file=f)
                 elif "summary of total for loop" in type:
                     print(f"{indent}#State of the program after the  for loop has been executed: {element}", file=f)
                 else:

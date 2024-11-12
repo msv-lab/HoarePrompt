@@ -1,1 +1,0 @@
-**Precondition**: l, r, and k are integers such that 1 <= l <= r < 10^18, and 1 <= k <= 10.

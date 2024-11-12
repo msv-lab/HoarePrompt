@@ -13,6 +13,7 @@ from node_base_style.try_statement import complete_try_triple
 from node_base_style.task_sorter import sort_tasks_by_depth, pretty_print_tasks, sort_post_by_depth, print_tree
 from node_base_style.merger import merge_triple
 from node_base_style.tree import summarize_functionality_tree
+from node_base_style.return_triple import complete_return_triple
 
 
 # This is a class responsible for analyzing the postcondition of a program given its precondition and source code
@@ -47,7 +48,7 @@ class PostconditionAnalyzer:
 
         # Handle return statements
         if isinstance(triple.command, ast.Return):
-            post = complete_triple(triple, self.model)
+            post = complete_return_triple(triple, self.model)
             # If we're at the first level of depth (inside a function), collect the return postcondition and we are done for this recursion
             if depth >= 1 :
                 self.got_return = True # we got a return statement
