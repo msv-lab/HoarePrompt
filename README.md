@@ -197,6 +197,22 @@ python src/hoareprompt.py --config <FILE>
 ```
  Normally we suggest using  default-config.json for normal HoarePrompt operations. Additionally, for a simpler, naive approach to verification, config_naive.json is available, which performs a single api call to the LLM.This is our baseline.
 
+### Assessment Modes
+The assessment-mode parameter controls the approach HoarePrompt uses to verify code correctness. The following modes are available:
+
+#### naive: In this mode, the tool directly assesses if the program aligns with its description without detailed structural analysis.
+
+Few-Shot Learning (fsl): When using the naive assessment mode, you can optionally enable Few-Shot Learning (FSL) by setting the fsl parameter in the configuration file:
+  fsl: true (default): Provides the model with examples to improve reasoning and accuracy.
+  fsl: false: Disables few-shot learning, using a simpler prompt structure.
+If the fsl parameter is omitted, it defaults to true.
+#### postcondition-entailment: This mode uses postcondition analysis to determine if the program's behavior meets its specification.
+
+Annotated Mode (annotated): When using the postcondition-entailment mode, you can enable annotated mode by setting annotated in the configuration:
+  annotated: true: Uses the annotated code tree, which includes a detailed structure of postconditions and state changes, for entailment checking.
+  annotated: false (default): Uses the standard program code and computed functionality for entailment checking.
+If the annotated parameter is omitted, it defaults to false.
+
 ### Main Configuration Options:
 
 - **model**: Choose the model to use. Supported models can be found in `src/model.py`.
@@ -223,6 +239,7 @@ python src/hoareprompt.py --config <FILE>
 - **annotated**: Only to be used in combination with assesment mode: naive
   - `True`:  It uses the the annotated code tree in the entailement.
   - `False`: The default option. It uses the original code plus the calculated functionality in the entailement.
+  
 ## Implementation Details
 
 HoarePrompt's reasoning process revolves around breaking down programs into smaller components and analyzing the behavior of each component in isolation:

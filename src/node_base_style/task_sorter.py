@@ -95,36 +95,36 @@ def print_tree(elements):
         with open("tasks.txt", "a") as f:
             if is_comment:
                 element = element.replace("\n", "\n" + indent+"#")
-                if "the if part of the statement" in type:
-                    print(f"{indent}#State of the program after the if part has been executed: {element}", file=f)
-                elif "the else statement of the if-else block" in type:
-                    print(f"{indent}#State of the program after the else part has been executed: {element}", file=f)
-                elif "a summary of the whole if-else block" in type:
+                # if "the if part of the statement" in type:
+                #     print(f"{indent}#State of the program after the if part has been executed: {element}", file=f)
+                # if "the else statement of the if-else block" in type:
+                #     print(f"{indent}#State of the program after the else part has been executed: {element}", file=f)
+                if "a summary of the whole if-else block" in type:
                     print(f"{indent}#State of the program after the if-else block has been executed: {element}", file=f)
                 elif "a summary of the whole if block" in type:
                     print(f"{indent}#State of the program after the if block has been executed: {element}", file=f)
-                elif "the try block" in type:
-                    print(f"{indent}#State of the program after the try block has been executed: {element}", file=f)
-                elif "the except block" in type:
-                    print(f"{indent}#State of the program after the except block has been executed: {element}", file=f)
+                # elif "the try block" in type:
+                #     print(f"{indent}#State of the program after the try block has been executed: {element}", file=f)
+                # elif "the except block" in type:
+                #     print(f"{indent}#State of the program after the except block has been executed: {element}", file=f)
                 elif "a summary of the whole try-except block" in type:
                     print(f"{indent}#State of the program after the try-except block has been executed: {element}", file=f)
-                elif "the summary of unrolled_loop" in type:
-                    print(f"{indent}#State of the program after the loop has been unrolled {unrolled_loop} times: {element}", file=f)
-                    unrolled_loop += 1
+                # elif "the summary of unrolled_loop" in type:
+                #     print(f"{indent}#State of the program after the loop has been unrolled {unrolled_loop} times: {element}", file=f)
+                #     unrolled_loop += 1
                 elif "a summary of the total loop" in type:
                     print(f"{indent}#State of the program after the loop has been executed: {element}", file=f)
                     unrolled_loop =1
                 elif 'the summary for the whole function' in type:
                     print(f"{indent}#Overall this is what the function does: {element}", file=f) 
-                elif "simple command" in type:
-                    print(f"{indent}#State of the program here: {element}", file=f)
+                # elif "simple command" in type:
+                #     print(f"{indent}#State of the program here: {element}", file=f)
                 elif "return statement" in type:
                     print(f"{indent}#State of the program after the return statement: {element}", file=f)
                 elif "summary of total for loop" in type:
                     print(f"{indent}#State of the program after the  for loop has been executed: {element}", file=f)
                 else:
-                    print(f"{indent}#State of the program after the statement: {element}", file=f)
+                    print(f"unsupported element : {element}")
 
                
         #put all the contents of tasks.txt in a string
