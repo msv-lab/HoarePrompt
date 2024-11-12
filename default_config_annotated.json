@@ -7,5 +7,6 @@
     "loop-unrolling-count": 3,
     "entailment-mode": "naive",
     "cex-mode": "with-postcondition",
-    "annotated" : true
+    "annotated" : true,
+    "annotated-type" : "complex"
 }

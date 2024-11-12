@@ -39,14 +39,14 @@ import ast
 
 import re
 
-def get_list_size(list):
-    return len(list)
+# def get_list_size(list):
+#     return len(list)
 
-def find_Rotations(str1):
-    n = get_list_size(str1)
-    for i in range(1,n+1):
-        if str1[i:] + str1[:i] == str1:
-            return i
+# def find_Rotations(str1):
+#     n = get_list_size(str1)
+#     for i in range(1,n+1):
+#         if str1[i:] + str1[:i] == str1:
+#             return i
  
 def count_Primes_nums(n: int) -> int:
     def is_prime(num: int) -> bool:

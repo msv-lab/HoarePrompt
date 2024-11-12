@@ -124,7 +124,7 @@ def print_tree(elements):
                 elif "summary of total for loop" in type:
                     print(f"{indent}#State of the program after the  for loop has been executed: {element}", file=f)
                 else:
-                    print(f"unsupported element : {element}")
+                    pass
 
                
         #put all the contents of tasks.txt in a string
