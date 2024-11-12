@@ -134,11 +134,10 @@ def naive_mult_func(model, description, functions, module_name, config, cex_path
     response = model.query(prompt)
     result = extract_correctness_from_response(response)
 
-    if result.lower() == 'true':
-        return (True , response)
-    if result.lower() == 'false':
-        return (False , response)
+    if 'true' in result.lower().strip() :
+        return (True, response)
+    if "false" in result.lower().strip() :
+        return (False, response)
     raise ValueError('failed to parse entailment checking response')
-
 
 # TBD: WHAT OTHER APPROACH CAN BE USED OTHER THAN NAIVE?

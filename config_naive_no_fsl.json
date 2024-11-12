@@ -4,6 +4,7 @@
     "assessment-mode": "naive", 
     "postcondition-mode": "hoarecot",
     "postcondition-cot-prompt": "node-based-style",
+    "annotated_type" : "simple",
     "loop-unrolling-count": 3,
     "entailment-mode": "naive",
     "cex-mode": "with-postcondition",

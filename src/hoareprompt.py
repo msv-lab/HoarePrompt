@@ -14,6 +14,7 @@ import comment_style
 import node_base_style.complete
 from  node_base_style.naive import naive_question
 from node_base_style.naive_no_fsl import naive_question_no_fsl
+from node_base_style.annotated_simple import annotated_simple
 import cex_generator
 from textwrap import dedent
 import ast
@@ -48,6 +49,23 @@ import re
 
 #     return script_cleaned.strip(), imports_str.strip()
 
+def remove_functionality(tree: str) -> str:
+    # Define the marker line after which we want to replace content
+    marker = "#Overall this is what the function does:"
+    
+    # Find the position of the marker in the tree
+    marker_pos = tree.find(marker)
+    
+    # If the marker is not found, return the original tree without modifications
+    if marker_pos == -1:
+        return tree
+    
+    # Extract the part of the tree up to (and including) the marker
+    before_marker = tree[:marker_pos ]
+    
+    # Combine the content before the marker with the new functionality
+   
+    return before_marker
 
 
 def remove_imports_and_comments(script: str) -> tuple:
@@ -259,16 +277,21 @@ def main():
         config = json.load(f)
 
     #if config annotated is true and  config  "assessment-mode": "naive" print error thaty they are noit compatible and that annotated only with postcondition-entailment
-    if "annotated" in config:
+    if "annotated"  in config:
         if config["annotated"] and config["assessment-mode"] == "naive":
             print("Error: Annotated mode is only compatible with 'postcondition-entailment' assessment mode")
             return
+        if config["annotated"] :
+            if "annotated-type" not in config:
+                print("Annotated mode need annotated-type to be defined, defaulting to complex")
+                config["annotated-type"] = "complex"
+            
     else :
         config["annotated"] = False
     #if in the configuration we have the config option fsl and we have it set to true
     #first check if the fsl option exists in config
     if "fsl" in config:
-        if not config["fsl"]:
+        if not config["fm/sl"]:
             #if fsl is set to true then we have to check if the assessment mode is set to postcondition-entailment
             if config["assessment-mode"] != "naive":
                 print("Error: FSL mode as False  is only compatible with 'naive' assessment mode")
@@ -493,7 +516,7 @@ def assess(description, program, module_name, config, log_directory, cex_path):
     entailment_log_dir.mkdir(parents=True, exist_ok=True)
     if len(postconditions_list)==1:
         if cex_path:
-            result = check_entailment(description, postcondition, imports+"\n" + global_code+"\n"+cleaned_program, module_name, config, entailment_log_dir, return_str, annotated_func,cex_path, )
+            result = check_entailment(description, postcondition, imports+"\n" + global_code+"\n"+cleaned_program, module_name, config, entailment_log_dir, return_str, annotated_func,cex_path )
         else:
             result = check_entailment(description, postcondition, imports+"\n" + global_code+"\n" + cleaned_program, module_name, config, entailment_log_dir, return_str, annotated_func)
     else:
@@ -561,12 +584,25 @@ def check_entailment(description, postcondition, program, module_name, config, l
     if config['entailment-mode'] == 'naive':
         if not cex_path:
             if config["annotated"]:
-                correctness = entailment_annotated.naive(model, description, return_str, annotated_func, module_name, config)
+                if config["annotated-type"] == "simple":
+                    print("Using simple annotated entailment")
+                    correctness = annotated_simple(description,  remove_functionality(annotated_func), model)
+                elif config["annotated-type"] == "complex":
+                    correctness = entailment_annotated.naive(model, description, return_str, annotated_func, module_name, config)
+                else:
+                    print(f"Annotated type {config['annotated-type']} not supported, only simple and complex are currently implemented")
+                    raise NotImplementedError
             else:
                 correctness = entailment.naive(model, description, postcondition, program, module_name, config)
         else:
             if config["annotated"]:
-                correctness = entailment_annotated.naive(model, description, return_str, annotated_func, module_name, config, cex_path)
+                if config["annotated-type"] == "simple":
+                    correctness = annotated_simple(description,  remove_functionality(annotated_func), model)
+                elif config["annotated-type"] == "complex":
+                    correctness = entailment_annotated.naive(model, description, return_str, annotated_func, module_name, config, cex_path)
+                else :
+                    print(f"Annotated type {config['annotated-type']} not supported, only simple and complex are currently implemented")
+                    raise NotImplementedError
             else:
                 correctness = entailment.naive(model, description, postcondition, program, module_name, config, cex_path)
             if not correctness[0] :
@@ -583,7 +619,9 @@ def check_entailment_mult_func(description, postconditions_list, functions_list,
     program= imports+"\n"
     total_post=""
     functions =""
+    fuctions_simple=""
     annotated_program=""
+    annotated_program_simple=""
     # for func in functions_list:
     #     program += func
     #add the global code to the last function in function list
@@ -592,19 +630,33 @@ def check_entailment_mult_func(description, postconditions_list, functions_list,
         program += f"#Function {index+1}:\n" + functions_list[index]+"\n\n"
         total_post+= f"Output Description for function number {index+1} : {post}+\n"
         functions += f"Function number {index+1} :\n Code:\n '''\n{functions_list[index]}\n''' \n\n Output decription for function{index+1}:  {post}\n"
+        fuctions_simple += f"Function number {index+1} :\n Code:\n '''\n{functions_list[index]}\n''' \n"
         annotated_program += f"#Function {index+1}:\n" + annotated_func_list[index]+"\n\n"
+        annotated_program_simple += f"#Function {index+1}:\n" + remove_functionality(annotated_func_list[index])+"\n"
     
     
     # Perform naive entailment checking, generating counterexamples if necessary
     if config['entailment-mode'] == 'naive':
         if not cex_path:
             if config["annotated"]:
-                correctness = entailement_mult_func_annotated.naive_mult_func(model, description, annotated_program, module_name, config)
+                if config["annotated-type"] == "simple":
+                    correctness = annotated_simple(description,  annotated_program_simple, model)
+                elif config["annotated-type"] == "complex":
+                    correctness = entailement_mult_func_annotated.naive_mult_func(model, description, annotated_program, module_name, config)
+                else:
+                    print(f"Annotated type {config['annotated-type']} not supported, only simple and complex are currently implemented")
+                    raise NotImplementedError
             else:
                 correctness = entailment_mult_func.naive_mult_func(model, description, functions, module_name, config)
         else:
             if config["annotated"]:
-                correctness = entailement_mult_func_annotated.naive_mult_func(model, description, annotated_program, module_name, config, cex_path)
+                if config["annotated-type"] == "simple":
+                    correctness = annotated_simple(description,  annotated_program_simple, model)
+                elif config["annotated-type"] == "complex":
+                    correctness = entailement_mult_func_annotated.naive_mult_func(model, description, annotated_program, module_name, config, cex_path)
+                else:
+                    print(f"Annotated type {config['annotated-type']} not supported, only simple and complex are currently implemented")
+                    raise NotImplementedError
             else:
                 correctness = entailment_mult_func.naive_mult_func(model, description, functions, module_name, config, cex_path)
             if not correctness[0] :
@@ -618,3 +670,5 @@ def check_entailment_mult_func(description, postconditions_list, functions_list,
 # This is just the entry point to the program
 if __name__ == "__main__":
     main()
+
+

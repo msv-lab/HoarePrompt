@@ -49,10 +49,16 @@ def naive(model, description, return_str, annotated_func, module_name, config, c
     response = model.query(prompt)
     result = extract_correctness_from_response(response)
 
-    if result.lower() == 'true':
-        return (True , response)
-    if result.lower() == 'false':
-        return (False , response)
+    # if result.lower() == 'true':
+    #     return (True , response)
+    # if result.lower() == 'false':
+    #     return (False , response)
+    # raise ValueError('failed to parse entailment checking response')
+
+    if 'true' in result.lower().strip() :
+        return (True, response)
+    if "false" in result.lower().strip() :
+        return (False, response)
     raise ValueError('failed to parse entailment checking response')
 
 

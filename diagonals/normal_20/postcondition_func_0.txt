@@ -1,1 +1,1 @@
-The function func_1 accepts a square matrix `matrix`, calculates the sum of diagonal elements by adding elements at positions (i, i) and (i, n - i - 1) for each row, and returns the total sum. If the matrix is empty (n=0) or negative, the function returns 0 as the total sum.
+The function func_1 accepts an integer parameter n, iterates through numbers from 2 to n-1, counts the prime numbers in that range, and returns the count of prime numbers found. If n is less than 3, the function returns 0 as there are no prime numbers between 2 and n.
