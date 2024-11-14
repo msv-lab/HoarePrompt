@@ -1,14 +1,18 @@
-def func_1(matrix):
-    n = len(matrix)
+def func_1(numbers):
     total = 0
-    for i in range(n):
-        total += matrix[i][i]
-        
-        total += matrix[i][n - i - 1]
-        
-    #State of the program after the  for loop has been executed: total is updated with the sum of the diagonal elements and anti-diagonal elements of the matrix, n is greater than or equal to 1, i is between 0 and n-1. If n is 0, the loop won't execute and total remains 0.
-    return total
-    #The program returns the sum of the diagonal elements and anti-diagonal elements of the matrix
-#Overall this is what the function does: The function accepts a square matrix as input and returns the sum of its diagonal and anti-diagonal elements.
-The program returns the sum of the diagonal elements and anti-diagonal elements of the matrix
+    count = 0
+    if (len(numbers) == 0) :
+        return None
+        #The program returns None
+    else :
+        if (len(numbers) == 1) :
+            return numbers[0]
+            #The program returns the first integer in the list 'numbers'
+        else :
+            return sum(numbers) / len(numbers)
+            #The program returns the average value of all integers in the list 'numbers'
+        #State of the program after the if-else block has been executed: *numbers is a non-empty list of integers, total is the sum of all integers in the list, count is the total number of integers in the list. If the length of numbers is 1, the function returns the only integer in the list. Otherwise, the function returns the average value of all integers in the list.
+    #State of the program after the if-else block has been executed: *`numbers` is a list of integers, `total` is the sum of all integers in the list, `count` is the total number of integers in the list. If the length of `numbers` is 0, the function returns None. If the length of `numbers` is 1, the function returns the only integer in the list. Otherwise, the function returns the average value of all integers in the list.
+#Overall this is what the function does: The function accepts a list of integers numbers, calculates the sum and count of the integers. If the length of numbers is 0, it returns None. If the length of numbers is 1, it returns the only integer in the list. Otherwise, it returns the average value of all integers in the list.
+*`numbers` is a list of integers, `total` is the sum of all integers in the list, `count` is the total number of integers in the list. If the length of `numbers` is 0, the function returns None. If the length of `numbers` is 1, the function returns the only integer in the list. Otherwise, the function returns the average value of all integers in the list.
 
