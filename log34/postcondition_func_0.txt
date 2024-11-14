@@ -1,1 +1,0 @@
-The function func_1 accepts a list of integers `numbers`. If the length of `numbers` is 0, it returns None. If the length of `numbers` is 1, it returns the only integer in the list. Otherwise, it calculates and returns the average value of all integers in the list.
