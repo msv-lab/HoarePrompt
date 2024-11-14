@@ -14,6 +14,8 @@ from node_base_style.task_sorter import sort_tasks_by_depth, pretty_print_tasks,
 from node_base_style.merger import merge_triple
 from node_base_style.tree import summarize_functionality_tree
 from node_base_style.return_triple import complete_return_triple
+from node_base_style.if_precondition import complete_if_precondition
+from node_base_style.else_precondition import complete_else_precondition
 
 
 # This is a class responsible for analyzing the postcondition of a program given its precondition and source code
@@ -79,12 +81,14 @@ class PostconditionAnalyzer:
         # Case for if statements
         if isinstance(triple.command, ast.If):
             pre = triple.precondition
-
+            condition = ast.unparse(triple.command.test)
             #push the current index of the  self.collected list in the current stack
             self.index_stack.append(len(self.collected))
-            
+            extended_if_precondition= pre
+            if not self.inside_loop:
+                extended_if_precondition = complete_if_precondition(pre, f"if ({condition}):", self.model)
             # Find the postcondition for the if body
-            then_completion = self.complete_triple_cot(Triple(pre, triple.command.body, State.UNKNOWN), depth=depth+1, type="if part")
+            then_completion = self.complete_triple_cot(Triple(extended_if_precondition, triple.command.body, State.UNKNOWN), depth=depth+1, type="if part")
             if_post = then_completion
             if not self.inside_loop:
                 self.collected.append((str(if_post), depth, "the if part of the statement", pprint_if_stmt(triple.command), True))
@@ -98,8 +102,11 @@ class PostconditionAnalyzer:
 
             else_post = None
             if triple.command.orelse:
+                extended_else_precondition =pre
+                if not self.inside_loop:
+                    extended_else_precondition= complete_else_precondition(pre, f"if ({condition}):", self.model)
                 # If there is an else part, find the postcondition for it
-                else_completion = self.complete_triple_cot(Triple(pre, triple.command.orelse, State.UNKNOWN),
+                else_completion = self.complete_triple_cot(Triple(extended_else_precondition, triple.command.orelse, State.UNKNOWN),
                                                            depth=depth+1, type="else part")
                 else_post = else_completion
                 if not self.inside_loop:
