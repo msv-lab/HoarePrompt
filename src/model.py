@@ -1,6 +1,7 @@
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
+import math
 
 from groq import Groq
 
@@ -18,6 +19,7 @@ import requests
 def get_model(name: str, temperature: float, log_directory: Path = None):
     openai_models = {
         "gpt-4o-2024-08-06",
+        "gpt-3.5-turbo-instruct",
         "gpt-4o-2024-05-13",
         "gpt-4o-mini-2024-07-18",
         "gpt-4-turbo-2024-04-09",
@@ -124,7 +126,39 @@ class OpenAIModel(Model):
             messages=[{"role": "user", "content": prompt}] if isinstance(prompt, str) else prompt,
             temperature=self.temperature)
         return response.choices[0].message.content
+    
+    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
+    def query_confidence(self, prompt):
+        response = self.client.completions.create(
+            model="gpt-3.5-turbo-instruct",  # Use the updated model
+            prompt=prompt,
+            max_tokens=50,
+            logprobs=5  # Request token-level log probabilities
+        )
+        
+         # Get the response content
+        content = response.choices[0].text.strip()
 
+        # Extract log probabilities
+        logprobs = response.choices[0].logprobs
+
+        if logprobs and logprobs.token_logprobs:
+            token_logprobs = logprobs.token_logprobs
+
+            # Filter out invalid log probabilities
+            valid_logprobs = [lp for lp in token_logprobs if lp > -1000]
+
+            if valid_logprobs:
+                # Calculate the average log probability
+                average_logprob = sum(valid_logprobs) / len(valid_logprobs)
+                # Convert to confidence score
+                confidence = math.exp(average_logprob)
+            else:
+                confidence = None
+        else:
+            confidence = None
+
+        return content, confidence
 
 class GroqModel(Model):
     

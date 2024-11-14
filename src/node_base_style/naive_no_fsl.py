@@ -37,6 +37,24 @@ If the program does not follow the problem description for every potential case 
 You need to strictly follow the format Correctness: **True or False**. Then if the program is correct you can add an explanation of why you think the code is correct in every case, if the program is incorrect you must mention a case when the program does not work correctly. If you cant find a single case then the program is correct.
 """
 
+PROMPT_Confidence = """
+You have been assigned the role of a program verifier. Your task is to determine the correctness of a given Python program based on the provided problem description. If the program is correct, that is it meets the requirements in the problem description, reply 1; otherwise, reply 0. Partially correct programs should be considered incorrect. You have to use the source code to try to understand if there is any missing logic or edge cases that the code is not handling. 
+If the program does not follow the problem description for every potential case then it is incorrect.Since if for at least one input or potential case the program does not work then reply 0.
+You are trying to find any potential case that the porgram does not does what the descriptions says.  If you can't think of an example of the ocde not working as expected then the code is correct.
+You need to reply either 1 for correct or 0 for incorrect.
+
+# Your task:
+Problem description: {description}
+Program:
+```
+{code}
+```
+
+
+If the program does not follow the problem description for every potential case then it is incorrect. Then if even for one input or potential case the program does not work then reply 0 .You are trying to find any potential case that the porgram does not does what the descriptions says. But if you cant find an example where the program does not work as expected in the description and all the examples you think work correctly then the program is correct.
+You need to strictly reply 1 or 0. 
+"""
+
 # This is the main function, it completes the prompt, queries the model and extracts the result, meaining the output state of that program part
 def naive_question_no_fsl(description, code, model):
    
@@ -47,6 +65,23 @@ def naive_question_no_fsl(description, code, model):
     print("*" * 50)
     print(f"{description} \n {code}")
     print(f"LLM Reply: {post}")
+
+    if 'true' in post.lower().strip() :
+        return True
+    if "false" in post.lower().strip() :
+        return False
+    return post
+
+def naive_question_no_fsl_confidence(description, code, model):
+    prompt = PROMPT_Confidence.format(description=description, code=code)
+    response, confidence = model.query_confidence(prompt)
+    print(response)
+    print(confidence)
+    post = extract_result(response, "Correctness")
+    print("*" * 50)
+    print(f"{description} \n {code}")
+    print(f"LLM Reply: {post}")
+    print(f"Confidence: {confidence}")
 
     if 'true' in post.lower().strip() :
         return True
@@ -84,3 +119,5 @@ def naive_question_no_fsl(description, code, model):
 
 # if __name__ == "__main__":
 #     main()
+
+

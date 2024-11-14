@@ -13,7 +13,7 @@ import entailement_mult_func_annotated
 import comment_style
 import node_base_style.complete
 from  node_base_style.naive import naive_question
-from node_base_style.naive_no_fsl import naive_question_no_fsl
+from node_base_style.naive_no_fsl import naive_question_no_fsl, naive_question_no_fsl_confidence
 from node_base_style.annotated_simple import annotated_simple
 import cex_generator
 from textwrap import dedent
@@ -276,6 +276,10 @@ def main():
     with config_file.open() as f:
         config = json.load(f)
 
+    if "confidence" not in config:
+        config["confidence"] = False
+
+    
     #if config annotated is true and  config  "assessment-mode": "naive" print error thaty they are noit compatible and that annotated only with postcondition-entailment
     if "annotated"  in config:
         if config["annotated"] and config["assessment-mode"] == "naive":
@@ -291,7 +295,7 @@ def main():
     #if in the configuration we have the config option fsl and we have it set to true
     #first check if the fsl option exists in config
     if "fsl" in config:
-        if not config["fm/sl"]:
+        if not config["fsl"]:
             #if fsl is set to true then we have to check if the assessment mode is set to postcondition-entailment
             if config["assessment-mode"] != "naive":
                 print("Error: FSL mode as False  is only compatible with 'naive' assessment mode")
@@ -302,6 +306,16 @@ def main():
     # Setup log directory if provided
     # If it is not provided, create the log_temporary directory
     # If the log directory already exists, delete it and recreate it
+
+    if config["confidence"] and config["assessment-mode"] != "naive":
+        print("Error: Confidence is only compatible with 'naive' assessment mode")
+        return
+    if config["confidence"] and config["assessment-mode"] == "naive":
+        if config["fsl"]:
+            print("Error: Confidence is not compatible with FSL true")
+            return
+        
+
     log_directory = None
     if args.log:
         log_directory = Path(args.log)
@@ -551,9 +565,14 @@ def extract_precondition(description, program, config, log_directory):
 def compute_postcondition_naive(description, program, config, log_directory):
     model = get_model(config["model"], config["temperature"], log_directory)
     if not config["fsl"]:
-        print("FSL is set to False, using naive_question_no_fsl")
-        #dont use few shot learning
-        response = naive_question_no_fsl(description, program, model)
+        if config["confidence"]:
+            print("FSL is set to False, using naive_question_no_fsl_confidence")
+            #dont use few shot learning
+            response = naive_question_no_fsl_confidence(description, program, model)
+        else:
+            print("FSL is set to False, using naive_question_no_fsl")
+            #dont use few shot learning
+            response = naive_question_no_fsl(description, program, model)
     else:
         response = naive_question(description, program, model)
     
