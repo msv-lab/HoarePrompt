@@ -32,6 +32,7 @@ class PostconditionAnalyzer:
         self.index_stack=[] #creates a stack to store the current index
         self.inside_loop= False #flag to check if we are inside a loop
         self.last_loop_depth = 1000 # the depth of the last loop statement
+        self.first_for = True
         
     # Core recursive method to compute the postcondition of a Triple .
     def complete_triple_cot(self, triple: Triple, depth=0, type ="") :
@@ -85,7 +86,7 @@ class PostconditionAnalyzer:
             #push the current index of the  self.collected list in the current stack
             self.index_stack.append(len(self.collected))
             extended_if_precondition= pre
-            if not self.inside_loop:
+            if self.first_for:
                 extended_if_precondition = complete_if_precondition(pre, f"if ({condition}):", self.model)
             # Find the postcondition for the if body
             then_completion = self.complete_triple_cot(Triple(extended_if_precondition, triple.command.body, State.UNKNOWN), depth=depth+1, type="if part")
@@ -103,7 +104,7 @@ class PostconditionAnalyzer:
             else_post = None
             if triple.command.orelse:
                 extended_else_precondition =pre
-                if not self.inside_loop:
+                if self.first_for:
                     extended_else_precondition= complete_else_precondition(pre, f"if ({condition}):", self.model)
                 # If there is an else part, find the postcondition for it
                 else_completion = self.complete_triple_cot(Triple(extended_else_precondition, triple.command.orelse, State.UNKNOWN),
@@ -223,6 +224,7 @@ class PostconditionAnalyzer:
             unrolled_post = ""
             
             self.inside_loop = True  # Mark that we are inside a loop to avoid annotation in the code tree
+            self.first_for = True # we are in the first unroll
             self.last_loop_depth = min(self.last_loop_depth, depth)
             depth += 1  # Increase depth since we’re inside the loop
             for i in range(k):
@@ -230,6 +232,8 @@ class PostconditionAnalyzer:
                 unrolled_post = unrolled_post+f"{indent}#state of the program after unrolled loop {i+1}: {post} \n"
                 examples.append(Triple(original_pre, body_command, post))
                 original_pre = get_for_precondition(self.model, post, loop_head)
+                self.first_for = False
+            self.first_for = True
 
             depth -= 1  # Done with the loop, decrease depth
             if self.last_loop_depth == depth:
@@ -277,6 +281,7 @@ class PostconditionAnalyzer:
             # Unroll the loop by simulating 'k' iterations
             self.last_loop_depth = min(self.last_loop_depth, depth)
             self.inside_loop = True # we are inside a loop, so any postocnditions of the unrolled code should not be appended as annotations in the code tree
+            self.first_for = True
             unrolled_post=""
             indent = " " * ((depth+1) * 4)
             depth = depth + 1 # increase the depth by 1 since we are inside a loop
@@ -285,6 +290,8 @@ class PostconditionAnalyzer:
                 unrolled_post = unrolled_post+f"{indent}#state of the program after unrolled loop {i+1}: {post} \n"
                 examples.append(Triple(pre, body_command, post))
                 pre = get_precondition(self.model, post, while_head)
+                self.first_for = False
+            self.first_for = True
                 
             depth = depth -1 # we are done with the loop so decrease the depth by 1
             if self.last_loop_depth == depth:
