@@ -37,6 +37,43 @@ If the program does not follow the problem description for every potential case 
 You need to strictly follow the format Correctness: **True or False**. Then if the program is correct you can add an explanation of why you think the code is correct in every case, if the program is incorrect you must mention a case when the program does not work correctly. If you cant find a single case then the program is correct.
 """
 
+PROMPT_COMPLEX = """
+You have been assigned the role of a program verifier. Your task is to determine the correctness of a given Python program based on the provided problem description. If the program is correct, that is it meets the requirements in the problem description, print "True"; otherwise, print "False". Partially correct programs should be considered incorrect. You have to use the source code to try to understand if there is any missing logic or edge cases that the code is not handling. 
+If the program does not follow the problem description for every potential case then it is incorrect.Since if for at least one input or potential case the program does not work then Correctness **False**.
+You are trying to find any potential case that the porgram does not does what the descriptions says.  If you can't think of an example of the ocde not working as expected then the code is correct.
+You need to strictly follow the format Correctness: **True or False**.
+
+# Your task:
+Problem description: {description}
+Program:
+```
+{code}
+```
+
+
+If the program does not follow the problem description for every potential case then it is incorrect. Then if even for one input or potential case the program does not work then Correctness **False** .You are trying to find any potential case that the porgram does not does what the descriptions says. But if you cant find an example where the program does not work as expected in the description and all the examples you think work correctly then the program is correct.
+You need to strictly follow the format Correctness: **True or False**. Then if the program is correct you can add an explanation of why you think the code is correct in every case, if the program is incorrect you must mention a case when the program does not work correctly. If you cant find a single case then the program is correct.
+"""
+PROMPT_COMPLEX_CONFIDENCE = """
+You have been assigned the role of a program verifier. Your task is to determine the correctness of a given Python program based on the provided problem description. If the program is correct, that is it meets the requirements in the problem description, print "True"; otherwise, print "False". Partially correct programs should be considered incorrect. You have to use the source code to try to understand if there is any missing logic or edge cases that the code is not handling. 
+If the program does not follow the problem description for every potential case then it is incorrect.Since if for at least one input or potential case the program does not work then Correctness **False**.
+You are trying to find any potential case that the porgram does not does what the descriptions says.  If you can't think of an example of the ocde not working as expected then the code is correct.
+You also need to tell me how confident you are in your response from 0 to 100. With 0 being no confident at all and 100 bein 100% sure.
+You need to strictly follow the format Correctness: **True or False** , Confidence: **number from 0 to 100**.
+
+# Your task:
+Problem description: {description}
+Program:
+```
+{code}
+```
+
+
+If the program does not follow the problem description for every potential case then it is incorrect. Then if even for one input or potential case the program does not work then Correctness **False** .You are trying to find any potential case that the porgram does not does what the descriptions says. But if you cant find an example where the program does not work as expected in the description and all the examples you think work correctly then the program is correct.
+Tell me how confident you are in your response in a scale from 0 to 100, where 0 means no confident at all.
+You need to strictly follow the format Correctness: **True or False** , Confidence: **number from 0 to 100**. Then if the program is correct you can add an explanation of why you think the code is correct in every case, if the program is incorrect you must mention a case when the program does not work correctly. If you cant find a single case then the program is correct.
+"""
+
 PROMPT_Confidence = """
 You have been assigned the role of a program verifier. Your task is to determine the correctness of a given Python program based on the provided problem description. If the program is correct, that is it meets the requirements in the problem description, reply 1; otherwise, reply 0. Partially correct programs should be considered incorrect. You have to use the source code to try to understand if there is any missing logic or edge cases that the code is not handling. 
 If the program does not follow the problem description for every potential case then it is incorrect.Since if for at least one input or potential case the program does not work then reply 0.
@@ -84,9 +121,28 @@ def naive_question_no_fsl_confidence(description, code, model):
     print(f"Confidence: {confidence}")
 
     if 'true' in post.lower().strip() :
-        return True
+        return True, confidence
     if "false" in post.lower().strip() :
-        return False
+        return False , confidence
+    return post , confidence
+
+
+def naive_question_no_fsl_confidence_2(description, code, model):
+    prompt = PROMPT_COMPLEX_CONFIDENCE.format(description=description, code=code)
+    response = model.query(prompt)
+    print(response)
+    
+    post = extract_result(response, "Correctness")
+    confidence = extract_result(response, "Confidence")
+    print("*" * 50)
+    print(f"{description} \n {code}")
+    print(f"LLM Reply: {post}")
+    print(f"Confidence: {confidence}")
+
+    if 'true' in post.lower().strip() :
+        return True , confidence
+    if "false" in post.lower().strip() :
+        return False, confidence
     return post
 
 # def main():
