@@ -1,0 +1,1 @@
+The function `func_1` accepts a non-negative integer `n` and calculates the factorial of `n` if `n` is greater than or equal to 2. If `n` is less than or equal to 1, the function returns `n`. If `n` is less than 2 but greater than 0, the function returns `curr` which is set to 1 initially.

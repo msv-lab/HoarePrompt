@@ -35,32 +35,6 @@ Example 2:
 
 Program state after fully executing the `try` block:
 Initial State: file_path is a string that's supposed to be a path to a file.
-```
-with open(file_path, 'r') as file:
-        data = file.read()
-        print("File content successfully read.")
-        return data
-```
-Program state after the execution of the `try` statement: `file_path` is a string thats supposed to be a path to a file, data is the contents of that file and the function returns that content.
-
-
-Changes in the program state after executing the `except` block :
-Initial State: variables can hold any values.
-```
-Except 1:
-    print("Error: The file was not found. Please check the file path.")
-    return None
-
-Except 2:
-    print("Error: You do not have permission to read this file.")
-    return None
-```
-Program state after executing the except statement(s) : Except statement 1:The function return None and prints "Error: The file was not found. Please check the file path." 
-                                                        Except statement 2: The function return None and prints "Error: You do not have permission to read this file."
-
-                                                        
-
-Initial State: file_path is a string that's supposed to be a path to a file.
 
 Code for the try except block:
 ```
