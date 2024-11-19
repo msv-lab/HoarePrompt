@@ -6,6 +6,7 @@ def f(n):
     i=0
     while i <= n:
         prev, curr = curr, prev * curr
-        i=i-1
+        i=i+1
 
     return curr
+# print(f(1))

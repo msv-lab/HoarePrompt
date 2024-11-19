@@ -1,0 +1,42 @@
+[
+    {
+        "id": "test_018",
+        "precondition": "filename is a string representing a valid file path.",
+        "code": "try:\n    file = open(filename, 'r')\n    content = file.read()\nexcept FileNotFoundError:\n    content = \"\"",
+        "expected_postcondition": "filename is a string representing a valid file path.If the file exists, content contains the text of the file. If the file does not exist, content is an empty string.",
+        "hoareprompt_postcondition": "`filename` is a string representing a valid file path. If the file exists and can be opened, `file` contains the file object, and `content` contains the file content. If the file is not found, `content` is an empty string.",
+        "is_equivalent": true,
+        "reason": "Both postconditions describe the state of the program in terms of handling a file given a filename. They both agree on the following points:\n- `filename` is a string representing a valid file path.\n- If the file exists, `content` contains the text of the file.\n- If the file does not exist, `content` is an empty string.\n\nThe difference is that the Computed Postcondition introduces the concept of a `file` object being created if the file can be opened, which is an implementation detail not mentioned in the Expected Postcondition. However, this does not alter the semantic meaning of the postcondition related to the `content`, which is the primary focus of both descriptions. Therefore, they are semantically the same regarding the state of `content` after execution."
+    },
+    {
+        "id": "test_019",
+        "precondition": "input_string is a string.",
+        "code": "try:\n    value = int(input_string)\n    result = 100 / value\nexcept ValueError:\n    result = \"Invalid input\"\nexcept ZeroDivisionError:\n    result = \"Cannot divide by zero\"",
+        "expected_postcondition": "input_string is a string. If input_string represents a valid non-zero integer, result is 100 / value. If input_string does not represent a valid integer, result is 'Invalid input'. If input_string respresents zero, result is 'Cannot divide by zero'.",
+        "hoareprompt_postcondition": "`input_string` is a string. If the input can be converted to an integer, the function will return the result of 100 divided by the integer value. If the input cannot be converted to an integer, the result is 'Invalid input'. If the integer value is 0, the result is 'Cannot divide by zero'.",
+        "is_equivalent": true,
+        "reason": "Both postconditions describe the same logical behavior of the program. They both specify that `input_string` is a string. When `input_string` represents a valid non-zero integer, the result is the division of 100 by the integer value. If `input_string` does not represent a valid integer, the result is 'Invalid input'. Lastly, if the integer value is zero, the result is 'Cannot divide by zero'. The semantic meaning of the expected and computed postconditions aligns perfectly, even though the wording is slightly different."
+    },
+    {
+        "id": "test_020",
+        "precondition": "numbers is a list, index is an integer.",
+        "code": "try:\n    value = numbers[index]\nexcept IndexError:\n    value = None",
+        "expected_postcondition": "numbers is a list, index is an integer. If index is within the bounds of numbers, value is numbers[index]. If index is out of bounds of the list numbers, value is None.",
+        "hoareprompt_postcondition": "The program could raise an `IndexError` if the index specified is out of range for the list `numbers`. If the index is within the valid range, the value at that index is assigned to `value`. If an `IndexError` occurs, `value` is set to `None`. \nTherefore, the output state is: **`numbers` is a list, `index` is an integer, `value` is assigned the value at the specified index from the list. If an `IndexError` occurs, `value` is `None`.**",
+        "is_equivalent": true,
+        "reason": "Both postconditions describe the same logical state of the program after execution. They both state that `numbers` is a list and `index` is an integer. They also agree that if the `index` is within the bounds of `numbers`, `value` takes the value at `numbers[index]`. Additionally, both postconditions handle the out-of-bounds scenario similarly: the expected postcondition mentions `value` is `None` if the index is out of bounds, while the computed postcondition describes the potential for an `IndexError` and subsequently, `value` being set to `None`. The essential semantic meaning is the same, addressing how `value` is determined based on the `index` validity."
+    },
+    {
+        "id": "test_021",
+        "precondition": "data is a dictionary, key is a string.",
+        "code": "try:\n    value = data[key]\nexcept KeyError:\n    value = \"Key not found\"",
+        "expected_postcondition": "data is a dictionary, key is a string. If key exists in data, value is data[key]. If key does not exist, value is 'Key not found'.",
+        "hoareprompt_postcondition": "key is a string. If the key is found in the dictionary, the function assigns the corresponding value to the variable `value`, otherwise, it assigns 'Key not found' to the variable `value`.",
+        "is_equivalent": true,
+        "reason": "Both postconditions describe the same semantic behavior of the program. They both state that `key` is a string and refer to a dictionary (`data`). If `key` exists in `data`, they both describe that `value` will be assigned `data[key]`. If `key` does not exist in the dictionary, `value` will be assigned the string 'Key not found'. Despite slight differences in wording, the logical outcomes and conditions described are equivalent."
+    },
+    {
+        "total_correct": 4,
+        "total": 4
+    }
+]

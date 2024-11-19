@@ -1,0 +1,152 @@
+{
+    "test_cases": [
+        {
+            "id": "test_001",
+            "description": "A simple for loop iterating over a range.",
+            "precondition": "n is an integer, total is 0",
+            "code": "for i in range(n):\n    total += i",
+            "expected_postcondition": "n is an integer, total is the sum of integers from 0 to n-1"
+        },
+        {
+            "id": "test_002",
+            "description": "A for loop iterating over a list of integers.",
+            "precondition": "numbers is a list of integers, total is 0",
+            "code": "for num in numbers:\n    total += num",
+            "expected_postcondition": "numbers is a alist of integers, total is the sum of all integers in the list 'numbers'"
+        },
+        {
+            "id": "test_003",
+            "description": "A while loop with a counter decrementing to zero.",
+            "precondition": "counter is an integer greater than 0, total is 0",
+            "code": "while counter > 0:\n    total += counter\n    counter -= 1",
+            "expected_postcondition": "total is the sum of integers from the initial value of 'counter' to 1, counter is 0"
+        },
+        {
+            "id": "test_004",
+            "description": "A while loop iterating until a condition is met.",
+            "precondition": "numbers is a list of integers, total is 0",
+            "code": "while numbers:\n    total += numbers.pop()",
+            "expected_postcondition": "total is the sum of all integers in 'numbers', and 'numbers' is an empty list"
+        },
+        {
+            "id": "test_005",
+            "description": "A nested for loop iterating over a matrix.",
+            "precondition": "matrix is a 2D list of integers, total is 0",
+            "code": "for row in matrix:\n    for num in row:\n        total += num",
+            "expected_postcondition": "total is the sum of all integers in the matrix, matrix is a 2D list of integers"
+        },
+        {
+            "id": "test_006",
+            "description": "A nested while loop decrementing counters.",
+            "precondition": "outer_counter and inner_counter are integers greater than 0, total is 0",
+            "code": "while outer_counter > 0:\n    while inner_counter > 0:\n        total += inner_counter\n        inner_counter -= 1\n    outer_counter -= 1",
+            "expected_postcondition": "total is the sum of integers from inner_counter to 1 for each value of outer_counter, inner_counter is 0, outer_counter is 0"
+        },
+        {
+            "id": "test_007",
+            "description": "A simple if statement checking a condition.",
+            "precondition": "x is an integer, y can have any value",
+            "code": "if x > 0:\n    y = x + 1",
+            "expected_postcondition": "If x > 0, y is x + 1. Otherwise, y is can have any value."
+        },
+        {
+            "id": "test_008",
+            "description": "An if-else statement assigning values based on a condition.",
+            "precondition": "x is an integer, y can have any value",
+            "code": "if x > 0:\n    y = x\nelse:\n    y = -x",
+            "expected_postcondition": "x is an integer , if x > 0, y is x. Otherwise, y is -x."
+        },
+        {
+            "id": "test_009",
+            "description": "An if-elif-else structure with multiple conditions.",
+            "precondition": "x is an integer",
+            "code": "if x > 0:\n    y = 'positive'\nelif x == 0:\n    y = 'zero'\nelse:\n    y = 'negative'",
+            "expected_postcondition": "x is an integer, y is a string. If x > 0, y is 'positive'. If x == 0, y is 'zero'. Otherwise, y is 'negative'."
+        },
+        {
+            "id": "test_010",
+            "description": "Nested if-else statements.",
+            "precondition": "x and y are integers",
+            "code": "if x > 0:\n    if y > 0:\n        z = x + y\n    else:\n        z = x - y\nelse:\n    z = y",
+            "expected_postcondition": "x and y are integers. If x > 0 and y > 0, z is x + y. If x > 0 and y <= 0, z is x - y. If x <= 0, z is y."
+        },
+        {
+            "id": "test_011",
+            "description": "An if statement with a compound condition.",
+            "precondition": "x and y are integers, z can have any value",
+            "code": "if x > 0 and y < 0:\n    z = x - y",
+            "expected_postcondition": "If x > 0 and y < 0, z is x - y. Otherwise, z can have any value ."
+        },
+        {
+            "id": "test_012",
+            "description": "Multiple independent if statements.",
+            "precondition": "x, y, and z are integers",
+            "code": "if x > 0:\n    y += x\nif y < 0:\n    z -= y",
+            "expected_postcondition": "x, y, and z are integers. If x > 0, y is increased by x. If y < 0, z is decreased by the value of y after the first if statement."
+        },
+        {
+            "id": "test_013",
+            "description": "An if-elif chain without else.",
+            "precondition": "x is an integer",
+            "code": "if x > 10:\n    y = x*10 \nelif x > 5:\n    y = 20*x\nelif x > 0:\n    y = 100*x\n",
+            "expected_postcondition": "x is an integer.If x > 10, y is 10 times the value of x. If 5 < x <= 10, y is 20 times the value of x. If 0 < x <= 5, y is 100 times the value of x . Otherwise, y can have any value."
+        },
+        {
+            "id": "test_014",
+            "description": "Complex nested if-elif-else with multiple layers.",
+            "precondition": "a, b, and c are integers",
+            "code": "if a > b:\n    if b > c:\n        x = a - c\n    elif c > a:\n        x = c - b\n    else:\n        x = a + b\nelse:\n    x = b + c",
+            "expected_postcondition": "a, b, and c are integers. If a > b and b > c, x is a - c. If a > b and c > a, x is c - b. If a > b and c <= a, x is a + b. If a <= b, x is b + c."
+        },
+        {
+            "id": "test_015",
+            "description": "A while loop calculating a sequence with preconditions and updates.",
+            "precondition": "prev = 0, curr = 1, i = 0, n is a non-negative integer",
+            "code": "while i <= n:\n    prev, curr = curr, prev * curr\n    i = i + 1",
+            "expected_postcondition": "i is equal to n+1. If n is 0, prev is 1 and curr is 1 after the loop. For n > 0, prev is either 1 or 0 and curr is either 0 or 1."
+        },
+        {
+            "id": "test_016",
+            "description": "A while loop calculating a sequence with preconditions and updates.",
+            "precondition": "prev = 1, curr = 1, i = 0, n is a non-negative integer",
+            "code": "while i <= n:\n    prev, curr = curr, prev * curr\n    i = i + 1",
+            "expected_postcondition": "i is equal to n+1. If n is 0, prev is 1 and curr is 1 after the loop. For n > 0, prev is 1 and curr is 1."
+        },
+        {
+            "id": "test_017",
+            "description": "Handles division with a potential ZeroDivisionError.",
+            "precondition": "numerator is a numeric value, denominator is a numeric value.",
+            "code": "try:\n    result = numerator / denominator\nexcept ZeroDivisionError:\n    result = None",
+            "expected_postcondition": "numerator is a numeric value, denominator is a numeric value. If denominator is not zero, result is numerator / denominator. If denominator is zero, result is None."
+        },
+        {
+            "id": "test_018",
+            "description": "Handles file reading with a potential FileNotFoundError.",
+            "precondition": "filename is a string representing a valid file path.",
+            "code": "try:\n    file = open(filename, 'r')\n    content = file.read()\nexcept FileNotFoundError:\n    content = \"\"",
+            "expected_postcondition": "filename is a string representing a valid file path.If the file exists, content contains the text of the file. If the file does not exist, content is an empty string."
+        },
+        {
+            "id": "test_019",
+            "description": "Handles multiple exceptions: ValueError and ZeroDivisionError.",
+            "precondition": "input_string is a string.",
+            "code": "try:\n    value = int(input_string)\n    result = 100 / value\nexcept ValueError:\n    result = \"Invalid input\"\nexcept ZeroDivisionError:\n    result = \"Cannot divide by zero\"",
+            "expected_postcondition": "input_string is a string. If input_string represents a valid non-zero integer, result is 100 / value. If input_string does not represent a valid integer, result is 'Invalid input'. If input_string respresents zero, result is 'Cannot divide by zero'."
+        },
+        {
+            "id": "test_020",
+            "description": "Handles IndexError when accessing a list element.",
+            "precondition": "numbers is a list, index is an integer.",
+            "code": "try:\n    value = numbers[index]\nexcept IndexError:\n    value = None",
+            "expected_postcondition": "numbers is a list, index is an integer. If index is within the bounds of numbers, value is numbers[index]. If index is out of bounds of the list numbers, value is None."
+        },
+        {
+            "id": "test_021",
+            "description": "Handles KeyError when accessing a dictionary.",
+            "precondition": "data is a dictionary, key is a string.",
+            "code": "try:\n    value = data[key]\nexcept KeyError:\n    value = \"Key not found\"",
+            "expected_postcondition": "data is a dictionary, key is a string. If key exists in data, value is data[key]. If key does not exist, value is 'Key not found'."
+        }   
+
+    ]
+}
