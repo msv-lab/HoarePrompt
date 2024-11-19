@@ -509,13 +509,19 @@ def assess(description, program, module_name, config, log_directory, cex_path):
             postcondition = postcondition_total[0]
             return_str = postcondition_total[1]
             annotated_func = postcondition_total[2]
+            
             postconditions_list.append(postcondition)
             return_list.append(return_str)
             annotated_func_list.append(annotated_func)
         else:
             postcondition = postcondition_total
             postconditions_list.append(postcondition)
-
+        
+        if len(annotated_func_list) >0:
+            with (log_directory / str('annotated_func' + '.py')).open("w", encoding="utf-8") as f:
+                for func in annotated_func_list:
+                    f.write(func)
+                    f.write("\n\n")
         # Save the computed postcondition
         with (log_directory / f'postcondition_func_{index}.txt').open("w", encoding="utf-8") as f:
             f.write(postcondition)
@@ -570,6 +576,7 @@ def compute_postcondition_naive(description, program, config, log_directory):
             #dont use few shot learning
             response1, confidence1 = naive_question_no_fsl_confidence(description, program, model)
             response2, confidence2 = naive_question_no_fsl_confidence_2(description, program, model)
+            
             response = (response1, confidence1, response2, confidence2)
         else:
             print("FSL is set to False, using naive_question_no_fsl")
@@ -609,6 +616,7 @@ def check_entailment(description, postcondition, program, module_name, config, l
                     print("Using simple annotated entailment")
                     correctness = annotated_simple(description,  remove_functionality(annotated_func), model)
                 elif config["annotated-type"] == "complex":
+                    print("Using complex annotated entailment")
                     correctness = entailment_annotated.naive(model, description, return_str, annotated_func, module_name, config)
                 else:
                     print(f"Annotated type {config['annotated-type']} not supported, only simple and complex are currently implemented")

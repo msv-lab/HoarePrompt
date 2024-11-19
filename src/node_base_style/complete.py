@@ -5,7 +5,9 @@ from node_base_style.general import complete_triple
 from node_base_style.if_statement import complete_if_triple
 from node_base_style.function_definition import complete_func_triple, get_func_def
 from node_base_style.loop import complete_loop_triple, get_while_head,get_for_loop_head, ForToWhileTransformer
+from node_base_style.loop_1_unroll import complete_loop_triple_1_unroll
 from node_base_style.for_loop import complete_for_triple
+from node_base_style.for_loop_1_unroll import complete_for_triple_1_unroll
 from node_base_style.loop_condition import get_precondition
 from node_base_style.for_condition import get_for_precondition
 from node_base_style.for_condition_first import get_for_precondition_first
@@ -242,7 +244,10 @@ class PostconditionAnalyzer:
 
             # Create a Triple for the entire for loop
             triple = Triple(triple.precondition, triple.command, State.UNKNOWN)
-            post = complete_for_triple(triple, self.model, examples)  # Aggregate the postconditions of the unrolled iterations
+            if k==1:
+                post = complete_for_triple_1_unroll(triple, self.model, examples)
+            else:
+                post = complete_for_triple(triple, self.model, examples)  # Aggregate the postconditions of the unrolled iterations
 
             # Format loop body for code tree output with indentation and postconditions
             body_commands = pprint_cmd(body_command)
@@ -300,7 +305,10 @@ class PostconditionAnalyzer:
 
             # Create a Triple for the entire 'while' loop
             triple = Triple(triple.precondition, triple.command, State.UNKNOWN)
-            post = complete_loop_triple(triple, self.model, examples)
+            if k==1:
+                post = complete_loop_triple_1_unroll(triple, self.model, examples)
+            else:
+                post = complete_loop_triple(triple, self.model, examples)
             
             body_commands = pprint_cmd(body_command)
             
@@ -375,6 +383,9 @@ class PostconditionAnalyzer:
             with open("tasks.txt", "a") as f:
                 print(return_conditions_str, file =f)
             
+            #add the precondition to the tree as comment in the begining
+            total_code = f"#State of the program right berfore the function call: {pre}\n" + total_code
+
             final = summarize_functionality_tree(total_code, return_conditions_str, self.model)
             updated_total_code = replace_functionality(total_code, final)
             return (final, return_conditions_str, updated_total_code)
