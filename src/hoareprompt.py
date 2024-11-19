@@ -15,11 +15,74 @@ import node_base_style.complete
 from  node_base_style.naive import naive_question
 from node_base_style.naive_no_fsl import naive_question_no_fsl, naive_question_no_fsl_confidence, naive_question_no_fsl_confidence_2
 from node_base_style.annotated_simple import annotated_simple
+
 import cex_generator
 from textwrap import dedent
 import ast
 
 import re
+from testing_equivalence import assess_postcondition_equivalence
+
+
+def load_test_cases(file_path):
+    """Load test cases from a JSON file."""
+    with open(file_path, "r") as f:
+        return json.load(f)
+
+
+
+
+
+def run_tests(test_cases_file, config, log_directory, model):
+    """Run the testing framework."""
+    # Load test cases
+    total_correct = 0
+    total=0
+    data = load_test_cases(test_cases_file)
+    results = []
+    test_cases = data["test_cases"]
+
+    
+
+    for case in test_cases:
+        total += 1
+        precondition = case["precondition"]
+        code = case["code"]
+        expected_postcondition = case["expected_postcondition"]
+        id = case["id"]
+
+        #create log_directory in the log directory with the id
+        log_directory_temp = log_directory / id
+        log_directory_temp.mkdir(parents=True, exist_ok=True)
+
+        # Get the HoarePrompt postcondition
+        hoareprompt_output = compute_postcondition(precondition, code, config, log_directory_temp)
+
+        # Compare postconditions using the LLM
+        response, reason = assess_postcondition_equivalence(expected_postcondition, hoareprompt_output, model)
+        if response:
+            total_correct += 1
+            
+        print(f"Total correct so far: {total_correct}/{total}")
+        # Save the result for this test case
+        results.append({
+            "id": id,
+            "precondition": precondition,
+            "code": code,
+            "expected_postcondition": expected_postcondition,
+            "hoareprompt_postcondition": hoareprompt_output,
+            "is_equivalent": response,
+            "reason": reason
+        })
+
+    results.append({
+        "total_correct": total_correct,
+        "total": total
+    })
+    print(f"Total correct: {total_correct}/{total}")
+    # Save results to a file
+    with (log_directory / 'regression_entailement.txt').open("w", encoding="utf-8") as f:
+            json.dump(results, f, indent=4)
 
 
 # def remove_imports_and_comments(script: str) -> tuple:
@@ -254,15 +317,18 @@ def main():
 
     # Arguments that could be used in different commands
     parser.add_argument('--description', type=str, help="Path to the description file")
-    parser.add_argument('--program', required=True, type=str, help="Path to the program file")
+    parser.add_argument('--program',  type=str, help="Path to the program file")
     parser.add_argument('--precondition', type=str, help="Path to the precondition file")
     parser.add_argument('--postcondition', type=str, help="Path to the postcondition file")
     parser.add_argument('--cex', type=str, help="Output file for the counterexample")
     
-
+    parser.add_argument('--test', action='store_true', help="Run in test mode using pre-defined test cases")
     # Parse the command-line arguments
     args = parser.parse_args()
     # If no commnad is provided assume assess
+
+    
+
     if not args.command:
         print("No command provided, defaulting to 'assess'")
         args.command = 'assess'
@@ -335,6 +401,24 @@ def main():
 
 
     cex_path = None
+
+    if args.test:
+        model = get_model("gpt-4o-2024-08-06", config["temperature"], log_directory)
+        print("Running in test mode")
+        #if current dir includes the file regression_test_cases.json
+        if Path("regression_test_cases.json").exists():
+            filename= "regression_test_cases.json"
+        else:
+            filename ="src/regression_test_cases.json"
+        run_tests(filename, config, log_directory, model)
+        # Call a test framework or handle test logic here
+        # For example:
+        # run_tests(TEST_CASES_FILE, OUTPUT_FILE, LLM_API_KEY, CONFIG, LOG_DIRECTORY)
+        exit(0)
+    else:
+        if not args.program:
+            print("Error: No program file provided")
+            return 
 
     # Handle the 'assess' command
     if args.command == 'assess':
