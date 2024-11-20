@@ -95,10 +95,10 @@ def print_tree(elements):
         with open("tasks.txt", "a") as f:
             if is_comment:
                 element = element.replace("\n", "\n" + indent+"#")
-                # if "the if part of the statement" in type:
-                #     print(f"{indent}#State of the program after the if part has been executed: {element}", file=f)
-                # if "the else statement of the if-else block" in type:
-                #     print(f"{indent}#State of the program after the else part has been executed: {element}", file=f)
+                if "the printable if part of the statement" in type:
+                    print(f"{indent}#State of the program after the if part has been executed: {element}", file=f)
+                if "the printable else statement of the if-else block" in type:
+                    print(f"{indent}#State of the program after the else part has been executed: {element}", file=f)
                 if "a summary of the whole if-else block" in type:
                     print(f"{indent}#State of the program after the if-else block has been executed: {element}", file=f)
                 elif "a summary of the whole if block" in type:

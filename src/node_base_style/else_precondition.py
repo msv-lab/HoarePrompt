@@ -70,7 +70,8 @@ if condition:
 ```
 {program_fragment}
 ```
-Your task is to complete the  postcondition . Give the overall state of the program for the program after it does not enter the if condition and instead enters the else. Follow the format Postcondition: **the calculated postcondition**
+Your task is to complete the  postcondition .All the information of the precondition must be included in the postcondition and additionally the negation of the if condition must also be included. Give the overall state of the program for the program after it does not enter the if condition and instead enters the else. 
+Follow the format Postcondition: **the calculated postcondition**
 """
 
 

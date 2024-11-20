@@ -116,6 +116,46 @@ def pprint_else_stmt(cmd: ast.AST | list) -> str:
         return "No elif or else block found"
     else:
         return "else :"
+
+
+def pprint_ast_node(node):
+    """
+    Pretty-print an AST node in its original Python code format.
+    """
+    if isinstance(node, list):
+        # If it's a list of AST nodes, join them with newlines
+        return "\n".join(ast.unparse(stmt).strip() for stmt in node)
+    elif isinstance(node, ast.AST):
+        # If it's a single AST node, unparse it
+        return ast.unparse(node).strip()
+    else:
+        raise ValueError("Input must be an ast.AST node or a list of ast.AST nodes.")
+    
+def pprint_else_stmt2(node):
+    """
+    Pretty-print the 'else' or 'elif' part of an if-else AST node, including proper formatting.
+    """
+    if not isinstance(node, ast.If):
+        raise ValueError("Input must be an ast.If node")
+
+    # Handle the `orelse` part
+    if node.orelse:
+        # Check if the `orelse` starts with another `If` node (elif case)
+        first_orelse = node.orelse[0]
+        if isinstance(first_orelse, ast.If):
+            # Handle `elif` case
+            condition = ast.unparse(first_orelse.test).strip()  # Get the condition of the elif
+            body = "\n".join("    " + line for line in ast.unparse(first_orelse.body).strip().splitlines())
+            # Recursive call to handle the next part of the elif chain
+            remaining = pprint_else_stmt(first_orelse)
+            return f"elif {condition}:\n{body}\n{remaining}"
+        else:
+            # Handle `else` case
+            body = "\n".join("    " + line for line in ast.unparse(node.orelse).strip().splitlines())
+            return f"else:\n{body}"
+    else:
+        # If there is no `orelse`, return an empty string
+        return ""
     
 def pprint_try_stmt(cmd: ast.AST | list) -> str:
     if isinstance(cmd, list):
