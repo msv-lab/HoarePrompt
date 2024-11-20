@@ -1,6 +1,6 @@
 import ast
 
-from node_base_style.hoare_triple import State, Triple, IfTriple, FuncTriple, TryTriple, pprint_cmd, pprint_else_stmt, pprint_if_stmt, pprint_try_stmt, pprint_except_stmt
+from node_base_style.hoare_triple import State, Triple, IfTriple, FuncTriple, TryTriple, pprint_cmd, pprint_else_stmt, pprint_if_stmt, pprint_try_stmt, pprint_except_stmt, pprint_else_stmt2
 from node_base_style.general import complete_triple
 from node_base_style.if_statement import complete_if_triple
 from node_base_style.function_definition import complete_func_triple, get_func_def
@@ -44,6 +44,7 @@ class PostconditionAnalyzer:
         if isinstance(triple.command,
                       (ast.Assign, ast.AugAssign, ast.Expr, ast.Raise, ast.Pass, ast.Break, ast.Continue)):
             post = complete_triple(triple, self.model)
+            print(f"We are analysing a simple command: {pprint_cmd(triple.command)}")
             if not self.inside_loop: # if we are not inside a loop
                 if type != "":
                     self.collected.append((str(post), depth, f"simple command in {type}", pprint_cmd(triple.command), False))
@@ -84,7 +85,11 @@ class PostconditionAnalyzer:
         # Case for if statements
         if isinstance(triple.command, ast.If):
             pre = triple.precondition
+            
+            
             condition = ast.unparse(triple.command.test)
+            
+            if_return = False
             #push the current index of the  self.collected list in the current stack
             self.index_stack.append(len(self.collected))
             extended_if_precondition= pre
@@ -93,36 +98,82 @@ class PostconditionAnalyzer:
             # Find the postcondition for the if body
             then_completion = self.complete_triple_cot(Triple(extended_if_precondition, triple.command.body, State.UNKNOWN), depth=depth+1, type="if part")
             if_post = then_completion
-            if not self.inside_loop:
-                self.collected.append((str(if_post), depth, "the if part of the statement", pprint_if_stmt(triple.command), True))
+            if_return = is_return_unavoidable(triple.command.body)
+
+            if not self.inside_loop :
+                if if_return:
+                    # print("AAAAAAAAAAAAAAAAAAAAAAAA")
+                    self.collected.append((str(if_post), depth, "the if part of the statement", pprint_if_stmt(triple.command), True))
+                else:
+                    # print("CCCCCCCCCCCCCCCCCCCC")
+                    self.collected.append((str(if_post), depth, "the if part of the statement", pprint_if_stmt(triple.command), True))
             
             #if we are inside an if statement and there's a return statement, collect the postcondition and we are done for this recursion
             # if depth >= 1 and any(isinstance(node, ast.Return) for node in ast.walk(triple.command)) and self.got_return:
             #     self.got_return = False
             #     self.collected_returns.append((str(if_post),self.last_return_depth))
             #     self.last_return_depth=0
+            if contains_return(triple.command.body)  and self.got_return:
+                self.got_return = False
+                self.collected_returns.append((str(if_post),self.last_return_depth))
+                self.last_return_depth=0
 
-
+            else_return =False
             else_post = None
             if triple.command.orelse:
+
                 extended_else_precondition =pre
                 if self.first_for:
                     extended_else_precondition= complete_else_precondition(pre, f"if ({condition}):", self.model)
-                # If there is an else part, find the postcondition for it
+                
                 else_completion = self.complete_triple_cot(Triple(extended_else_precondition, triple.command.orelse, State.UNKNOWN),
                                                            depth=depth+1, type="else part")
                 else_post = else_completion
-                if not self.inside_loop:
-                    self.collected.append((str(else_post), depth, "the else statement of the if-else block", pprint_else_stmt(triple.command), True))
+                else_return = is_return_unavoidable(triple.command.orelse)
+
+                if not self.inside_loop :
+                    if else_return:
+                        # print("BBBBBB")
+                        self.collected.append((str(else_post), depth, "the else statement of the if-else block", pprint_else_stmt(triple.command), True))
+                    else:
+                        # print("DDDDDDDDDDDDDDD")
+                        self.collected.append((str(else_post), depth, "the else statement of the if-else block", pprint_else_stmt(triple.command), True))
                 # If we are inside a else  and there's a return statement, collect the postcondition and we are done for this recursion
                 # if depth >= 1 and any(isinstance(node, ast.Return) for node in ast.walk(triple.command)) and self.got_return:
                 #     self.got_return = False
                 #     self.collected_returns.append((str(else_post),self.last_return_depth))
                 #     self.last_return_depth=0
-
+                
+                if contains_return(triple.command.orelse) and self.got_return:
+                    self.got_return = False
+                    self.collected_returns.append((str(else_post),self.last_return_depth))
+                    self.last_return_depth=0
             # Create an IfTriple to represent the if statement with its branches and then compute the overall post condition
             if_triple = IfTriple(pre, triple.command, if_post, else_post, State.UNKNOWN)
-            post = complete_if_triple(if_triple, self.model)
+
+
+            #if we are inside 2nd or 3rd iteration of loop lets do it the traditional way
+            if not self.first_for:
+                post = complete_if_triple(if_triple, self.model)
+            else:
+                if triple.command.orelse: #there is an else
+                    #if only the if statement has high level return then we use only the else postcondition
+                    if if_return and not else_return:
+                        post = else_post
+                    #if only the else statement has high level return then we use only the if postcondition
+                    elif else_return and not if_return:
+                        post = if_post
+                    #if both have high level return then we use the precondition as the postcondition
+                    elif else_return and if_return:
+                        post = pre
+                    else:
+                        post = complete_if_triple(if_triple, self.model)
+                else: #there is no else
+                    if not if_return: #single if statement with no return
+                        post = complete_if_triple(if_triple, self.model)
+                    else: #single if statement with return
+                        post= complete_else_precondition(pre, f"if ({condition}):", self.model)
+
             #if this was an if -else statement keep the postcondition for the total if -else otherwise we insert it with type if-statement
             
             #if we wanna merge the output state of the if-else statement , currently not used .This uses the merge.py and could be used for example in longer postconditions
@@ -131,18 +182,17 @@ class PostconditionAnalyzer:
             
             #pop the  index of where the if statement starts from the stack
             current_index = self.index_stack.pop()
-            if not self.inside_loop: # if we are not inside a loop
-                if triple.command.orelse:
+            if not self.inside_loop :
+                if post == pre:
+                    self.collected.append((str(post), depth, "a non printable summary of the whole if-else block", "", False))
+                elif triple.command.orelse:
                     self.collected.append((str(post), depth, "a summary of the whole if-else block", "", False))
                 else:
                     self.collected.append((str(post), depth, "a summary of the whole if block", "", False))
             
            
             # If we are inside a function and there's a return statement, collect the postcondition and we are done for this recursion
-            if any(isinstance(node, ast.Return) for node in ast.walk(triple.command)) and self.got_return and depth ==1:
-                self.got_return = False
-                self.collected_returns.append((str(post),self.last_return_depth))
-                self.last_return_depth=0
+            
                 
             return post
 
@@ -374,10 +424,12 @@ class PostconditionAnalyzer:
             
             #sort the collected items by depth
             self.collected=sort_tasks_by_depth(self.collected)
-
+            
             #pretty print the collected items
             total_code=sort_post_by_depth(self.collected)
+           
             total_code=print_tree(total_code)
+            
 
             #Store the return conditions in a file for debugging
             with open("tasks.txt", "a") as f:
@@ -404,6 +456,76 @@ def compute_postcondition(model, precondition, program, config):
     triple = Triple(precondition, parsed_code, State.UNKNOWN)
     postcondition = analyzer.complete_triple_cot(triple)
     return postcondition
+
+
+
+def is_return_unavoidable(command):
+    """
+    Check if every path through the given AST node includes a `return` statement.
+    If there exists at least one path without a `return`, return False.
+    Otherwise, return True.
+    """
+    def path_avoids_return(node_or_statements):
+        """
+        Recursively check if there's a path through the given AST node or list of statements
+        that avoids encountering a return statement.
+        """
+        # Handle a single node or a list of nodes
+        if isinstance(node_or_statements, list):
+            # Process each statement in the list
+            for stmt in node_or_statements:
+                if not path_avoids_return(stmt):
+                    return False
+            return True
+        elif isinstance(node_or_statements, ast.Return):
+            # This path encounters a return
+            return False
+        elif isinstance(node_or_statements, (ast.If, ast.While, ast.For)):
+            # Check both the body and the orelse (if any)
+            body_avoids = path_avoids_return(node_or_statements.body)
+            orelse_avoids = path_avoids_return(node_or_statements.orelse)
+            # If neither the body nor the orelse avoids a return, the path is terminal
+            return body_avoids or orelse_avoids
+        elif isinstance(node_or_statements, ast.FunctionDef):
+            # Ignore nested function definitions
+            return True
+        elif isinstance(node_or_statements, (ast.Break, ast.Continue)):
+            # Break or continue does not prevent further execution
+            return True
+        elif hasattr(node_or_statements, 'body'):
+            # General case for nodes with a body attribute (e.g., Module, ClassDef)
+            return path_avoids_return(node_or_statements.body)
+        else:
+            # Other nodes allow execution to continue
+            return True
+
+    # Handle the top-level input
+    if isinstance(command, list):
+        # If the input is a list, process each node
+        return not path_avoids_return(command)
+    elif isinstance(command, ast.AST):
+        # If the input is a single AST node, process it directly
+        return not path_avoids_return([command])
+    else:
+        raise ValueError("Input must be an ast.AST or a list of ast.AST nodes.")
+    
+def contains_return(body):
+    """
+    Check if an AST node or a list of AST nodes contains a Return statement.
+    """
+    if isinstance(body, list):
+        # Wrap the list in an artificial container node like `ast.Module`
+        container = ast.Module(body=body, type_ignores=[])
+    elif isinstance(body, ast.AST):
+        # Use the node as-is if it's already an AST node
+        container = body
+    else:
+        raise ValueError("Input must be an ast.AST node or a list of ast.AST nodes.")
+
+    # Use ast.walk to check for the presence of a Return node
+    return any(isinstance(node, ast.Return) for node in ast.walk(container))
+
+
 
 def replace_functionality(tree: str, functionality: str) -> str:
     # Define the marker line after which we want to replace content

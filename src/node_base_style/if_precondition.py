@@ -70,7 +70,8 @@ if condition:
 ```
 {program_fragment}
 ```
-Your task is to complete the  postcondition . Give the overall state of the program for the program after it enters the if condition. Follow the format Postcondition: **the calculated postcondition**
+Your task is to complete the  postcondition . All the information of the precondition must be included in the postcondition. Give the overall state of the program for the program after it enters the if condition.
+Follow the format Postcondition: **the calculated postcondition**
 """
 
 

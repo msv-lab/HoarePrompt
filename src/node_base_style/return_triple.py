@@ -11,13 +11,13 @@ I am giving you some examples to understand the task better. Then I am giving yo
 
 
 Example1:
-Initial State: `str` is a string
+Initial State: `str` is a string, 'str' has 3 or more characters
 ```
 eturn str
 ```
 Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate the result.
 Example Answer:
-Output State: **The program returns string 'str'**
+Output State: **The program returns string 'str' that has 3 or more characters **
 
 
 Example2:
@@ -42,14 +42,14 @@ Output State: **The program returns 4 or 6**
 
 
 Example4:
-Initial State: `x` is 1, `y` is 0, `z` is 0
+Initial State: `x` is 1, `y` is  greater than 3 , `z` is 0
 ```
 retrun y+x
 ```
 Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate the result.
 Example Answer: 
 `y' is 0 and 'x' is one so the program returns  0+1=1.
-Output State: **`The program returns 1**
+Output State: **`The program returns y that is greater than 3 plus 1**
 
 xample4:
 Initial State: `count' contains the number of numbers greater than 1 in the list `numbers`, 'numbers' is a list of integers, 'total' is 0
@@ -66,7 +66,8 @@ Initial State: {pre}
 ```
 {program}
 ```
-Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate what the program returns. You must adhere to the text format: Output State: **output state**.
+Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate what the program returns. Any variable or value that is included in the return, describe all the information we have for it.
+You must adhere to the text format: Output State: **output state**.
 """
 
 # This is the main function, it completes the prompt, queries the model and extracts the result, meaining the output state of that program part
