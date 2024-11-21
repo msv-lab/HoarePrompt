@@ -1,6 +1,6 @@
 import ast
 
-from node_base_style.hoare_triple import State, Triple, IfTriple, FuncTriple, TryTriple, pprint_cmd, pprint_else_stmt, pprint_if_stmt, pprint_try_stmt, pprint_except_stmt, pprint_else_stmt2
+from node_base_style.hoare_triple import State, Triple, IfTriple, FuncTriple, TryTriple, pprint_cmd, pprint_else_stmt, pprint_if_stmt, pprint_try_stmt, pprint_except_stmt, pprint_else_stmt2, pprint_if_else
 from node_base_style.general import complete_triple
 from node_base_style.if_statement import complete_if_triple
 from node_base_style.function_definition import complete_func_triple, get_func_def
@@ -35,6 +35,7 @@ class PostconditionAnalyzer:
         self.inside_loop= False #flag to check if we are inside a loop
         self.last_loop_depth = 1000 # the depth of the last loop statement
         self.first_for = True
+        self.got_if_else_return = False #if both the if and the else branch have unavoidable return statements
         
     # Core recursive method to compute the postcondition of a Triple .
     def complete_triple_cot(self, triple: Triple, depth=0, type ="") :
@@ -80,12 +81,16 @@ class PostconditionAnalyzer:
                 #self.collected.append((str(completion), depth))
                 if self.got_return:
                     break
+                if self.got_if_else_return:
+                    print("Wassup")
+                    self.got_if_else_return = False
+                    break
             return pre
         
         # Case for if statements
         if isinstance(triple.command, ast.If):
             pre = triple.precondition
-            
+            self.got_if_else_return = False 
             
             condition = ast.unparse(triple.command.test)
             
@@ -148,9 +153,18 @@ class PostconditionAnalyzer:
                     self.got_return = False
                     self.collected_returns.append((str(else_post),self.last_return_depth))
                     self.last_return_depth=0
+
             # Create an IfTriple to represent the if statement with its branches and then compute the overall post condition
             if_triple = IfTriple(pre, triple.command, if_post, else_post, State.UNKNOWN)
-
+            # print("AAAAAAA")
+            # print(pprint_if_stmt(triple.command))
+            # print("BBBBBBBBB")
+            # print(pprint_else_stmt(triple.command))
+            # print("CCCCCCCCC")
+            # print(pprint_if_else(triple.command))
+            # print("DDDDDDDDDD")
+            # print(pprint_cmd(triple.command))
+            # print("EEEEEEEEEE")
 
             #if we are inside 2nd or 3rd iteration of loop lets do it the traditional way
             if not self.first_for:
@@ -192,7 +206,8 @@ class PostconditionAnalyzer:
             
            
             # If we are inside a function and there's a return statement, collect the postcondition and we are done for this recursion
-            
+            if if_return and else_return:
+                self.got_if_else_return = True
                 
             return post
 
@@ -418,9 +433,9 @@ class PostconditionAnalyzer:
             #get the complete function reasoning from the llm
             final= complete_func_triple(func_triple, self.model)
             
-        
+            
             #append the final reasoning to the beggining of the collected list
-            self.collected.append((str(final), depth, "the summary for the whole function",def_str , True))
+            self.collected.append((str(final).strip(), depth, "the summary for the whole function",def_str , True))
             
             #sort the collected items by depth
             self.collected=sort_tasks_by_depth(self.collected)
