@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 import ast
 import astor
+from typing import Union
 
 # Enum to define different states of the program or variables 
 class State(Enum):
@@ -86,6 +87,41 @@ def pprint_cmd(cmd: ast.AST | list) -> str:
     else:
         return astor.to_source(cmd)
     
+
+
+def pprint_if_else(cmd: Union[ast.AST, list]) -> str:
+    """
+    Recursively pretty-print an AST if-else statement as a string,
+    handling nested if-else (including elif cases).
+    """
+    def helper(node, indent=0):
+        spaces = " " * indent
+        result = ""
+        if isinstance(node, ast.If):
+            # Append the 'if' condition
+            result += f"{spaces}if {ast.unparse(node.test)}:\n"
+            # Append the 'if' body
+            for stmt in node.body:
+                result += f"{spaces}    {ast.unparse(stmt)}\n"
+            # Handle 'else' part
+            if node.orelse:
+                result += f"{spaces}else:\n"
+                for stmt in node.orelse:
+                    # Recursively process nested 'if' in 'else'
+                    if isinstance(stmt, ast.If):
+                        result += helper(stmt, indent + 4)
+                    else:
+                        result += f"{spaces}    {ast.unparse(stmt)}\n"
+        return result
+
+    if isinstance(cmd, list):
+        # Process a list of AST nodes
+        return "".join(helper(stmt) for stmt in cmd if isinstance(stmt, ast.If))
+    elif isinstance(cmd, ast.If):
+        # Process a single AST if-node
+        return helper(cmd)
+    else:
+        raise ValueError("Input must be an ast.If node or a list of ast.If nodes.")
 
 
 def pprint_if_stmt(cmd: ast.AST | list) -> str:

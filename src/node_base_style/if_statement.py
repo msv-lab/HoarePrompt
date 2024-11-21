@@ -1,4 +1,4 @@
-from node_base_style.hoare_triple import IfTriple, parse_stmt, State,  pprint_cmd
+from node_base_style.hoare_triple import IfTriple, parse_stmt, State,  pprint_cmd, pprint_if_else
 from node_base_style.helper import extract_postcondition, format_prompt
 
 # prompt template for asking the model to verify and describe if-statements
@@ -110,7 +110,7 @@ Your task is to complete the overall postcondition of the whole if else block. S
 
 # Function to complete the IfTriple by computing its overall postcondition using the model
 def complete_if_triple(incomplete_triple: IfTriple, model):
-    program = pprint_cmd(incomplete_triple.command)
+    program = pprint_if_else(incomplete_triple.command)
     prompt = VERIFYER_SYSTEM_PROMPT_IF.format(precondition=incomplete_triple.precondition,
                                               program_fragment=program,
                                               postconditions_if=incomplete_triple.if_postcondition,

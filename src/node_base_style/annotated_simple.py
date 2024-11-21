@@ -20,23 +20,19 @@ Use the format: RESULT: **Correct or Incorrect**.
 """
 
 PROMPT_COMPLEX = """
-You have been assigned the role of a program verifier. Your task is to determine the correctness of a given Python program based on the provided problem description. If the program is correct, that is it meets the requirements in the problem description, print "True"; otherwise, print "False". Partially correct programs should be considered incorrect. You have to use the source code to try to understand if there is any missing logic or edge cases that the code is not handling. 
-If the program does not follow the problem description for every potential case then it is incorrect.Since if for at least one input or potential case the program does not work then Correctness **False**.
-You are trying to find any potential case that the porgram does not does what the descriptions says.  If you can't think of an example of the ocde not working as expected then the code is correct.
-We have added some annotations within the code to help you understand the code and its logic. The annotations are in the form of comments and are inserted automatically so double check whether the annotations are correct or not and describe the code correctly.
-If the annotations are correct use them along with the code to determine the correctness of the code. If the annotations are incorrect then you can ignore them and just use the code to determine the correctness.
-You need to strictly follow the format Correctness: **True or False**.
+You have been assigned the role of a program verifier. Your task is to determineg the correctness of a given Python program based on the provided problem description . If the program is correct, that is it meets the requirements in the problem description, print "True"; otherwise, print "False". You need to strictly follow the format Correctness: **True or False**.
 
 # Your task:
-Problem description: {description}
+I am now giing you the problem description. This is what the function must do.
+PROBLEM DESCRIPTION: {description}
+This was the problem description. Lets move on to the  annotated program. The program must do what the problem description says for it to be correct.
+
 Annotated Program:
 ```
 {code}
 ```
-
-
-If the program does not follow the problem description for every potential case then it is incorrect. Then if even for one input or potential case the program does not work then Correctness **False** .You are trying to find any potential case that the porgram does not does what the descriptions says. But if you cant find an example where the program does not work as expected in the description and all the examples you think work correctly then the program is correct.
-You need to strictly follow the format Correctness: **True or False**. Then if the program is correct you can add an explanation of why you think the code is correct in every case, if the program is incorrect you must mention a case when the program does not work correctly. If you cant find a single case then the program is correct.
+The program is correct only if it meets the problem description! The problem description is defined before the program.  Return Correctness: **True** if the program follows the problem description, otherwise return Correctness: **False** if the program does not do what the problem description asks for for every potential case.
+If the program is correct explain why it always does what the problem description say. If it is incorrect explain why it does not do what the problem description says or a case where it doesnot follow the problem description.
 """
 
 # This is the main function, it completes the prompt, queries the model and extracts the result, meaining the output state of that program part

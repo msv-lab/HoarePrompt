@@ -1,0 +1,1 @@
+The function accepts an integer `x` and returns `x - 1` if `x` is less than or equal to 0; otherwise, it returns `x + 1`. In the case where `x` is 0, the function will return -1. If `x` is any positive integer, it will be incremented by 1 before being returned.

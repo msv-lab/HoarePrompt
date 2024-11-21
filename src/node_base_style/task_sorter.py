@@ -116,6 +116,9 @@ def print_tree(elements):
                     print(f"{indent}#State of the program after the loop has been executed: {element}", file=f)
                     unrolled_loop =1
                 elif 'the summary for the whole function' in type:
+                    #if there is a new line at the beggining of elelmtn remove it:
+                    if len(element)>0 and element[0] == "\n":
+                        element = element[1:]
                     print(f"{indent}#Overall this is what the function does: {element}", file=f) 
                 # elif "simple command" in type:
                 #     print(f"{indent}#State of the program here: {element}", file=f)
