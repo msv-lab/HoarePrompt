@@ -1,0 +1,69 @@
+[
+    {
+        "id": "test_022",
+        "precondition": "x is an integer",
+        "code": "if x > 0:\n    return 'Positive'\nelse:\n    y = -x",
+        "expected_postcondition": "x is an integer. x is 0 or negative. y is -x.",
+        "hoareprompt_postcondition": "`x` is an integer and less than or equal to 0; `y` is greater than or equal to 0",
+        "is_equivalent": true,
+        "reason": "Both postconditions describe the state of the variables `x` and `y` after the execution of the function. In both cases, `x` is described as an integer that is either 0 or negative, which aligns with \"x is an integer and less than or equal to 0\". The expected postcondition states that `y` is `-x`, which implies `y` is a non-negative integer (since `x` is 0 or negative). The computed postcondition confirms that `y` is greater than or equal to 0. Therefore, semantically, both postconditions describe the same state of the program where `x` is non-positive and `y` is non-negative."
+    },
+    {
+        "id": "test_023",
+        "precondition": "x is a positive integer",
+        "code": "if x % 2 == 0:\n    return 'Even'",
+        "expected_postcondition": "x is an odd positive integer.",
+        "hoareprompt_postcondition": "*`x` is a positive integer and `x` is an odd integer.",
+        "is_equivalent": true,
+        "reason": "Both postconditions describe the same logical state: that `x` is a positive integer and that `x` is odd. The expected postcondition combines these two characteristics into a single statement, while the computed postcondition explicitly lists them separately. Semantically, they both convey that `x` must be a positive integer and that it must be odd, thus aligning with each other in meaning."
+    },
+    {
+        "id": "test_024",
+        "precondition": "x is an integer",
+        "code": "if x > 10:\n    return 'Large'\nelif x > 0:\n    return 'Small'\nelse:\n    return 'Negative'",
+        "expected_postcondition": "x is an integer.",
+        "hoareprompt_postcondition": "x is an integer",
+        "is_equivalent": true,
+        "reason": "The expected and computed postconditions both state that \"x is an integer.\" Since they describe the same type for the variable x, they semantically describe the same logical program state. The wording is identical, and there is no difference in meaning."
+    },
+    {
+        "id": "test_025",
+        "precondition": "x and y are integers",
+        "code": "if x > y:\n    if y > 0:\n        return 'X greater and Y positive'\n    else:\n        z = x + y\nelse:\n    return 'X not greater'",
+        "expected_postcondition": "x and y are integers.  x > y , y <= 0 and z =x+y.",
+        "hoareprompt_postcondition": "`x` and `y` are integers; `x` is greater than `y`; `y` is less than or equal to 0; `z` is greater than `x` and less than or equal to `x`.",
+        "is_equivalent": false,
+        "reason": "The expected postcondition and the computed postcondition do not semantically describe the same state. In the expected postcondition, it indicates that `z` is equal to `x + y`. However, in the computed postcondition, it states that `z` is greater than `x` and less than or equal to `x`, which is a contradiction and does not logically align with the expected postcondition of `z = x + y`. Therefore, the states described in the postconditions are not equivalent."
+    },
+    {
+        "id": "test_026",
+        "precondition": "a is a string",
+        "code": "if len(a) > 5:\n    b = a.upper()\nelse:\n    return 'Too short'",
+        "expected_postcondition": "a is a string.  len(a) > 5, b is the uppercase version of a. ",
+        "hoareprompt_postcondition": "`a` is a string, and the length of `a` is greater than 5; `b` is the uppercase version of `a`",
+        "is_equivalent": true,
+        "reason": "Both the expected and computed postconditions semantically describe that `a` is a string with a length greater than 5, and `b` is the uppercase version of `a`. The wording is slightly different, but the logical meaning and state they describe are identical."
+    },
+    {
+        "id": "test_027",
+        "precondition": "x is an integer, y is an integer",
+        "code": "if x == y:\n    z = x + y\nelif x > y:\n    return 'X is greater'\nelse:\n    z = y - x",
+        "expected_postcondition": "x and y are integers. If x == y, z is the sum of x and y. If x < y, z is the difference between y and x.",
+        "hoareprompt_postcondition": "*`x` and `y` are integers. If `x` is equal to `y`, then `z` is set to `x + y`, which is equal to `2 * x`. If `x` is greater than `y`, the function returns 'X is greater'. Otherwise, if `x` is less than `y`, then `z` is set to `y - x`.",
+        "is_equivalent": false,
+        "reason": "The expected postcondition and the computed postcondition do not describe the same state semantically. While both postconditions agree on the conditions for when `x` is equal to `y` (i.e., `z` is set to the sum of `x` and `y`), they diverge when it comes to the case where `x < y`. In the expected postcondition, `z` is set to the difference between `y` and `x` when `x < y`. However, the computed postcondition introduces a third case where if `x > y`, the function returns a string 'X is greater', which is not mentioned in the expected postcondition. This additional scenario in the computed postcondition means the two are not semantically the same, as the expected postcondition provides no behavior or description for when `x > y`."
+    },
+    {
+        "id": "test_028",
+        "precondition": "x is an integer",
+        "code": "if x > 10:\n    return 'Greater than 10'\nelif x > 5:\n    y = x - 5\nelse:\n    return 'Five or less'",
+        "expected_postcondition": "x is an integer. X is less than or equal to 10 and greater than 5, y is x-5.",
+        "hoareprompt_postcondition": "`x` is an integer, `x` is greater than 5 and less than or equal to 10; `y` is either 1, 2, 3, 4, or 5",
+        "is_equivalent": true,
+        "reason": "Both postconditions describe the same range and relationship between `x` and `y`. The expected postcondition states that `x` is an integer between 6 and 10 inclusive, and `y` is `x - 5`. The computed postcondition also states that `x` is an integer between 6 and 10 inclusive (as it says `x` is greater than 5 and less than or equal to 10) and that `y` can be any of the values 1, 2, 3, 4, or 5, which directly corresponds to `y` being `x - 5` for each possible value of `x`. Thus, both postconditions describe the same logical program state."
+    },
+    {
+        "total_correct": 5,
+        "total": 7
+    }
+]
