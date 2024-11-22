@@ -81,7 +81,7 @@ def run_tests(test_cases_file, config, log_directory, model):
     })
     print(f"Total correct: {total_correct}/{total}")
     # Save results to a file
-    with (log_directory / 'regression_entailement.txt').open("w", encoding="utf-8") as f:
+    with (log_directory / 'regression_entailement.json').open("w", encoding="utf-8") as f:
             json.dump(results, f, indent=4)
 
 
