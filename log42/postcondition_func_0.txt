@@ -1,1 +1,0 @@
-The function `func_1` accepts a non-negative integer `n`. If `n` is less than or equal to 1, the function returns `n`. For all other cases where `n` is greater than 1, the function calculates the Fibonacci number at index n+1 and returns that value. The function correctly computes the Fibonacci sequence, updating `prev` and `curr` variables accordingly in a loop.

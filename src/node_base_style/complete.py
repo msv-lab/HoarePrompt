@@ -298,7 +298,8 @@ class PostconditionAnalyzer:
                 post = self.complete_triple_cot(Triple(original_pre, body_command, State.UNKNOWN), depth=depth, type=f"unrolled_loop_{i+1}")
                 unrolled_post = unrolled_post+f"{indent}#state of the program after unrolled loop {i+1}: {post} \n"
                 examples.append(Triple(original_pre, body_command, post))
-                original_pre = get_for_precondition(self.model, post, loop_head)
+                if i < k-1:
+                    original_pre = get_for_precondition(self.model, post, loop_head)
                 self.first_for = False
             self.first_for = True
 
@@ -359,7 +360,8 @@ class PostconditionAnalyzer:
                 post = self.complete_triple_cot(Triple(pre, body_command, State.UNKNOWN), depth=depth, type=f"unrolled_loop_{i+1}")
                 unrolled_post = unrolled_post+f"{indent}#state of the program after unrolled loop {i+1}: {post} \n"
                 examples.append(Triple(pre, body_command, post))
-                pre = get_precondition(self.model, post, while_head)
+                if i < k-1:
+                    pre = get_precondition(self.model, post, while_head)
                 self.first_for = False
             self.first_for = True
                 

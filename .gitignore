@@ -9,3 +9,4 @@ example/__pycache__
 example1/
 example2/
 src/HoarePrompt.egg-info
+logs/

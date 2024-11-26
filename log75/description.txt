@@ -1,1 +1,0 @@
-Calculate the cumulative product of all non-zero numbers in the list. If a 0 is encountered, then add the product so far and start again.

@@ -1,24 +1,15 @@
 [
     {
-        "id": "test_001",
-        "precondition": "n is an integer, total is 0",
-        "code": "for i in range(n):\n    total += i",
-        "expected_postcondition": "n is an integer, total is the sum of integers from 0 to n-1",
-        "hoareprompt_postcondition": "`total` is equal to the sum of integers from 0 to `n-1`, which is `(n-1)n/2`, `n` is a non-negative integer.",
+        "id": "test_002",
+        "precondition": "numbers is a list of integers, total is 0",
+        "code": "for num in numbers:\n    total += num",
+        "expected_postcondition": "numbers is a alist of integers, total is the sum of all integers in the list 'numbers'",
+        "hoareprompt_postcondition": "`total` is equal to the sum of all integers in `numbers`, `numbers` is a list of integers.",
         "is_equivalent": true,
-        "reason": "Both postconditions describe the same program state: the variable `total` holds the sum of the integers from 0 to `n-1`. The expected postcondition states this in a straightforward manner, while the computed postcondition provides a mathematical formula for the sum, `(n-1)n/2`, which is the correct formula for the sum of integers from 0 to `n-1`. Additionally, both postconditions ensure that `n` is an integer, with the computed postcondition further specifying that `n` is non-negative, which is a reasonable assumption for summing integers starting from 0. Thus, semantically, both postconditions describe the same logical state of the program."
+        "reason": "Both postconditions describe the same logical state of the program. The Expected Postcondition states that `numbers` is a list of integers and `total` is the sum of all integers in that list. The Computed Postcondition similarly indicates that `total` is equal to the sum of all integers in `numbers` and that `numbers` is a list of integers. Despite slight differences in wording, they both convey the same semantic meaning regarding the contents of `numbers` and the value of `total`."
     },
     {
-        "id": "test_003",
-        "precondition": "counter is an integer greater than 0, total is 0",
-        "code": "while counter > 0:\n    total += counter\n    counter -= 1",
-        "expected_postcondition": "total is the sum of integers from the initial value of 'counter' to 1, counter is 0",
-        "hoareprompt_postcondition": "`counter` is 0, `total` is the sum of all integers from 1 to the initial value of `counter`, which is (initial `counter` * (initial `counter` + 1)) / 2.",
-        "is_equivalent": true,
-        "reason": "Both postconditions describe the same end state of the program, albeit in slightly different terms. The Expected Postcondition states that `total` is the sum of integers from the initial `counter` value down to 1, and that `counter` is 0. The Computed Postcondition describes `total` as the sum of integers from 1 up to the initial `counter` value, using the arithmetic series formula `(initial counter * (initial counter + 1)) / 2` to compute this sum. Both descriptions ultimately represent the same summation process and result in the same value for `total`. Additionally, both postconditions indicate that `counter` is 0 at the end. Therefore, they are semantically the same."
-    },
-    {
-        "total_correct": 2,
-        "total": 2
+        "total_correct": 1,
+        "total": 1
     }
 ]

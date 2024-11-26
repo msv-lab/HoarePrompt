@@ -1,1 +1,0 @@
-The function `func_1` accepts an integer `x`. If `x` is greater than 0, it increments `x` by 1. If `x` is less than or equal to 0, it decrements `x` by 1. The function then returns the modified value of `x`.

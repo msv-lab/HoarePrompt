@@ -1,1 +1,0 @@
-The function func_1 accepts an integer parameter x and returns the updated value of x. If x is greater than 0, it increases x by 1. If x is less than or equal to 0, it decreases x by 1. The function handles both positive and non-positive values of x by adjusting x accordingly.

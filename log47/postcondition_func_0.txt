@@ -1,1 +1,0 @@
-The function func_1 accepts a non-negative integer n as a parameter and recursively calculates the sum of the results of calling func_1 with arguments n-1 and n-2. The function returns the result of this summation.
