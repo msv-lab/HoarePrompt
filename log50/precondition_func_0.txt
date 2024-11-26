@@ -1,1 +1,0 @@
-**Precondition**: **n is a non-negative integer.**

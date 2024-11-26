@@ -1,1 +1,0 @@
-find the average of the positive integers in a list.

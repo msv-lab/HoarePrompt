@@ -20,7 +20,7 @@ def get_response_from_file(file_path):
     return response.choices[0].message.content
 
 # Example usage
-file_path = '/home/jim/HoarePrompt/test.txt'  # Replace with your prompt file path
+file_path = '/home/jim/HoarePrompt/log79/0000.prompt.md'  # Replace with your prompt file path
 # file_path = 'log_053/0000.prompt.md'  # Replace with your prompt file path
 
 response = get_response_from_file(file_path)

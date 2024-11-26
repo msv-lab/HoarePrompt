@@ -1,1 +1,0 @@
-The function func_1 accepts a non-negative integer n. If n is less than or equal to 1, the function returns n. Otherwise, it calculates and returns the nth term of the Fibonacci sequence. The function correctly calculates the nth Fibonacci term for all non-negative integers.
