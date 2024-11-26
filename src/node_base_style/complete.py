@@ -557,6 +557,6 @@ def replace_functionality(tree: str, functionality: str) -> str:
     before_marker = tree[:marker_pos + len(marker)]
     
     # Combine the content before the marker with the new functionality
-    modified_tree = before_marker + "\n" + functionality.strip()
+    modified_tree = before_marker  + functionality.strip()
     
     return modified_tree

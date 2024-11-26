@@ -87,7 +87,17 @@ def pprint_cmd(cmd: ast.AST | list) -> str:
     else:
         return astor.to_source(cmd)
     
-
+def pprint_outer_if_else(node: ast.If) -> str:
+    """
+    Pretty-print only the outermost 'if' condition and 'else:' if it exists.
+    """
+    if not isinstance(node, ast.If):
+        raise ValueError("Input must be an 'ast.If' node.")
+    
+    result = f"if {ast.unparse(node.test)}:\n"
+    if node.orelse:
+        result += "else:\n"
+    return result
 
 def pprint_if_else(cmd: Union[ast.AST, list]) -> str:
     """

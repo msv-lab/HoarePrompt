@@ -130,6 +130,24 @@ def remove_functionality(tree: str) -> str:
    
     return before_marker
 
+def find_function_definition(func_str: str) -> str:
+    """
+    Extracts the function definition (header) from a string representing a Python function,
+    including everything up to the first newline after 'def'.
+    
+    Args:
+        func_str (str): A string containing the Python function.
+    
+    Returns:
+        str: The function definition (header), or an empty string if not found.
+    """
+    # Match the first "def" keyword to the first newline
+    pattern = r"^\s*def.*?:\s*(#.*)?$"
+    match = re.search(pattern, func_str, re.MULTILINE)
+    if match:
+        return match.group().strip()
+    return ""
+
 
 def remove_imports_and_comments(script: str) -> tuple:
     # Parse the script into an AST
@@ -580,7 +598,7 @@ def assess(description, program, module_name, config, log_directory, cex_path):
     for index, func in enumerate(functions_list):
         # Extract the precondition from the description and program
         
-        precondition = extract_precondition(description, imports+'\n'+func, config, precondition_log_dir)
+        precondition = extract_precondition(description, func, config, precondition_log_dir)
         
         # Save the extracted precondition
         with (log_directory / f'precondition_func_{index}.txt').open("w", encoding="utf-8") as f:
@@ -644,9 +662,9 @@ def assess(description, program, module_name, config, log_directory, cex_path):
 # Extract the precondition from a description and program using a model
 def extract_precondition(description, program, config, log_directory):
     model = get_model(config["model"], config["temperature"], log_directory)
-    
+    program_def =find_function_definition(program)
     # Use the precondition extractor model to generate the precondition
-    return precondition_extractor.default(model, description, program)
+    return precondition_extractor.default(model, description, program_def)
 
 
 # if the assessment mode is set to 'naive', use the naive_question function to compute the postcondition
