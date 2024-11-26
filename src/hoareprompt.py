@@ -33,7 +33,9 @@ def load_test_cases(file_path):
 
 
 
-def run_tests(test_cases_file, config, log_directory, model):
+
+
+def run_tests(test_cases_file, config, log_directory, model, test_ids=[]):
     """Run the testing framework."""
     # Load test cases
     total_correct = 0
@@ -42,7 +44,12 @@ def run_tests(test_cases_file, config, log_directory, model):
     results = []
     test_cases = data["test_cases"]
 
-    
+    if test_ids:
+        test_cases = [case for case in test_cases if case["id"] in test_ids]
+        if not test_cases:
+            print("No matching test cases found for the provided IDs.")
+            return
+
 
     for case in test_cases:
         total += 1
@@ -340,7 +347,7 @@ def main():
     parser.add_argument('--postcondition', type=str, help="Path to the postcondition file")
     parser.add_argument('--cex', type=str, help="Output file for the counterexample")
     
-    parser.add_argument('--test', action='store_true', help="Run in test mode using pre-defined test cases")
+    parser.add_argument('--test', nargs='*', help="Run in test mode using pre-defined test cases. Optionally, provide test IDs.")
     # Parse the command-line arguments
     args = parser.parse_args()
     # If no commnad is provided assume assess
@@ -420,23 +427,28 @@ def main():
 
     cex_path = None
 
-    if args.test:
+    if args.test is not None:
+        # Get the model for testing
         model = get_model("gpt-4o-2024-08-06", config["temperature"], log_directory)
         print("Running in test mode")
-        #if current dir includes the file regression_test_cases.json
+        
+        # Check for regression_test_cases.json file
         if Path("regression_test_cases.json").exists():
-            filename= "regression_test_cases.json"
+            filename = "regression_test_cases.json"
         else:
-            filename ="src/regression_test_cases.json"
-        run_tests(filename, config, log_directory, model)
-        # Call a test framework or handle test logic here
-        # For example:
-        # run_tests(TEST_CASES_FILE, OUTPUT_FILE, LLM_API_KEY, CONFIG, LOG_DIRECTORY)
+            filename = "src/regression_test_cases.json"
+
+        # If specific test IDs are provided, use them; otherwise, run all tests
+        test_ids = args.test if args.test else []
+        print(f"Test IDs to run: {test_ids}" if test_ids else "Running all tests")
+        
+        # Run tests with the provided IDs
+        run_tests(filename, config, log_directory, model, test_ids)
         exit(0)
     else:
         if not args.program:
             print("Error: No program file provided")
-            return 
+            exit(1)
 
     # Handle the 'assess' command
     if args.command == 'assess':
