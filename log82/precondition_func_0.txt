@@ -1,1 +1,0 @@
-x is a list of integers, which may include zero and non-zero values.
