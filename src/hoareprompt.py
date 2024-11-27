@@ -738,7 +738,7 @@ def check_entailment(description, postcondition, program, module_name, config, l
         model_complex = get_model(config["model"], config["temperature"], log_directory/'entailment_complex')
         model_default = get_model(config["model"], config["temperature"], log_directory/'entailment_default')
     # Perform naive entailment checking, generating counterexamples if necessary
-    if config['entailment-mode'] == 'naive' and config['assessment-mode'] == 'postcondition-entailment:':
+    if config['entailment-mode'] == 'naive' and config['assessment-mode'] == 'postcondition-entailment':
         if not cex_path:
             if config["annotated"]:
                 if config["annotated-type"] == "simple":
@@ -805,7 +805,7 @@ def check_entailment_mult_func(description, postconditions_list, functions_list,
     
     
     # Perform naive entailment checking, generating counterexamples if necessary
-    if config['entailment-mode'] == 'naive' and config['assessment-mode'] == 'postcondition-entailment:':
+    if config['entailment-mode'] == 'naive' and config['assessment-mode'] == 'postcondition-entailment':
         if not cex_path:
             if config["annotated"]:
                 if config["annotated-type"] == "simple":
