@@ -1,10 +1,10 @@
 import ast
 
-from node_base_style.hoare_triple import State, Triple, IfTriple, FuncTriple, TryTriple, pprint_cmd, pprint_else_stmt, pprint_if_stmt, pprint_try_stmt, pprint_except_stmt
+from node_base_style.hoare_triple import State, Triple, IfTriple, FuncTriple, TryTriple, pprint_cmd, pprint_else_stmt, pprint_if_stmt, pprint_try_stmt, pprint_except_stmt, pprint_else_stmt2, pprint_if_else
 from node_base_style.general import complete_triple
 from node_base_style.if_statement import complete_if_triple
 from node_base_style.function_definition import complete_func_triple, get_func_def
-from node_base_style.loop import complete_loop_triple, get_while_head,get_for_loop_head
+from node_base_style.loop import complete_loop_triple, get_while_head,get_for_loop_head, ForToWhileTransformer
 from node_base_style.loop_1_unroll import complete_loop_triple_1_unroll
 from node_base_style.for_loop import complete_for_triple
 from node_base_style.for_loop_1_unroll import complete_for_triple_1_unroll
@@ -13,7 +13,7 @@ from node_base_style.loop_condition_first import get_while_precondition_first
 from node_base_style.for_condition import get_for_precondition
 from node_base_style.for_condition_first import get_for_precondition_first
 from node_base_style.try_statement import complete_try_triple
-from node_base_style.task_sorter import sort_tasks_by_depth, sort_post_by_depth, print_tree
+from node_base_style.task_sorter import sort_tasks_by_depth, pretty_print_tasks, sort_post_by_depth, print_tree
 from node_base_style.merger import merge_triple
 from node_base_style.tree import summarize_functionality_tree
 from node_base_style.return_triple import complete_return_triple
@@ -21,164 +21,151 @@ from node_base_style.if_precondition import complete_if_precondition
 from node_base_style.else_precondition import complete_else_precondition
 
 
+# This is a class responsible for analyzing the postcondition of a program given its precondition and source code
 class PostconditionAnalyzer:
-    """
-    Analyzes the postcondition of a program given its precondition and source code.
-    Handles recursive analysis, collects postconditions, and manages specific cases like loops and returns.
-    """
-    
     def __init__(self, model, config):
-        """
-        Initialize the PostconditionAnalyzer with a model and configuration.
-        """
         self.model = model
         self.config = config
-        self.collected_returns = [] # Store postconditions from return statements as a list of tuples (postcondition, depth)
-        self.collected=[] # General storage for collected postconditions, storing tuples (postcondition, depth, context, command, is_loop_related)
-
-        # Flags and state trackers
-        self.got_return = False              # Indicates if a return statement was encountered at the current recursion level
-        self.last_return = ""                # Stores the last return postcondition
-        self.last_return_depth = 0           # Depth of the last return statement
-        self.index_stack = []                # Stack to store indices during recursion
-        self.inside_loop = False             # Flag to indicate whether we're inside a loop
-        self.last_loop_depth = 1000          # Depth of the last loop encountered, initalised with a high value so any loop will have a lower depth
-        self.first_for = True                # Tracks if it's the first `for` loop in the current scope
-        self.got_if_else_return = False      # Flag to indicate both `if` and `else` branches have unavoidable return statements
-
-
+        # Collects postconditions from return statements as strings. but i also want it to collect the depth for each postcondition so a list of tuples
+        self.collected_returns = []
+        self.collected=[]
+        self.got_return = False # Flag to check if a return statement was encountered in the same level of recursion
+        self.last_return ="" # the last return statement
+        self.last_return_depth=0 # the depth of the last return statement
+        self.index_stack=[] #creates a stack to store the current index
+        self.inside_loop= False #flag to check if we are inside a loop
+        self.last_loop_depth = 1000 # the depth of the last loop statement
+        self.first_for = True
+        self.got_if_else_return = False #if both the if and the else branch have unavoidable return statements
+        
     # Core recursive method to compute the postcondition of a Triple .
     def complete_triple_cot(self, triple: Triple, depth=0, type ="") :
-        """
-        Core recursive method to compute the postcondition of a given Triple.
-
-        Args:
-            triple (Triple): The program triple containing precondition, command, and postcondition.
-            depth (int): Current depth in the recursion tree.
-            type (str): Context type for better understanding of the analysis (e.g., "if block").
-
-        Returns:
-            State: The computed postcondition.
-        """
-
-        #if the postcondition is already known, there was an error calling the function to compute it
         assert triple.postcondition == State.UNKNOWN
 
-        # Generic case: Handle simple commands like assignments or expressions
-        if isinstance(triple.command,(ast.Assign, ast.AugAssign, ast.Expr, ast.Raise, ast.Pass, ast.Break, ast.Continue)):
+        #generic easy case
+        if isinstance(triple.command,
+                      (ast.Assign, ast.AugAssign, ast.Expr, ast.Raise, ast.Pass, ast.Break, ast.Continue)):
             post = complete_triple(triple, self.model)
-            
-            # Collect the postcondition if not inside a loop
-            if not self.inside_loop:
-                context = f"simple command in {type}" if type else "simple command"
-                self.collected.append((str(post), depth, context, pprint_cmd(triple.command), False))
-            
+            print(f"We are analysing a simple command: {pprint_cmd(triple.command)}")
+            if not self.inside_loop: # if we are not inside a loop
+                if type != "":
+                    self.collected.append((str(post), depth, f"simple command in {type}", pprint_cmd(triple.command), False))
+                else:
+                    self.collected.append((str(post), depth, "simple command", pprint_cmd(triple.command), False))
             return post
 
-        # Return case: Handle return statements
+        # Handle return statements
         if isinstance(triple.command, ast.Return):
             post = complete_return_triple(triple, self.model)
-            # If we're at depth >= 1 (just inside function), collect the return postcondition.
-            # If we are lower than depth 1, we are inside a loop or if statement , or try, so we don't collect the return postcondition, they will be collected in the higher level
-            if depth >= 1:
-                self.got_return = True
-                self.last_return = str(post)
-                self.last_return_depth = depth
-                
-                # Collect the return postcondition if not inside a loop
-                if not self.inside_loop:
-                    context = f"return statement in {type}" if type else "return statement"
-                    self.collected.append((str(post), depth, context, pprint_cmd(triple.command), False))
-                
+            # If we're at the first level of depth (inside a function), collect the return postcondition and we are done for this recursion
+            if depth >= 1 :
+                self.got_return = True # we got a return statement
+                self.last_return = str(post) # the last return statement
+                self.last_return_depth= depth # the depth of the last return statement
+                if not self.inside_loop: # if we are not inside a loop
+                    if type != "":
+                        self.collected.append((str(post), depth, f"return statement in {type}", pprint_cmd(triple.command),False))
+                    else:
+                        self.collected.append((str(post), depth, "return statement", pprint_cmd(triple.command), False))
+                return post
+                #self.collected_returns.append(str(post))
             return post
 
-        # List case: Handle compound statements (e.g., function body or code blocks)
+        # case where there are multiple statements, like a function body or a block of code
         # we dont really do anything here just analyse the blocks one by one by calling the complete_triple_cot recursively
         if isinstance(triple.command, list):
             pre = triple.precondition
-
             # Recursively compute the postcondition for each sub-command
             for subcmd in triple.command:
                 completion = self.complete_triple_cot(Triple(pre, subcmd, State.UNKNOWN), depth=depth, type=type)
                 pre = completion
-
-                # Exit early if a return statement or both branches of an if-else have returns
+                #self.collected.append((str(completion), depth))
                 if self.got_return:
                     break
                 if self.got_if_else_return:
-                    print("Exiting due to complete if-else returns.")
+                    print("Wassup")
                     self.got_if_else_return = False
                     break
-
             return pre
         
-        # If case : Handles the analysis of an AST `if-else` statement
+        # Case for if statements
         if isinstance(triple.command, ast.If):
-
             pre = triple.precondition
-            condition = ast.unparse(triple.command.test)  # Extract the condition as a string
-            self.got_if_else_return = False  # Reset the flag for if-else returns
-
-            # Store the starting index of the `if` statement in the collected list
+            self.got_if_else_return = False 
+            
+            condition = ast.unparse(triple.command.test)
+            
+            if_return = False
+            #push the current index of the  self.collected list in the current stack
             self.index_stack.append(len(self.collected))
-            
-           
-            # --- Handle the `if` branch ---
-            extended_if_precondition = pre # Initialize the extended precondition for the `if` branch
+            extended_if_precondition= pre
             if self.first_for:
-                # Extend precondition for the `if` condition if we are in the first unroll of a loop or not in a loop
                 extended_if_precondition = complete_if_precondition(pre, f"if ({condition}):", self.model)
+            # Find the postcondition for the if body
+            then_completion = self.complete_triple_cot(Triple(extended_if_precondition, triple.command.body, State.UNKNOWN), depth=depth+1, type="if part")
+            if_post = then_completion
+            if_return = is_return_unavoidable(triple.command.body)
 
-           # Compute the postcondition for the `if` branch
-            if_post = self.complete_triple_cot(
-                Triple(extended_if_precondition, triple.command.body, State.UNKNOWN), depth=depth + 1, type="if part"
-            )
-            if_return = is_return_unavoidable(triple.command.body) # Check if a return statement is unavoidable in the `if` branch
-
-
-            if not self.inside_loop:
-                self.collected.append(
-                        (str(if_post), depth, "the if part of the statement", pprint_if_stmt(triple.command), True)
-                    )
-
+            if not self.inside_loop :
+                if if_return:
+                    # print("AAAAAAAAAAAAAAAAAAAAAAAA")
+                    self.collected.append((str(if_post), depth, "the if part of the statement", pprint_if_stmt(triple.command), True))
+                else:
+                    # print("CCCCCCCCCCCCCCCCCCCC")
+                    self.collected.append((str(if_post), depth, "the if part of the statement", pprint_if_stmt(triple.command), True))
             
-            
-            # Collect return postconditions if present in the `if` branch
-            if contains_return(triple.command.body) and self.got_return:
+            #if we are inside an if statement and there's a return statement, collect the postcondition and we are done for this recursion
+            # if depth >= 1 and any(isinstance(node, ast.Return) for node in ast.walk(triple.command)) and self.got_return:
+            #     self.got_return = False
+            #     self.collected_returns.append((str(if_post),self.last_return_depth))
+            #     self.last_return_depth=0
+            if contains_return(triple.command.body)  and self.got_return:
                 self.got_return = False
-                self.collected_returns.append((str(if_post), self.last_return_depth))
-                self.last_return_depth = 0
+                self.collected_returns.append((str(if_post),self.last_return_depth))
+                self.last_return_depth=0
 
-            # --- Handle the `else` branch (if it exists) ---
+            else_return =False
             else_post = None
-            else_return = False
             if triple.command.orelse:
-                extended_else_precondition =pre
 
-                if self.first_for: 
-                    # Extend precondition for the `else` branch if we are not in a loop or if we are  in the first unroll of a loop
-                    extended_else_precondition = complete_else_precondition(pre, f"if ({condition}):", self.model)
+                extended_else_precondition =pre
+                if self.first_for:
+                    extended_else_precondition= complete_else_precondition(pre, f"if ({condition}):", self.model)
                 
-                # Compute the postcondition for the `else` branch
-                else_post = self.complete_triple_cot(
-                    Triple(extended_else_precondition, triple.command.orelse, State.UNKNOWN), depth=depth + 1, type="else part"
-                )
+                else_completion = self.complete_triple_cot(Triple(extended_else_precondition, triple.command.orelse, State.UNKNOWN),
+                                                           depth=depth+1, type="else part")
+                else_post = else_completion
                 else_return = is_return_unavoidable(triple.command.orelse)
 
-
-                if not self.inside_loop:
-                    self.collected.append(
-                            (str(else_post), depth, "the else statement of the if-else block", pprint_else_stmt(triple.command), True)
-                        )
+                if not self.inside_loop :
+                    if else_return:
+                        # print("BBBBBB")
+                        self.collected.append((str(else_post), depth, "the else statement of the if-else block", pprint_else_stmt(triple.command), True))
+                    else:
+                        # print("DDDDDDDDDDDDDDD")
+                        self.collected.append((str(else_post), depth, "the else statement of the if-else block", pprint_else_stmt(triple.command), True))
+                # If we are inside a else  and there's a return statement, collect the postcondition and we are done for this recursion
+                # if depth >= 1 and any(isinstance(node, ast.Return) for node in ast.walk(triple.command)) and self.got_return:
+                #     self.got_return = False
+                #     self.collected_returns.append((str(else_post),self.last_return_depth))
+                #     self.last_return_depth=0
                 
-                # Collect return postconditions if present in the `else` branch
                 if contains_return(triple.command.orelse) and self.got_return:
                     self.got_return = False
-                    self.collected_returns.append((str(else_post), self.last_return_depth))
-                    self.last_return_depth = 0
+                    self.collected_returns.append((str(else_post),self.last_return_depth))
+                    self.last_return_depth=0
 
-             # --- Compute the overall postcondition --- if necessary
+            # Create an IfTriple to represent the if statement with its branches and then compute the overall post condition
             if_triple = IfTriple(pre, triple.command, if_post, else_post, State.UNKNOWN)
+            # print("AAAAAAA")
+            # print(pprint_if_stmt(triple.command))
+            # print("BBBBBBBBB")
+            # print(pprint_else_stmt(triple.command))
+            # print("CCCCCCCCC")
+            # print(pprint_if_else(triple.command))
+            # print("DDDDDDDDDD")
+            # print(pprint_cmd(triple.command))
+            # print("EEEEEEEEEE")
 
             #if we are inside 2nd or 3rd iteration of loop lets do it the traditional way
             if not self.first_for:
@@ -196,20 +183,22 @@ class PostconditionAnalyzer:
                         post = pre
                     else:
                         post = complete_if_triple(if_triple, self.model)
-                else: # Single `if` branch without `else`
+                else: #there is no else
                     if not if_return: #single if statement with no return
                         post = complete_if_triple(if_triple, self.model)
                     else: #single if statement with return
                         post= complete_else_precondition(pre, f"if ({condition}):", self.model)
 
+            #if this was an if -else statement keep the postcondition for the total if -else otherwise we insert it with type if-statement
             
-            #pop the  index of where the if statement starts from the stack . not used currently
+            #if we wanna merge the output state of the if-else statement , currently not used .This uses the merge.py and could be used for example in longer postconditions
+            # merged_output = merge_triple(Triple(post, triple.command, State.UNKNOWN), self.model)
+            # post = merged_output
+            
+            #pop the  index of where the if statement starts from the stack
             current_index = self.index_stack.pop()
-
-            # Collect the summary for the entire `if-else` block
             if not self.inside_loop :
                 if post == pre:
-                    # If the postcondition is the same as the precondition, we don't need to print the entire if-else block
                     self.collected.append((str(post), depth, "a non printable summary of the whole if-else block", "", False))
                 elif triple.command.orelse:
                     self.collected.append((str(post), depth, "a summary of the whole if-else block", "", False))
@@ -217,7 +206,7 @@ class PostconditionAnalyzer:
                     self.collected.append((str(post), depth, "a summary of the whole if block", "", False))
             
            
-           # If both `if` and `else` branches return, set the flag
+            # If we are inside a function and there's a return statement, collect the postcondition and we are done for this recursion
             if if_return and else_return:
                 self.got_if_else_return = True
                 
@@ -225,58 +214,47 @@ class PostconditionAnalyzer:
 
         # Case for try except blocks
         if isinstance(triple.command, ast.Try):
-            
-            pre = triple.precondition
-
-            # Push the current index of `self.collected` into the stack, not currently used
+           
+            #push the current index of the  self.collected list in the stack
             self.index_stack.append(len(self.collected))
                
-            # --- Handle the `try` block ---
-            try_commands = triple.command.body  # Commands inside the `try` block
-            try_completion = self.complete_triple_cot(
-                Triple(pre, try_commands, State.UNKNOWN), depth=depth + 1, type="try block"
-            )
-        
+            pre = triple.precondition
+            try_command = triple.command.body # Commands inside the try block
+            except_commands = triple.command.handlers # Commands inside the first except block
+
+            # First get the postcondition for the try block
+            try_completion = self.complete_triple_cot(Triple(pre, try_command, State.UNKNOWN), depth=depth+1, type = "try block")
             
             if not self.inside_loop: #if we are not inside a loop
                 self.collected.append((str(try_completion), depth, "the try block", pprint_try_stmt(triple.command), True))
-            
-            # --- Handle `except` blocks ---
+            # Then get the postcondition for the except block and handle multiple except blocks
             except_completions = []
-            for i, handler in enumerate(triple.command.handlers):
-                except_commands = handler.body  # Commands inside the current `except` block
-                except_completion = self.complete_triple_cot(
-                    Triple(State.UNKNOWN, except_commands, State.UNKNOWN), depth=depth + 1, type=f"except block_{i + 1}"
-                )
+            for handler, i in zip(triple.command.handlers, range(len(triple.command.handlers))):
+                except_command = handler.body
+                except_completion = self.complete_triple_cot(Triple(State.UNKNOWN, except_command, State.UNKNOWN), depth=depth+1, type=f"except block_{i+1}")
                 except_completions.append(except_completion)
-
                 if not self.inside_loop:
                     self.collected.append((str(except_completion), depth, f"the except block {i+1}", pprint_except_stmt(handler), True))
 
-             # Combine the results of all `except` blocks into a single string for clarity
-            combined_except_postconditions = "\n".join(
-                [f"except_{i + 1}: {exc}" for i, exc in enumerate(except_completions)]
-            )
+            #for the except_completitions make them into one string saying that each one is the except number i
+            except_completion = "\n".join([f"except_{i+1}: {exc}" for i, exc in enumerate(except_completions)])
+            # Create a TryTriple to represent the try-except block and then compute the overall postcondition
+            try_triple = TryTriple(pre, triple.command, try_command, try_completion, except_commands, except_completion,
+                                   State.UNKNOWN)
 
-            # --- Compute the overall postcondition ---
-            try_triple = TryTriple(
-                pre, triple.command, try_commands, try_completion, triple.command.handlers, combined_except_postconditions, State.UNKNOWN
-            )
+            #get the postoncdition for the whole try-except block
             post = complete_try_triple(try_triple, self.model)
-
 
             #if we wanna merge the output state of the try catch block , currently not used
             # merged_output = merge_triple(Triple(post, triple.command, State.UNKNOWN), self.model)
-            # post = merged_output
+            # post = erged_output
 
-            
-            current_index = self.index_stack.pop() #get the index of the whole try-except block and insert the postcondition there, not currently used
-            # Collect a summary of the whole `try-except` block
+            #get the index of the whole try-except block and insert the postcondition there
+            current_index = self.index_stack.pop()
             if not self.inside_loop: #if we are not inside a loop
                 self.collected.append((str(post), depth, "a summary of the whole try-except block", "", False))
 
-            # --- Handle Return Collection ---
-            # Collect the postcondition if there's a `return` statement in the block
+            # If we are inside a function and there's a return statement, collect the postcondition and we are done for this recursion
             if any(isinstance(node, ast.Return) for node in ast.walk(triple.command)) and self.got_return and depth ==1:
                 self.collected_returns.append((str(post),self.last_return_depth))
                 self.last_return_depth=0
@@ -285,75 +263,71 @@ class PostconditionAnalyzer:
             return post
         
 
-       
+        # This is a tricky case. If the command is a for loop, we need to convert it to a while loop and then compute the postcondition
+        # if isinstance(triple.command, ast.For):
+        #     t = ForToWhileTransformer()
+        #     while_code = t.visit(triple.command)
+        #     new_triple = Triple(triple.precondition, while_code, State.UNKNOWN)
+        #     return self.complete_triple_cot(new_triple, depth=depth)
 
         # Case for for loops
         if isinstance(triple.command, ast.For):
-            k = self.config["loop-unrolling-count"]  # Number of loop unrolls from the config
+            k = self.config["loop-unrolling-count"]  # The unrolling parameter from the config
             body_command = triple.command.body  # The body of the for loop
             loop_head = get_for_loop_head(triple.command)  # The header of the for loop, e.g., `for x in y:`
-            # iterator_var = triple.command.target  # The loop variable, e.g., `x` in `for x in y:`
-            # iter_expression = triple.command.iter  # The iterable expression, e.g., `y` in `for x in y:`
 
-             # Push the current index of `self.collected` into the stack, not used currently
+            # Push the current element's index (entire for loop) into the index stack
             self.index_stack.append(len(self.collected))
 
-            # Track the initial precondition and initialize the unrolled postconditions
+            # List to store examples of unrolled runs of the loop
+            examples = []
+            
             pre = triple.precondition
-            original_pre = get_for_precondition_first(self.model, pre, loop_head)
+            iterator_var = triple.command.target  # The loop variable, e.g., `x` in `for x in y:`
+            iter_expression = triple.command.iter  # The iterable expression, e.g., `y` in `for x in y:`
+
+            # Generate the initial state of the loop variable for unrolling
+            original_pre =get_for_precondition_first(self.model, pre, loop_head)
+            indent = " " * ((depth + 1) * 4)
             unrolled_post = ""
-            examples = []  # Stores examples for each unrolled iteration
-
-            indent = " " * ((depth + 1) * 4)  # Indentation for nested blocks
-            self.inside_loop = True  # Flag to indicate we are inside a loop
-            self.first_for = True  # Flag for the first unroll
-            self.last_loop_depth = min(self.last_loop_depth, depth) #the highest level that there is a loop
-            depth += 1  # Increment depth for nested structure
-
-            # Unroll the loop `k` times
+            
+            self.inside_loop = True  # Mark that we are inside a loop to avoid annotation in the code tree
+            self.first_for = True # we are in the first unroll
+            self.last_loop_depth = min(self.last_loop_depth, depth)
+            depth += 1  # Increase depth since we’re inside the loop
             for i in range(k):
-                post = self.complete_triple_cot(
-                    Triple(original_pre, body_command, State.UNKNOWN),
-                    depth=depth,
-                    type=f"unrolled_loop_{i + 1}"
-                )
+                post = self.complete_triple_cot(Triple(original_pre, body_command, State.UNKNOWN), depth=depth, type=f"unrolled_loop_{i+1}")
                 unrolled_post = unrolled_post+f"{indent}#state of the program after unrolled loop {i+1}: {post} \n"
                 examples.append(Triple(original_pre, body_command, post))
-
-                # Update precondition for the next iteration , no need to do that for the last unroll since there is not gonna be next iteration
                 if i < k-1:
                     original_pre = get_for_precondition(self.model, post, loop_head)
-                self.first_for = False # we are no longer in the first unroll
+                self.first_for = False
+            self.first_for = True
 
-            
-            self.first_for = True # Reset first unroll flag
             depth -= 1  # Done with the loop, decrease depth
-
-            if self.last_loop_depth == depth:  # we will say we are no loger in a loop only if we are sure this is the highest level loop we are in
+            if self.last_loop_depth == depth:
                 self.last_loop_depth = 1000
                 self.inside_loop =  False # we are no longer inside a high level loop
 
             # Create a Triple for the entire for loop
             triple = Triple(triple.precondition, triple.command, State.UNKNOWN)
-            #single unroll case
             if k==1:
                 post = complete_for_triple_1_unroll(triple, self.model, examples)
-            else: #multiple unroll casse
+            else:
                 post = complete_for_triple(triple, self.model, examples)  # Aggregate the postconditions of the unrolled iterations
 
-            # Prepare the code tree representation
+            # Format loop body for code tree output with indentation and postconditions
             body_commands = pprint_cmd(body_command)
             body_commands = body_commands.replace("\n", "\n" + indent)
-            loop_summary = loop_head + "\n" + indent + body_commands
-            # Uncomment the following line if you want unrolled states in the code tree:
-            # loop_summary += f"\n{indent}# Unrolling the for loop {k} times for comprehension\n{unrolled_post}"
-
-            # Get the correct index of the self.collected list, not currently used
+            # Insert comments for unrolled states within the code tree
+            #uncomment the following line if you want the unrolled postconditions to be in the code tree
+            # body_commands = loop_head + "\n" + indent + body_commands + f"# Unrolling the for loop {k} times for comprehension\n{unrolled_post}"
+            body_commands = loop_head + "\n" + indent + body_commands 
+            # Store the summary of the whole loop in the code tree at the correct index
             current_index = self.index_stack.pop()
-
-            # Store the summary of the entire loop in `self.collected`
+            
             if not self.inside_loop: # if we are not inside a loop 
-                self.collected.append((str(post), depth, "summary of total for loop", loop_summary, False))
+                self.collected.append((str(post), depth, "summary of total for loop", body_commands, False))
 
             # Handle any return statements found within the loop
             if  any(isinstance(node, ast.Return) for node in ast.walk(triple.command)) and self.got_return and depth ==1:
@@ -367,137 +341,125 @@ class PostconditionAnalyzer:
         # Case for while loops
         if isinstance(triple.command, ast.While):
             k = self.config["loop-unrolling-count"] # the unrolling param from the config
-            while_head = get_while_head(triple.command)  # The loop header, e.g., `while condition:`
-            body_command = triple.command.body  # The body of the `while` loop
-        
-            #push the index of the current element (so the index of the whole while loop) in the collected list, not currently used
+            body_command = triple.command.body # the body of the while loop
+            while_head = get_while_head(triple.command) # the head of the while loop
+            #push the index of the current element (so the index of the whole while loop) in the collected list
             self.index_stack.append(len(self.collected))
             
-           # Track the initial precondition and initialize the unrolled postconditions
+            #list to store the examples of unrolled runs of the loop
+            examples = []
+            
             pre = triple.precondition
-            original_pre = get_while_precondition_first(self.model, pre, while_head)
-            unrolled_post = ""
-            examples = []  # Stores examples for each unrolled iteration
-
-            indent = " " * ((depth + 1) * 4)  # Indentation for nested blocks
-            self.last_loop_depth = min(self.last_loop_depth, depth) #make the last loop depth the highest level there is a loop
-            self.inside_loop = True  # Mark that we are inside a loop
-            self.first_for = True  # Reset first unroll flag
-            depth += 1  # Increment depth for nested structure
-
-            # Unroll the loop `k` times
+            original_pre = get_while_precondition_first(self.model, pre, while_head) # get the initial state of the loop for unrolling
+            # Unroll the loop by simulating 'k' iterations
+            self.last_loop_depth = min(self.last_loop_depth, depth)
+            self.inside_loop = True # we are inside a loop, so any postocnditions of the unrolled code should not be appended as annotations in the code tree
+            self.first_for = True
+            unrolled_post=""
+            indent = " " * ((depth+1) * 4)
+            depth = depth + 1 # increase the depth by 1 since we are inside a loop
             for i in range(k):
-                post = self.complete_triple_cot(
-                    Triple(original_pre, body_command, State.UNKNOWN),
-                    depth=depth,
-                    type=f"unrolled_loop_{i + 1}"
-                )                
+                post = self.complete_triple_cot(Triple(original_pre, body_command, State.UNKNOWN), depth=depth, type=f"unrolled_loop_{i+1}")
                 unrolled_post = unrolled_post+f"{indent}#state of the program after unrolled loop {i+1}: {post} \n"
                 examples.append(Triple(original_pre, body_command, post))
-
-                # Update precondition for the next iteration, only if we are not at the last unroll
                 if i < k-1:
                     original_pre = get_precondition(self.model, post, while_head)
                 self.first_for = False
-
-            self.first_for = True # Reset first unroll flag
+            self.first_for = True
+                
             depth = depth -1 # we are done with the loop so decrease the depth by 1
-
-            if self.last_loop_depth == depth: # we will say we are no loger in a loop only if we are sure this is the highest level loop we are in
+            if self.last_loop_depth == depth:
                 self.last_loop_depth = 1000
                 self.inside_loop =  False # we are no longer inside a high level loop
 
             # Create a Triple for the entire 'while' loop
             triple = Triple(triple.precondition, triple.command, State.UNKNOWN)
-            # Compute the overall postcondition for the entire loop, depending on if unroll =1 or multiple
             if k==1:
                 post = complete_loop_triple_1_unroll(triple, self.model, examples)
             else:
                 post = complete_loop_triple(triple, self.model, examples)
             
-            # Prepare the code tree representation
             body_commands = pprint_cmd(body_command)
-            body_commands = body_commands.replace("\n", "\n" + indent)
-            loop_summary = while_head + "\n" + indent + body_commands
-            # Uncomment the following line if you want unrolled states in the code tree:
-            # loop_summary += f"\n{indent}# In the following comments, we unroll the loop {k} times to help you understand its functionality\n{unrolled_post}"
-
-            # if we wanna merge the output state of the if-else statement , currently not used
-            # merged_output = merge_triple(Triple(post, triple.command, State.UNKNOWN), self.model)
-            # post = merged_output
-
-            # pop the correct index of the self.collecte dlist, not currently used
-            current_index = self.index_stack.pop()    
-
-            if not self.inside_loop: # if we are not inside a loop 
-                self.collected.append((str(post), depth, "a summary of the total loop", loop_summary , False))
             
-            # Handle any return statements inside the loop
+            body_commands = body_commands.replace("\n", "\n"+indent) #replace all nwe lines with indent + new line
+            # we are creating the whole loop for the code tree, with postconditions of every total unroll but without the code of the loop unrolled
+            #uncomment the following line if you want the unrolled postconditions to be in the code tree
+            # body_commands = while_head + "\n" +indent+ body_commands + f"# In the following comments we are unrolling the loop {k} times to help you understand its functionality\n {unrolled_post}"
+            body_commands = while_head + "\n" +indent+ body_commands 
+            #if we wanna merge the output state of the if-else statement , currently not used
+            # merged_output = merge_triple(Triple(post, triple.command, State.UNKNOWN), self.model)
+            # post =merged_output
+
+            # store the summary of the whole loop in the code tree at the correct index
+            current_index = self.index_stack.pop()    
+            if not self.inside_loop: # if we are not inside a loop 
+                self.collected.append((str(post), depth, "a summary of the total loop", body_commands , False))
             if any(isinstance(node, ast.Return) for node in ast.walk(triple.command)) and self.got_return and depth ==1:
                 self.collected_returns.append((str(post),self.last_return_depth))
                 self.last_return_depth=0
                 self.got_return = False
                 
+
             return post
 
         # Case for function definitions
         if isinstance(triple.command, ast.FunctionDef):
-            #initialise all the values, probably unnecessary since it is done when creating a postoncition analyser
-            self.collected_returns = []  #initialise the return lis
-            self.collected=[] #initialise the postocniditons list
+            self.collected_returns = []
+            self.collected=[]
             self.got_return = False # Flag to check if a return statement was encountered in the same level of recursion
             self.last_return ="" # the last return statement
             self.last_return_depth=0 # the depth of the last return statement
             self.index_stack=[] #creates a stack to store the current index
             self.inside_loop= False #flag to check if we are inside a loop
-
-
             pre = triple.precondition
             def_str = get_func_def(triple.command) # Get the function signature (the name plus input params of the func) as a string
             
-            # Analyze the function body recursively
+            #this is where the main job is being done by iterating over the body of the function
             self.complete_triple_cot(Triple(pre, triple.command.body, State.UNKNOWN), depth=1)
 
-            # Handle unprocessed return conditions
+            #if the got_return flag is True then the last_return has not been appended to the collected_returns
             if self.got_return:
-                self.collected_returns.append((self.last_return, self.last_return_depth))
+                self.collected_returns.append((self.last_return,self.last_return_depth))
                 self.got_return = False
-
-             # Format return conditions for multiple cases
             if len(self.collected_returns) > 1:
+                # add Case_{counter} to ecah return postcondition and new line at the end of it. but remember that the collected_returns is a list of tuples
                 self.collected_returns = [f"Case_{i+1}: {ret[0]}\n" for i, ret in enumerate(self.collected_returns)]
             else:
                 self.collected_returns = [f"{ret[0]}\n" for ret in self.collected_returns]
             return_conditions_str = "\n".join(self.collected_returns)
 
-            # Create a FuncTriple for the entire function
+            
+           
+
             func_triple = FuncTriple(triple.precondition, triple.command, def_str, triple.command.body,
                                     return_conditions_str, State.UNKNOWN)
             
-            # Generate the function reasoning using the LLM
+            #get the complete function reasoning from the llm
             final= complete_func_triple(func_triple, self.model)
             
             
-            # Append the reasoning to the collected items
+            #append the final reasoning to the beggining of the collected list
             self.collected.append((str(final).strip(), depth, "the summary for the whole function",def_str , True))
             
-            # Sort and format the collected items
-            self.collected = sort_tasks_by_depth(self.collected)
-            total_code = sort_post_by_depth(self.collected)
-            total_tree = print_tree(total_code)
+            #sort the collected items by depth
+            self.collected=sort_tasks_by_depth(self.collected)
+            
+            #pretty print the collected items
+            total_code=sort_post_by_depth(self.collected)
+           
+            total_code=print_tree(total_code)
+            
 
-            # Debugging: Save return conditions to a file
+            #Store the return conditions in a file for debugging
             with open("tasks.txt", "a") as f:
                 print(return_conditions_str, file =f)
             
-            # Add precondition as a comment at the beginning of the tree
-            total_tree = f"#State of the program right berfore the function call: {pre}\n" + total_tree
+            #add the precondition to the tree as comment in the begining
+            total_code = f"#State of the program right berfore the function call: {pre}\n" + total_code
 
-            # Summarize functionality and integrate it into the code tree
-            final = summarize_functionality_tree(total_tree, return_conditions_str, self.model)
-            updated_total_tree = replace_functionality(total_tree, final)
-
-            return (final, return_conditions_str, updated_total_tree)
+            final = summarize_functionality_tree(total_code, return_conditions_str, self.model)
+            updated_total_code = replace_functionality(total_code, final)
+            return (final, return_conditions_str, updated_total_code)
          
         # Handle import statements and assertions as they dont change the state
         if isinstance(triple.command, (ast.Import, ast.ImportFrom, ast.Assert)):
