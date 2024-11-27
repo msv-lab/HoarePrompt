@@ -591,7 +591,8 @@ def assess(description, program, module_name, config, log_directory, cex_path):
         print("Using naive assessment mode")
         return compute_postcondition_naive(description, cleaned_program, config, log_directory)
     # Ensure assessment mode is set to 'postcondition-entailment'
-    assert config['assessment-mode'] == 'postcondition-entailment'
+    assert config['assessment-mode'] in {'postcondition-entailment', 'total'}
+
     
     # Save the program and description to the log directory
     with (log_directory / str(module_name + '.py')).open("w", encoding="utf-8") as f:
@@ -648,6 +649,16 @@ def assess(description, program, module_name, config, log_directory, cex_path):
     # Check entailment to verify consistency with the description
     entailment_log_dir = log_directory / 'check_entailment'
     entailment_log_dir.mkdir(parents=True, exist_ok=True)
+
+    if config["assessment-mode"] == "total":
+        print("Using total entailment mode")
+        entailment_log_dir_simple = entailment_log_dir/'entailment_simple'
+        entailment_log_dir_simple.mkdir(parents=True, exist_ok=True)
+        entailment_log_dir_complex = entailment_log_dir/'entailment_complex'
+        entailment_log_dir_complex.mkdir(parents=True, exist_ok=True)
+        entailment_log_dir_default = entailment_log_dir/'entailment_default'
+        entailment_log_dir_default.mkdir(parents=True, exist_ok=True)
+
     if len(postconditions_list)==1:
         if cex_path:
             result = check_entailment(description, postcondition, imports+"\n" + global_code+"\n"+cleaned_program, module_name, config, entailment_log_dir, return_str, annotated_func,cex_path )
@@ -721,9 +732,13 @@ def compute_postcondition(precondition, program, config, log_directory):
 # Check if the postcondition implies compliance with the description using entailment
 def check_entailment(description, postcondition, program, module_name, config, log_directory, return_str, annotated_func, cex_path=None):
     model = get_model(config["model"], config["temperature"], log_directory)
-
+    if config["assessment-mode"] == "total":
+        print("Using total entailment mode")
+        model_simple = get_model(config["model"], config["temperature"], log_directory/'entailment_simple')
+        model_complex = get_model(config["model"], config["temperature"], log_directory/'entailment_complex')
+        model_default = get_model(config["model"], config["temperature"], log_directory/'entailment_default')
     # Perform naive entailment checking, generating counterexamples if necessary
-    if config['entailment-mode'] == 'naive':
+    if config['entailment-mode'] == 'naive' and config['assessment-mode'] == 'postcondition-entailment:':
         if not cex_path:
             if config["annotated"]:
                 if config["annotated-type"] == "simple":
@@ -752,6 +767,12 @@ def check_entailment(description, postcondition, program, module_name, config, l
                 reason = correctness[1].replace("Correctness: **False**", "")
                 cex_generator.output_cex(model, description, postcondition, program, config, cex_path, module_name, reason)
         return correctness[0]
+    elif config['entailment-mode'] == 'naive' and config['assessment-mode'] == 'total':
+            #special case to save time when running the experiments
+            correctness_simple = annotated_simple(description,  remove_functionality(annotated_func), model_simple)
+            correctness_complex= entailment_annotated.naive(model_complex, description, return_str, annotated_func, module_name, config, cex_path)
+            correctness_default = entailment.naive(model_default, description, postcondition, program, module_name, config, cex_path)
+            return [correctness_simple[0], correctness_complex[0], correctness_default[0]]
 
     print(f"Entailment mode {config['entailment-mode']} not supported, only naive is currently implemented")
     raise NotImplementedError
@@ -759,6 +780,11 @@ def check_entailment(description, postcondition, program, module_name, config, l
 # Check if the postcondition implies compliance with the description using entailment
 def check_entailment_mult_func(description, postconditions_list, functions_list, imports, global_code, module_name, config, log_directory, return_list, annotated_func_list,cex_path=None):
     model = get_model(config["model"], config["temperature"], log_directory)
+    if config["assessment-mode"] == "total":
+        model_simple = get_model(config["model"], config["temperature"], log_directory/'entailment_simple')
+        model_complex = get_model(config["model"], config["temperature"], log_directory/'entailment_complex')
+        model_default = get_model(config["model"], config["temperature"], log_directory/'entailment_default')
+
     program= imports+"\n"
     total_post=""
     functions =""
@@ -779,7 +805,7 @@ def check_entailment_mult_func(description, postconditions_list, functions_list,
     
     
     # Perform naive entailment checking, generating counterexamples if necessary
-    if config['entailment-mode'] == 'naive':
+    if config['entailment-mode'] == 'naive' and config['assessment-mode'] == 'postcondition-entailment:':
         if not cex_path:
             if config["annotated"]:
                 if config["annotated-type"] == "simple":
@@ -791,6 +817,7 @@ def check_entailment_mult_func(description, postconditions_list, functions_list,
                     raise NotImplementedError
             else:
                 correctness = entailment_mult_func.naive_mult_func(model, description, functions, module_name, config)
+        
         else:
             if config["annotated"]:
                 if config["annotated-type"] == "simple":
@@ -806,6 +833,12 @@ def check_entailment_mult_func(description, postconditions_list, functions_list,
                 reason = correctness[1].replace("Correctness: **False**", "")
                 cex_generator.output_cex(model, description, total_post, program, config, cex_path, module_name, reason)
         return correctness[0]
+    elif config['entailment-mode'] == 'naive' and config['assessment-mode'] == 'total':
+            #special case to save time when running the experiments
+            correctness_simple = annotated_simple(description,  annotated_program_simple, model_simple)
+            correctness_complex= entailement_mult_func_annotated.naive_mult_func(model_complex, description, annotated_program, module_name, config, cex_path)
+            correctness_default =entailment_mult_func.naive_mult_func(model_default, description, functions, module_name, config, cex_path)
+            return [correctness_simple[0], correctness_complex[0], correctness_default[0]]
 
     print(f"Entailment mode {config['entailment-mode']} not supported, only naive is currently implemented")
     raise NotImplementedError

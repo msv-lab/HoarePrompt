@@ -9,6 +9,7 @@ from node_base_style.loop_1_unroll import complete_loop_triple_1_unroll
 from node_base_style.for_loop import complete_for_triple
 from node_base_style.for_loop_1_unroll import complete_for_triple_1_unroll
 from node_base_style.loop_condition import get_precondition
+from node_base_style.loop_condition_first import get_while_precondition_first
 from node_base_style.for_condition import get_for_precondition
 from node_base_style.for_condition_first import get_for_precondition_first
 from node_base_style.try_statement import complete_try_triple
@@ -349,6 +350,7 @@ class PostconditionAnalyzer:
             examples = []
             
             pre = triple.precondition
+            original_pre = get_while_precondition_first(self.model, pre, while_head) # get the initial state of the loop for unrolling
             # Unroll the loop by simulating 'k' iterations
             self.last_loop_depth = min(self.last_loop_depth, depth)
             self.inside_loop = True # we are inside a loop, so any postocnditions of the unrolled code should not be appended as annotations in the code tree
@@ -357,11 +359,11 @@ class PostconditionAnalyzer:
             indent = " " * ((depth+1) * 4)
             depth = depth + 1 # increase the depth by 1 since we are inside a loop
             for i in range(k):
-                post = self.complete_triple_cot(Triple(pre, body_command, State.UNKNOWN), depth=depth, type=f"unrolled_loop_{i+1}")
+                post = self.complete_triple_cot(Triple(original_pre, body_command, State.UNKNOWN), depth=depth, type=f"unrolled_loop_{i+1}")
                 unrolled_post = unrolled_post+f"{indent}#state of the program after unrolled loop {i+1}: {post} \n"
-                examples.append(Triple(pre, body_command, post))
+                examples.append(Triple(original_pre, body_command, post))
                 if i < k-1:
-                    pre = get_precondition(self.model, post, while_head)
+                    original_pre = get_precondition(self.model, post, while_head)
                 self.first_for = False
             self.first_for = True
                 
