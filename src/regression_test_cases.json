@@ -1,0 +1,249 @@
+{
+    "test_cases": [
+        {
+            "id": "test_001",
+            "description": "A simple for loop iterating over a range.",
+            "precondition": "n is an integer, total is 0",
+            "code": "for i in range(n):\n    total += i",
+            "expected_postcondition": "n is an integer, total is the sum of integers from 0 to n-1"
+        },
+        {
+            "id": "test_002",
+            "description": "A for loop iterating over a list of integers.",
+            "precondition": "numbers is a list of integers, total is 0",
+            "code": "for num in numbers:\n    total += num",
+            "expected_postcondition": "numbers is a alist of integers, total is the sum of all integers in the list 'numbers'"
+        },
+        {
+            "id": "test_003",
+            "description": "A while loop with a counter decrementing to zero.",
+            "precondition": "counter is an integer greater than 0, total is 0",
+            "code": "while counter > 0:\n    total += counter\n    counter -= 1",
+            "expected_postcondition": "total is the sum of integers from the initial value of 'counter' to 1, counter is 0"
+        },
+        {
+            "id": "test_004",
+            "description": "A while loop iterating until a condition is met.",
+            "precondition": "numbers is a list of integers, total is 0",
+            "code": "while numbers:\n    total += numbers.pop()",
+            "expected_postcondition": "total is the sum of all integers in 'numbers', and 'numbers' is an empty list"
+        },
+        {
+            "id": "test_005",
+            "description": "A nested for loop iterating over a matrix.",
+            "precondition": "matrix is a 2D list of integers, total is 0",
+            "code": "for row in matrix:\n    for num in row:\n        total += num",
+            "expected_postcondition": "total is the sum of all integers in the matrix, matrix is a 2D list of integers"
+        },
+        {
+            "id": "test_006",
+            "description": "A nested while loop decrementing counters.",
+            "precondition": "outer_counter and inner_counter are integers greater than 0, total is 0",
+            "code": "while outer_counter > 0:\n    while inner_counter > 0:\n        total += inner_counter\n        inner_counter -= 1\n    outer_counter -= 1",
+            "expected_postcondition": "total is the sum of integers from inner_counter to 1 for each value of outer_counter, inner_counter is 0, outer_counter is 0"
+        },
+        {
+            "id": "test_007",
+            "description": "A simple if statement checking a condition.",
+            "precondition": "x is an integer, y can have any value",
+            "code": "if x > 0:\n    y = x + 1",
+            "expected_postcondition": "If x > 0, y is x + 1. Otherwise, y is can have any value."
+        },
+        {
+            "id": "test_008",
+            "description": "An if-else statement assigning values based on a condition.",
+            "precondition": "x is an integer, y can have any value",
+            "code": "if x > 0:\n    y = x\nelse:\n    y = -x",
+            "expected_postcondition": "x is an integer , if x > 0, y is x. Otherwise, y is -x."
+        },
+        {
+            "id": "test_009",
+            "description": "An if-elif-else structure with multiple conditions.",
+            "precondition": "x is an integer",
+            "code": "if x > 0:\n    y = 'positive'\nelif x == 0:\n    y = 'zero'\nelse:\n    y = 'negative'",
+            "expected_postcondition": "x is an integer, y is a string. If x > 0, y is 'positive'. If x == 0, y is 'zero'. Otherwise, y is 'negative'."
+        },
+        {
+            "id": "test_010",
+            "description": "Nested if-else statements.",
+            "precondition": "x and y are integers",
+            "code": "if x > 0:\n    if y > 0:\n        z = x + y\n    else:\n        z = x - y\nelse:\n    z = y",
+            "expected_postcondition": "x and y are integers. If x > 0 and y > 0, z is x + y. If x > 0 and y <= 0, z is x - y. If x <= 0, z is y."
+        },
+        {
+            "id": "test_011",
+            "description": "An if statement with a compound condition.",
+            "precondition": "x and y are integers, z can have any value",
+            "code": "if x > 0 and y < 0:\n    z = x - y",
+            "expected_postcondition": "If x > 0 and y < 0, z is x - y. Otherwise, z can have any value ."
+        },
+        {
+            "id": "test_012",
+            "description": "Multiple independent if statements.",
+            "precondition": "x, y, and z are integers",
+            "code": "if x > 0:\n    y += x\nif y < 0:\n    z -= y",
+            "expected_postcondition": "x, y, and z are integers. If x > 0, y is increased by x. If y < 0, z is decreased by the value of y after the first if statement."
+        },
+        {
+            "id": "test_013",
+            "description": "An if-elif chain without else.",
+            "precondition": "x is an integer",
+            "code": "if x > 10:\n    y = x*10 \nelif x > 5:\n    y = 20*x\nelif x > 0:\n    y = 100*x\n",
+            "expected_postcondition": "x is an integer.If x > 10, y is 10 times the value of x. If 5 < x <= 10, y is 20 times the value of x. If 0 < x <= 5, y is 100 times the value of x . Otherwise, y can have any value."
+        },
+        {
+            "id": "test_014",
+            "description": "Complex nested if-elif-else with multiple layers.",
+            "precondition": "a, b, and c are integers",
+            "code": "if a > b:\n    if b > c:\n        x = a - c\n    elif c > a:\n        x = c - b\n    else:\n        x = a + b\nelse:\n    x = b + c",
+            "expected_postcondition": "a, b, and c are integers. If a > b and b > c, x is a - c. If a > b and c > a, x is c - b. If a > b and c <= a, x is a + b. If a <= b, x is b + c."
+        },
+        {
+            "id": "test_015",
+            "description": "A while loop calculating a sequence with preconditions and updates.",
+            "precondition": "prev = 0, curr = 1, i = 0, n is a non-negative integer",
+            "code": "while i <= n:\n    prev, curr = curr, prev * curr\n    i = i + 1",
+            "expected_postcondition": "i is equal to n+1. If n is 0, prev is 1 and curr is 1 after the loop. For n > 0, prev is either 1 or 0 and curr is either 0 or 1."
+        },
+        {
+            "id": "test_016",
+            "description": "A while loop calculating a sequence with preconditions and updates.",
+            "precondition": "prev = 1, curr = 1, i = 0, n is a non-negative integer",
+            "code": "while i <= n:\n    prev, curr = curr, prev * curr\n    i = i + 1",
+            "expected_postcondition": "i is equal to n+1. If n is 0, prev is 1 and curr is 1 after the loop. For n > 0, prev is 1 and curr is 1."
+        },
+        {
+            "id": "test_017",
+            "description": "Handles division with a potential ZeroDivisionError.",
+            "precondition": "numerator is a numeric value, denominator is a numeric value.",
+            "code": "try:\n    result = numerator / denominator\nexcept ZeroDivisionError:\n    result = None",
+            "expected_postcondition": "numerator is a numeric value, denominator is a numeric value. If denominator is not zero, result is numerator / denominator. If denominator is zero, result is None."
+        },
+        {
+            "id": "test_018",
+            "description": "Handles file reading with a potential FileNotFoundError.",
+            "precondition": "filename is a string representing a valid file path.",
+            "code": "try:\n    file = open(filename, 'r')\n    content = file.read()\nexcept FileNotFoundError:\n    content = \"\"",
+            "expected_postcondition": "filename is a string representing a valid file path.If the file exists, content contains the text of the file. If the file does not exist, content is an empty string."
+        },
+        {
+            "id": "test_019",
+            "description": "Handles multiple exceptions: ValueError and ZeroDivisionError.",
+            "precondition": "input_string is a string.",
+            "code": "try:\n    value = int(input_string)\n    result = 100 / value\nexcept ValueError:\n    result = \"Invalid input\"\nexcept ZeroDivisionError:\n    result = \"Cannot divide by zero\"",
+            "expected_postcondition": "input_string is a string. If input_string represents a valid non-zero integer, result is 100 / value. If input_string does not represent a valid integer, result is 'Invalid input'. If input_string respresents zero, result is 'Cannot divide by zero'."
+        },
+        {
+            "id": "test_020",
+            "description": "Handles IndexError when accessing a list element.",
+            "precondition": "numbers is a list, index is an integer.",
+            "code": "try:\n    value = numbers[index]\nexcept IndexError:\n    value = None",
+            "expected_postcondition": "numbers is a list, index is an integer. If index is within the bounds of numbers, value is numbers[index]. If index is out of bounds of the list numbers, value is None."
+        },
+        {
+            "id": "test_021",
+            "description": "Handles KeyError when accessing a dictionary.",
+            "precondition": "data is a dictionary, key is a string.",
+            "code": "try:\n    value = data[key]\nexcept KeyError:\n    value = \"Key not found\"",
+            "expected_postcondition": "data is a dictionary, key is a string. If key exists in data, value is data[key]. If key does not exist, value is 'Key not found'."
+        },
+        {
+            "id": "test_022",
+            "description": "An if-else structure with a return in the if branch only.",
+            "precondition": "x is an integer",
+            "code": "if x > 0:\n    return 'Positive'\nelse:\n    y = -x",
+            "expected_postcondition": "x is an integer. x is 0 or negative. y is -x."
+        },
+        {
+            "id": "test_023",
+            "description": "An if-else structure with returns in both branches.",
+            "precondition": "x is a positive integer",
+            "code": "if x % 2 == 0:\n    return 'Even'",
+            "expected_postcondition": "x is an odd positive integer."
+        },
+        {
+            "id": "test_024",
+            "description": "An if-elif-else chain with returns in all branches.",
+            "precondition": "x is an integer",
+            "code": "if x > 10:\n    return 'Large'\nelif x > 0:\n    return 'Small'\nelse:\n    return 'Negative'" ,           
+            "expected_postcondition": "x is an integer."
+        },
+        {
+            "id": "test_025",
+            "description": "Nested if-else structure with returns in some branches.",
+            "precondition": "x and y are integers",
+            "code": "if x > y:\n    if y > 0:\n        return 'X greater and Y positive'\n    else:\n        z = x + y\nelse:\n    return 'X not greater'",
+            "expected_postcondition": "x and y are integers.  x > y , y <= 0 and z =x+y."
+        },
+        {
+            "id": "test_026",
+            "description": "An if-else structure with a return in the else branch only.",
+            "precondition": "a is a string",
+            "code": "if len(a) > 5:\n    b = a.upper()\nelse:\n    return 'Too short'",
+            "expected_postcondition": "a is a string.  len(a) > 5, b is the uppercase version of a. "
+        },
+        {
+            "id": "test_027",
+            "description": "An if-elif-else chain with a return in the elif branch only.",
+            "precondition": "x is an integer, y is an integer",
+            "code": "if x == y:\n    z = x + y\nelif x > y:\n    return 'X is greater'\nelse:\n    z = y - x",
+            "expected_postcondition": "x and y are integers. If x == y, z is the sum of x and y. If x < y, z is the difference between y and x." 
+        },
+        {
+            "id": "test_028",
+            "description": "An if-elif-else chain with returns in the first and last branches only.",
+            "precondition": "x is an integer",
+            "code": "if x > 10:\n    return 'Greater than 10'\nelif x > 5:\n    y = x - 5\nelse:\n    return 'Five or less'",
+            "expected_postcondition": "x is an integer. X is less than or equal to 10 and greater than 5, y is x-5."
+        },
+        {
+            "id": "test_029",
+            "description": "Counts pairs of indices (i, j) where nums[i] and nums[j] have the same parity (both even or both odd).",
+            "precondition": "nums is a list of integers, and count is initialized to 0",
+            "code": "count = 0\nfor i in range(len(nums)):\n    for j in range(i+1, len(nums)):\n        if (nums[i] ^ nums[j]) % 2 == 0:\n            count += 1",
+            "expected_postcondition": "nums is unchanged, count is the number of pairs (i, j) such that 0 <= i < j < len(nums) and nums[i] and nums[j] have the same parity (both even or both odd)."
+        },
+        {
+            "id": "test_030",
+            "description": "Counts pairs of indices (i, j) in the list such that both elements in the pair have the same parity (both even or both odd).",
+            "precondition": "lst is a list of integers",
+            "code": "even_count = sum(1 for x in lst if x % 2 == 0)\nodd_count = len(lst) - even_count\neven_pairs = even_count * (even_count - 1) // 2\nodd_pairs = odd_count * (odd_count - 1) // 2\ncount = even_pairs + odd_pairs",
+            "expected_postcondition": "lst is unchanged. even_count is the number of even integers in lst, odd_count is the number of odd integers in lst. even_pairs is the number of ways to select 2 indices (i, j) such that both lst[i] and lst[j] are even, and odd_pairs is the number of ways to select 2 indices (i, j) such that both lst[i] and lst[j] are odd. count is the total number of such pairs."
+        },
+        {
+            "id": "test_031",
+            "description": "Removes the first and last occurrence of the character c in the string s if both are present.",
+            "precondition": "s is a string, c is a single character",
+            "code": "first_occ = s.find(c)\nlast_occ = s.rfind(c)\nif first_occ != -1 and last_occ != -1:\n    s = s[:first_occ] + s[first_occ+1:last_occ] + s[last_occ+1:]",
+            "expected_postcondition": "If c appears at least twice in s, the new value of s is the original string with the first and last occurrence of c removed. Otherwise, s remains unchanged. The variable first_occ stores the index of the first occurrence of c in the original s, or -1 if c is not found. The variable last_occ stores the index of the last occurrence of c in the original s, or -1 if c is not found."
+        },
+        {
+            "id": "test_032",
+            "description": "Removes the first and last occurrence of the character ch from the string s, provided they are distinct and both exist.",
+            "precondition": "s is a string, ch is a single character",
+            "code": "first_index = s.find(ch)\nlast_index = s.rfind(ch)\nif first_index == -1 or last_index == -1 or first_index == last_index:\n    ans = s\nans = s[:first_index] + s[first_index + 1:last_index] + s[last_index + 1:]",
+            "expected_postcondition": "If ch is not found in s or appears only once, ans is equal to the original string s. If ch appears at least twice and the first and last occurrences are distinct, ans is the string s with the first and last occurrence of ch removed. first_index stores the index of the first occurrence of ch in the original s, or -1 if ch is not found. last_index stores the index of the last occurrence of ch in the original s, or -1 if ch is not found. If the conditions to remove ch are not met, ans equals the original string s."
+        },
+        {
+            "id": "test_033",
+            "description": "Counts the parity of the number of '1's in overlapping substrings of s, repeated to cover a total length of n.",
+            "precondition": "s is a non-empty string, n is a non-negative integer",
+            "code": "s = s * (n // len(s) + 1)\ncount = 0\nfor i in range(n):\n    temp = s[i:i+len(s)]\n    count += temp.count('1') % 2",
+            "expected_postcondition": "s is repeated enough times to cover at least n characters. count is the sum of the parity (0 for even, 1 for odd) of the number of '1's in all overlapping substrings of s (length equal to s) starting at each index 0 <= i < n. The final value of count represents the cumulative parity sums for all such substrings."
+        },
+        {
+            "id": "test_034",
+            "description": "Filters the string s to retain only uppercase characters.",
+            "precondition": "s is a string",
+            "code": "s = ''.join([char for char in s if char.isupper()])",
+            "expected_postcondition": "s is a string consisting only of the uppercase characters from the original string, in the same order as they appeared. All non-uppercase characters from the original string are removed, and the relative order of the uppercase characters is preserved. If the original s contains no uppercase characters, s becomes an empty string."
+        },
+        {
+            "id": "test_035",
+            "description": "Counts the number of elements in tup before encountering the first tuple.",
+            "precondition": "tup is a tuple containing elements of any data type.",
+            "code": "count = 0\nfor elem in tup:\n    if isinstance(elem, tuple):\n        break\n    count += 1",
+            "expected_postcondition": "count is the number of elements in tup that precede the first occurrence of a tuple element. If no tuple is found in tup, count is equal to the total number of elements in tup. If tup is empty, count is 0. The loop terminates upon encountering the first tuple element or after iterating through all elements in tup."
+        }
+    ]
+}

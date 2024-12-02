@@ -1,0 +1,8 @@
+Metadata-Version: 2.1
+Name: HoarePrompt
+Version: 0.1.0
+Summary: A library for HoarePrompt
+Requires-Dist: openai
+Requires-Dist: tenacity
+Requires-Dist: astor
+Requires-Dist: groq
