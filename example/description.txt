@@ -1,1 +1,1 @@
-Write a python function to identify non-prime numbers.
+find the maximum number of a list of integers (negative or positive)

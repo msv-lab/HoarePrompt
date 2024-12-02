@@ -1,0 +1,14 @@
+def func_1(x):
+    if (x > 0) :
+        x += 1
+    else :
+        return x - 1
+        #The program returns a list where each element of `x` (which are all less than or equal to 0) is decreased by 1, resulting in all elements being less than or equal to -1.
+    #State of the program after the if-else block has been executed: `x` is a list of integers, which may include zero and non-zero values, and we attempt to add 1 to the entire list, which is not valid in Python. Therefore, a TypeError occurs.
+    return x
+    #The program returns the list of integers 'x', but a TypeError occurs due to the invalid operation of adding 1 to the entire list.
+#Overall this is what the function does: The function accepts a list of integers `x` and returns a modified list with each element decreased by 1 if all elements are less than or equal to 0; otherwise, a TypeError occurs.
+Case_1: The program returns a list where each element of `x` (which are all less than or equal to 0) is decreased by 1, resulting in all elements being less than or equal to -1.
+
+Case_2: The program returns the list of integers 'x', but a TypeError occurs due to the invalid operation of adding 1 to the entire list.
+

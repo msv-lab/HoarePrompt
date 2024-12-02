@@ -1,4 +1,5 @@
 venv/
+env/
 myvenv/
 log_*/
 .idea/
@@ -7,3 +8,5 @@ src/node_base_style/__pycache__
 example/__pycache__
 example1/
 example2/
+src/HoarePrompt.egg-info
+logs/

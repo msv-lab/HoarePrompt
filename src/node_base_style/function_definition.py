@@ -1,59 +1,64 @@
-from node_base_style.hoare_triple import FuncTriple, parse_stmt
-from node_base_style.helper import extract_postcondition, format_prompt
+import ast
+
+from node_base_style.hoare_triple import FuncTriple
+from node_base_style.helper import extract_result
+
+# This script handles functions to get its functionality
+# A prompt template to query the language model (LLM) for verifying and describing the functionality of a Python function.
+PROMPT = """
+You have been assigned the task of a program verifier, responsible for describing the functionality of a Python function. You will be provided with the constraints and relationships between the input parameters, as well as the resulting output of the function based on these inputs. Your task is to organize this information and describe the functionality of the function. Please avoid describing how the function operates or details such as how local variables are initialized—only describe what parameters the function accepts and what it returns. If there are multiple return points in the function we will split them in Cases with an arithmetic counter and remember if one case is fullfilled none of the others are. You must adhere to the text format: Functionality: **functionality**.
 
 
-VERIFYER_SYSTEM_PROMPT_FUNC = """You are assigned the role of a program verifier, responsible for completing the Hoare triples of Python functions. Each Hoare triple is made up of three components: a precondition, a program fragment, and a postcondition. The precondition and the postcondition are expressed in natural language. In addition to the Hoare triple, you will also see the postcondition of the function body. You need to combine this with the postcondition of the function body to provide the overall postcondition of the function.
-
-Precondition: describes the initial state of the program variables before the execution of the program fragment. This description should only include the values of the variables, without detailing the operational aspects of the program.
-
-Program Fragment: This is a given part of the task and is not something you need to create or modify.
-
-Postcondition: describes the state of the program variables after the execution of the program fragment with the initial state described in the precondition. This description should include both the values of the variables and the relationships between them. Similar to the precondition, avoid explaining how the program operates; concentrate solely on the variable values and their interrelations. You need to strictly follow the format."""
-
-generic_func_ctx = [
-    FuncTriple(
-        "`number` is an integer.",
-        parse_stmt('''
-def is_even(number):
-    if number % 2 == 0:
-        return True
-    return False
-        '''),
-        "`number` is an integer. If `number` is even, the function returns True; otherwise, it returns False.",
-        "The function `is_even` takes an integer parameter `number`. If the `number` is even, the function returns `True`; otherwise, it returns `False`."
-    ),
-    FuncTriple(
-        "`celsius` is a float",
-        parse_stmt('''
-def celsius_to_fahrenheit(celsius):
-    return (celsius * 9/5) + 32
-        '''),
-        "The function returns (`celsius` * 9/5) + 32",
-        "The function takes a floating-point parameter `celsius` and, in all cases, returns `(celsius * 9/5) + 32`."
-    ),
-    FuncTriple(
-        "`strings` is a list of string and `char` is a character",
-        parse_stmt('''
-def find_first_string_with_char(strings, char):
-    for s in strings:
-        if char in s:
-            return s
-    return None
-        '''),
-        "The iteration variable `s` traverses each string in the list `strings`. During any iteration, if the character `char` is found in `s`, the function returns `s`. If no such `s` is found during the loop, then `s` is the last string in the list, the function returns `None`.",
-        "The function `find_first_string_with_char` takes two parameters: a list of strings, `strings`, and a character, `char`. The function iterates through each string in `strings`, and if `char` is found in a string, that string is returned and the function terminates. If `char` is not found in any of the strings, the function returns `None` after the loop completes."
-    ),
-]
+Example1:
+Parameter constraints and relationships: `number` is an integer.
+```
+def func(number):
+```
+Output: `number` is an integer. If `number` is even, the function returns True; otherwise, it returns False.
+Now, please think step by step: What are the parameters the function accepts, and the return value?
 
 
-def complete_func_triple(incomplete_triple: FuncTriple, model, context_triples=generic_func_ctx):
-    prompt = VERIFYER_SYSTEM_PROMPT_FUNC
-    for ctx in context_triples:
-        prompt = prompt + "\n" + format_prompt(ctx) + "\n" + f"Postcondition: **{ctx.postcondition}**"
-    prompt = prompt + "\n" + format_prompt(incomplete_triple)
+Example Answer1:
+The function `func` accepts a parameter `number`. `number` is an integer. After executing the function body, if number is even, the function returns `True`; otherwise, it returns `False`. Therefore, the functionality of the function func is to accept an integer `number`, and if `number` is even, it returns True. If `number` is not even, it returns False.
+Functionality: **The function accepts a parameter number, returns `True` if `number` is even. If `number` is not even, it returns `False`.**
+
+
+Parameter constraints and relationships: `age` is an integer.
+```
+def func(age):
+```
+Output: Case_1:`number` is an integer. If `number` is lower than 0, the function returns an error message that ages can't be negative; 
+        Case_2: `number` is an integer. If `number` is between 0 and 18, the function returns "minor"; otherwise, it returns "adult".
+Now, please think step by step: What are the parameters the function accepts, and the return value?
+
+
+Example Answer:
+The function `func` accepts a parameter `age`. `age` is an integer. If `age` is lower than 0, the function returns an error message that ages can't be negative. If `age` is between 0 and 18, the function returns "minor"; otherwise, it returns "adult". Therefore, the functionality of the function func is to accept an integer `age`  and return if the person is a minor or an adult based on the age while handling wrong negative input values.
+
+
+Your Task:
+Parameter constraints: {pre}
+```
+{head}
+```
+Output: {body_post}
+Now, please think step by step: What are the parameters the function accepts, and the return value?
+"""
+
+# This function completes the functionality of a function given its precondition, postcondition, and head
+def complete_func_triple(incomplete_triple: FuncTriple, model):
+    pre = incomplete_triple.precondition
+    body_post = incomplete_triple.body_postcondition
+    head = incomplete_triple.head # The function signature, ehich is the function name and parameters
+    prompt = PROMPT.format(pre=pre, body_post=body_post, head=head)
     response = model.query(prompt)
-    post = extract_postcondition(response)
-    # print("*" * 50)
-    # print(incomplete_triple)
-    # print(f"LLM post: {post}")
+    post = extract_result(response, "Functionality")
     return post
+
+# This function extracts the function definition (signature) from an AST node 
+# It returns the function name and the list of parameters as a formatted string
+def get_func_def(node: ast.FunctionDef):
+    name = node.name
+    args = [arg.arg for arg in node.args.args]
+    args_str = ", ".join(args)
+    return f"def {name}({args_str}):"

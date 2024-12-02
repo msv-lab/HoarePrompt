@@ -1,100 +1,208 @@
-from node_base_style.hoare_triple import LoopTriple, parse_stmt, State
-from node_base_style.helper import extract_postcondition, format_prompt
+import ast
 
-VERIFYER_SYSTEM_PROMPT_LOOP = """You are assigned the role of a program verifier, responsible for completing the overall Hoare triples for loop statements. In addition to the Hoare triples, you will also see the postcondition of the loop body. You need to combine the precondition, the code, and the postcondition of the loop body to infer the overall postcondition of the loop. Each Hoare triple is made up of three components: a precondition, a program fragment, and a postcondition. The precondition and the postcondition are expressed in natural language. The postcondition of the loop body records how the loop body code changes the state of the variables in a single iteration.
+from node_base_style.hoare_triple import pprint_cmd, Triple
+from node_base_style.helper import extract_result
 
-Precondition: describes the initial state of the program variables before the execution of the program fragment. This description should only include the values of the variables, without detailing the operational aspects of the program.
 
-Program Fragment: This is a given part of the task and is not something you need to create or modify. If the loop is a for loop, new variables may appear. If the loop is a while loop, and the condition correctness needs to be determined, you need to discuss both entering and not entering the loop.
+# The prompt template instructs the model on how to analyze the state of the loop after several(k) iterations.
+LOOP_PROMPT = """
+ou have been assigned the role of a program verifier, responsible for analyzing the program's state after the while loop. The initial state of the code has already been provided. Additionally, you can see how the state changes after the loop executes a few times. The initial state includes the values and relationships of the variables before the program execution. The output state should include the values and relationships of the variables after all the iterations of the while loop have executed. Similar to the initial state, avoid explaining how the program operates; focus solely on the variable values and their interrelations. 
+You must adhere to the text format: Output State: **output state.**
+I am giving you two examples to understand the task better. Then I am giving you your task.
 
-Postcondition: describes the state of the program variables after the execution of the program fragment with the initial state described in the precondition. This description should include both the values of the variables and the relationships between them. Similar to the precondition, avoid explaining how the program operates; concentrate solely on the variable values and their interrelations. Ensure that the postcondition retains the conditions stated in the precondition. You need to strictly follow the format."""
+Example 1: 
 
-generic_while_ctx = [
-    LoopTriple(
-        "`n` is 5, `factorial` is 1",
-        parse_stmt('''
+Initial State: `n` is a positive integer, `factorial` is 1
+Code of the loop:
+```
 while n > 0:
     factorial *= n
     n -= 1
-    '''),
-        "`factorial` is updated to its previous value multiplied by `n`, and `n` is decremented by 1.",
-        "`n` is 0 and variable `factorial` holds the value of the factorial of 5, which is 120."
-    ),
-    LoopTriple(
-        State.TOP,
-        parse_stmt('''
-while i * i <= n:
-    i += 1
-    '''),
-        "`i` is increased by 1",
-        "If `i` squared is greater than `n` before the loop, `i` remains unchanged. If `i` squared is less than or equal to `n`, `i` increments by 1 each iteration. After the loop, `i` is the smallest integer whose square is strictly greater than `n`."
-    ),
-    LoopTriple(
-        "`string` is a string, `index` is the length of string minus 1, `reversed_string` is an empty string",
-        parse_stmt("""
-while index >= 0:
-    reversed_string += string[index]
-    index -= 1
-        """),
-        "`reversed_string` appends the character at index `index` of the variable `string`, and `index` is decremented by 1.",
-        "`reversed_string` stores the reverse of `string`, `index` is -1, `string` remains unchanged."
-    ),
-]
+```
 
-generic_for_ctx = [
-    LoopTriple(
-        "`n` is 5, `factorial` is 1",
-        parse_stmt("""
-for i in range(1, n + 1):
-    factorial *= i
-    """),
-        "`factorial` is updated to its previous value multiplied by `n`",
-        "Iteration variable `i` starts at 1 and increments by 1 up to 5. At the end of the loop, the variable `factorial` holds the value of the factorial of 5, which is 120, and `n` remains 5. The iteration variable `i` is 5."
-    ),
-    LoopTriple(
-        "`numbers` is a list of integers, `even_numbers` is an empty list.",
-        parse_stmt("""
-for num in numbers:
-    if num % 2 == 0:
-        even_numbers.append(num)
-        """),
-        "If `num` is even, it is appended to list `even_numbers`.",
-        "The iteration variable `num` traverses all integers in `numbers`. If in any iteration, `num` is even number, it appends to `even_numbers`. At the end of the loop, the `even_numbers` list contains all even numbers from `numbers` in their original order, and `numbers` remains unchanged. The iteration variable `num` is the last element of `numbers`."
-    ),
-    LoopTriple(
-        "`n` is an integer.",
-        parse_stmt("""
-for i in range(2, int(math.sqrt(n)) + 1):
-    if n % i == 0:
-        return True
-        """),
-        "If `n` divided by `i` has a remainder of 0, the function returns True.",
-        "The iteration variable `i` ranges from 2 to the ceiling of the square root of n, incrementing by 1. If `n` is divisible by `i` in any iteration, indicating `n` is not prime, the function returns True. The integer `n` remains unchanged. If the loop completes without returning, the iteration variable `i` is the ceiling of the square root of `n`."
-    ),
-]
+Output State after loop executes 1 times: `factorial` is `n`, `n` is decremented to `n-1`.
+Output State after loop executes 2 times: `factorial` is `n * (n - 1)`, `n` is decremented to `n-2`, initial `n` had greater than 1
+Output State after loop executes 3 times: `factorial` is `n * (n - 1) * (n - 2)`, `n` is decremented to `n-3`, initial `n` had greater than 2.
+Now, please think step by step. Using the results from the first few iterations of the loop provided in the example as hints but  mostly from the loop code, determine the loop's output state.
 
+Example Answer 1:
+if n is greater than 0 the loop will execute at least once and fac will contain the factorial of n and n will be 0. If n is 0 then the loop wont execute and fac will remain 1, which is indeed the factorial of 0 , and the value of n wont change.
+Therefore, the output state of the loop is that `fac` is the factorial of the original value of `n`, 'n' is 0.
+Output State: **n` is 0, `fac` is the factorial of the original value of 'n' **
 
-def complete_while_triple(incomplete_triple: LoopTriple, model, context_triples=generic_while_ctx):
-    prompt = VERIFYER_SYSTEM_PROMPT_LOOP
-    for ctx in context_triples:
-        prompt = prompt + "\n" + format_prompt(ctx) + "\n" + f"Postcondition: **{ctx.postcondition}**"
-    prompt = prompt + "\n" + format_prompt(incomplete_triple)
+Example 2: 
+
+Initial State:  `total` is 0, 'students' can hold any value. 
+Code of the loop:
+```
+while students >= 1:
+    total += students
+    students -= 1
+```
+
+Output state after loop executes 1 time: `total` is equal to the initial value of 'students', 'students' becomes 1 less than the initial value of 'students'
+Output state after loop executes 2 times: `total` is equal to twice the initial value of 'students' minus 1, 'students' becomes 2 less than the initial value of 'students'
+Output state after loop executes 3 times: `total` is equal to three times the initial value of 'students' minus 3, 'students' becomes 3 less than the initial value of 'students'
+
+Now, please think step by step. Using the results from the first few iterations of the loop provided in the example as hints but  mostly from the loop code, determine the loop's output state.
+
+Example answer 2:
+The loop calculates the sum of all numbers from 1 to students and stores it in total . The loop will be executed at least once if students is greater or equal to 1 and in the end students will be 0. if students is less thn 1 then the loop will not execute and the value of total will remain 0.
+Output State: **'students' is 0, if students was initially greater or equal to 1 then total` is the sum of all numbers from 1 to the initial value of students, if students is less than 1 the loop doesnt execute and total is 0**
+Your Task:
+
+Initial State: {pre}
+Code of the loop:
+```
+{loop_code}
+```
+
+{loop_unrolled}
+Now, please think step by step. Using the results from the first few iterations of the loop provided in the example, determine the loop's output state, after all the iterations of the loop have executed. Make sure to include the values of the variables after the loop has finished especially the any loop control variables. 
+Use the fomrat Output State: **the output state you calculate**
+"""
+
+# Format examples of loop iterations into the text format required for the prompt.
+# This will show multiple iterations of a loop and how the state changes.the loop k unrolled
+def format_examples(examples: list[Triple]):
+    s = ""
+    i = 1
+    for e in examples:
+        post = e.postcondition
+        s = s + f"Output State after the loop executes {i} times: {post}\n"
+        i += 1
+    return s
+# The model will compute the final state of the program after multiple iterations of the loop.
+def complete_loop_triple(incomplete_triple: Triple, model, examples: list[Triple]):
+    
+    loop_unrolled = format_examples(examples)
+    prompt = LOOP_PROMPT.format(loop_unrolled=loop_unrolled, pre=incomplete_triple.precondition,
+                                loop_code=pprint_cmd(incomplete_triple.command))
     response = model.query(prompt)
-    post = extract_postcondition(response)
-    # print("*" * 50)
-    # print(incomplete_triple)
-    # print(f"LLM post: {post}")
+    post = extract_result(response, "Output State")
     return post
 
+# Retrieve the head of a while loop, which is its condition 
+def get_while_head(node: ast.While) -> str:
+    condition = ast.unparse(node.test)
+    while_head = f"while {condition}:"
+    return while_head
 
-def complete_for_triple(incomplete_triple: LoopTriple, model, context_triples=generic_for_ctx):
-    prompt = VERIFYER_SYSTEM_PROMPT_LOOP
-    for ctx in context_triples:
-        prompt = prompt + "\n" + format_prompt(ctx) + "\n" + f"Postcondition: **{ctx.postcondition}**"
-    prompt = prompt + "\n" + format_prompt(incomplete_triple)
-    response = model.query(prompt)
-    post = extract_postcondition(response)
-    # print("*" * 50)
-    # print(incomplete_triple)
-    # print(f"LLM post: {post}")
-    return post
+# Retrieve the head of a for loop, which includes the loop variable and iterable
+def get_for_loop_head(node: ast.For) -> str:
+    loop_var = ast.unparse(node.target)  # Loop variable (e.g., `x` in `for x in y`)
+    iter_expr = ast.unparse(node.iter)   # Iterable expression (e.g., `y` in `for x in y`)
+    for_head = f"for {loop_var} in {iter_expr}:"
+    return for_head
+
+
+# This class transforms a for loop into a while loop
+class ForToWhileTransformer(ast.NodeTransformer):
+    def visit_For(self, node):
+        # If the for loop is iterating over a range, we transform it into a while loop
+        if isinstance(node.iter, ast.Call) and isinstance(node.iter.func, ast.Name) and node.iter.func.id == 'range':
+            args = node.iter.args 
+            start = args[0] if len(args) > 0 else ast.Constant(value=0) #start of the range
+            stop = args[1] if len(args) > 1 else ast.Constant(value=0) #end of the range
+            step = args[2] if len(args) > 2 else ast.Constant(value=1) #step of the range
+            # Case of a simple range loop with constant values
+            if len(args) < 3 or (isinstance(start, ast.Constant) and isinstance(stop, ast.Constant) and isinstance(step,
+                                                                                                                   ast.Constant)):
+                init = ast.Assign(targets=[node.target], value=start)
+                if isinstance(step, ast.UnaryOp) and isinstance(step.op, ast.USub):
+                    comp_op = ast.Gt()
+                else:
+                    comp_op = ast.Lt()
+                condition = ast.Compare(left=node.target, ops=[comp_op], comparators=[stop])
+
+                self.generic_visit(node)
+
+                increment = ast.AugAssign(target=node.target, op=ast.Add(), value=step)
+                node.body.append(increment)
+                while_node = ast.While(test=condition, body=node.body, orelse=node.orelse)
+                return [init, while_node]
+            # Case of a more complex loop
+            else:
+                target = node.target
+                # Instead of directly looping over the sequence, the code creates an explicit iterator using the built-in iter function
+                # Then a try catch block is used to handle the StopIteration exception
+                iter_var = ast.Name(id=f'iter_{target.id}', ctx=ast.Store())
+                iter_init = ast.Assign(
+                    targets=[iter_var],
+                    value=ast.Call(
+                        func=ast.Name(id='iter', ctx=ast.Load()),
+                        args=[node.iter],
+                        keywords=[]
+                    )
+                )
+                self.generic_visit(node)
+
+                try_except = ast.Try(
+                    body=[
+                             ast.Assign(
+                                 targets=[target],
+                                 value=ast.Call(
+                                     func=ast.Name(id='next', ctx=ast.Load()),
+                                     args=[iter_var],
+                                     keywords=[]
+                                 )
+                             )
+                         ] + node.body,
+                    handlers=[
+                        ast.ExceptHandler(
+                            type=ast.Name(id='StopIteration', ctx=ast.Load()),
+                            name=None,
+                            body=[ast.Break()]
+                        )
+                    ],
+                    orelse=[],
+                    finalbody=[]
+                )
+                while_node = ast.While(test=ast.Constant(value=True), body=[try_except], orelse=node.orelse)
+                return [iter_init, while_node]
+        # Case of other non-range iterators like lists
+        else:
+            iter_var = ast.Name(id='iterator', ctx=ast.Store())
+            iter_init = ast.Assign(targets=[iter_var],
+                                   value=ast.Call(func=ast.Name(id='iter', ctx=ast.Load()), args=[node.iter],
+                                                  keywords=[]))
+
+            self.generic_visit(node)
+
+            try_except = ast.Try(
+                body=[ast.Assign(targets=[node.target],
+                                 value=ast.Call(func=ast.Name(id='next', ctx=ast.Load()), args=[iter_var],
+                                                keywords=[]))] + node.body,
+                handlers=[ast.ExceptHandler(type=ast.Name(id='StopIteration', ctx=ast.Load()), name=None,
+                                            body=[ast.Break()])],
+                orelse=[],
+                finalbody=[]
+            )
+
+            while_node = ast.While(test=ast.Constant(value=True), body=[try_except], orelse=node.orelse)
+            return [iter_init, while_node]
+
+# This is a test to test the transformation logic for for-loops
+if __name__ == "__main__":
+    code = """
+for i in range(2, n + 1):
+    prev, curr = curr, prev * curr
+for i in range(a, b, c):
+    print(i)
+for j in some_iterable:
+    print(j)
+for i in matrix:
+    for j in i:
+        print(j)
+for i, j in zip(xs, ys):
+    print(i)
+    """
+    parsed_code = ast.parse(code)
+
+    transformer = ForToWhileTransformer()
+    transformed_code = transformer.visit(parsed_code)
+
+    transformed_code = ast.fix_missing_locations(transformed_code)
+    final_code = ast.unparse(transformed_code)
+
+    print(final_code)

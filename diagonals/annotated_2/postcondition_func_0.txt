@@ -1,0 +1,1 @@
+The function func_1 accepts a square matrix of dimension n x n. It calculates the sum of diagonal elements up to the ith index, considering both the diagonal and reverse diagonal. If n is 0, it returns 0. The function does not handle cases where n is negative, and it only sums the diagonal and reverse diagonal elements of the matrix up to the ith index.

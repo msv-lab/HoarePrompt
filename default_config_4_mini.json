@@ -1,0 +1,12 @@
+{
+    "model": "gpt-4o-mini-2024-07-18",
+    "temperature": 0.7,
+    "assessment-mode": "postcondition-entailment", 
+    "postcondition-mode": "hoarecot",
+    "postcondition-cot-prompt": "node-based-style",
+    "loop-unrolling-count": 3,
+    "entailment-mode": "naive",
+    "cex-mode": "with-postcondition",
+    "annotated": false,
+    "fsl": true
+}
