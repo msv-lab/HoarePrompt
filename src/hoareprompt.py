@@ -15,6 +15,8 @@ import node_base_style.complete
 from  node_base_style.naive import naive_question
 from node_base_style.naive_no_fsl import naive_question_no_fsl, naive_question_no_fsl_confidence, naive_question_no_fsl_confidence_2
 from node_base_style.annotated_simple import annotated_simple
+from node_base_style.single_post import single_post
+from node_base_style.single_post_no_fsl import single_post_no_fsl
 
 import cex_generator
 from textwrap import dedent
@@ -376,6 +378,12 @@ def main():
         if config["annotated"] and config["assessment-mode"] == "naive":
             print("Error: Annotated mode is only compatible with 'postcondition-entailment' assessment mode")
             return
+        if config["annotated"] and config["assessment-mode"] == "single-postcondition":
+            print("Error: Annotated mode is only compatible with 'postcondition-entailment' assessment mode")
+            return
+        if config["annotated"] and config["assessment-mode"] == "single-postcondition-no-fsl":
+            print("Error: Annotated mode is only compatible with 'postcondition-entailment' assessment mode")
+            return
         if config["annotated"] :
             if "annotated-type" not in config:
                 print("Annotated mode need annotated-type to be defined, defaulting to complex")
@@ -388,8 +396,8 @@ def main():
     if "fsl" in config:
         if not config["fsl"]:
             #if fsl is set to true then we have to check if the assessment mode is set to postcondition-entailment
-            if config["assessment-mode"] != "naive":
-                print("Error: FSL mode as False  is only compatible with 'naive' assessment mode")
+            if config["assessment-mode"] != "naive" and config["assessment-mode"] != "single-postcondition" and config["assessment-mode"] != "single-postcondition-no-fsl":
+                print("Error: FSL mode as False  is only compatible with 'naive' or single-postcondition or single-postcondition-no-fsl assessment mode")
                 return
     else:
         #if the fsl option does not exist in the config file then we have to set it to false
@@ -590,6 +598,10 @@ def assess(description, program, module_name, config, log_directory, cex_path):
     if config['assessment-mode'] == 'naive':
         print("Using naive assessment mode")
         return compute_postcondition_naive(description, cleaned_program, config, log_directory)
+    
+    if config['assessment-mode'] == 'single-postcondition' or config['assessment-mode'] == 'single-postcondition-no-fsl':
+        print(f"Using {config['assessment-mode']} assessment mode")
+        return compute_postcondition_single(description, functions_list,imports, global_code, cleaned_program, module_name, program, config, log_directory)
     # Ensure assessment mode is set to 'postcondition-entailment'
     assert config['assessment-mode'] in {'postcondition-entailment', 'total'}
 
@@ -689,6 +701,51 @@ def extract_precondition(description, program, config, log_directory):
     # Use the precondition extractor model to generate the precondition
     return precondition_extractor.default(model, description, program_def)
 
+
+def compute_postcondition_single(description, functions_list, imports, global_code, cleaned_program, module_name, program, config, log_directory):
+    model = get_model(config["model"], config["temperature"], log_directory)
+    # Save the program and description to the log directory
+    with (log_directory / str(module_name + '.py')).open("w", encoding="utf-8") as f:
+        f.write(program)
+    with (log_directory / str(module_name + '_cleaned.py')).open("w", encoding="utf-8") as f:
+        f.write(cleaned_program)
+    with (log_directory / 'description.txt').open("w", encoding="utf-8") as f:
+        f.write(description)
+    
+    precondition_log_dir = log_directory / 'extract-precondition'
+    precondition_log_dir.mkdir(parents=True, exist_ok=True)
+
+    postcondition_log_dir = log_directory / 'compute-postcondition'
+    postcondition_log_dir.mkdir(parents=True, exist_ok=True)
+    all_funcs= ""
+    for index, func in enumerate(functions_list):
+        # Extract the precondition from the description and program
+        
+        precondition = extract_precondition(description, func, config, precondition_log_dir)
+        
+        # Save the extracted precondition
+        with (log_directory / f'precondition_func_{index}.txt').open("w", encoding="utf-8") as f:
+            f.write(precondition)
+
+        # Compute the postcondition from the precondition and program
+        # This is where the important work gets done
+        if config['assessment-mode'] == 'single-postcondition' :
+            postcondition_total = single_post(precondition, func, model)
+        elif config['assessment-mode'] == 'single-postcondition-no-fsl' :
+            postcondition_total = single_post_no_fsl(precondition, func, model)
+        else :
+            print(f"Error: {config['assessment-mode']} should not have reached this function")
+            exit(1)
+        
+        func_updated =func + "\n" + f"#State after the function execution: {postcondition_total}"
+        all_funcs += func_updated + "\n\n"
+    all_funcs = imports+"\n" + global_code+"\n"+ all_funcs
+    if config["fsl"]:
+        response = naive_question(description, all_funcs, model)
+    else:
+        response = naive_question_no_fsl(description, all_funcs, model)
+    return response
+            
 
 # if the assessment mode is set to 'naive', use the naive_question function to compute the postcondition
 # we just do an llm call to get if the oce is correct or not using the naive_question function from naive.py

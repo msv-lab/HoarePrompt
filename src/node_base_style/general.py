@@ -81,7 +81,7 @@ Initial State: {pre}
 {program}
 ```
 Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate the result. You must adhere to the text format: Output State: **output state**.
-Be as specifgic as possible. If a variable has a specific value or is equal to some combination of variables, use that specific value  or expression it is equal to. nclude all the information of the precondition that is still valid after the code has been executed. Just update the values of the variables that have been changed by the code.
+Be as specific as possible. If a variable has a specific value or is equal to some combination of variables, use that specific value  or expression it is equal to. nclude all the information of the precondition that is still valid after the code has been executed. Just update the values of the variables that have been changed by the code.
 """
 
 # This is the main function, it completes the prompt, queries the model and extracts the result, meaining the output state of that program part
