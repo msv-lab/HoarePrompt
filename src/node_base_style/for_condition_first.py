@@ -19,9 +19,9 @@ for i in range(n):
 Now, please think step by step: Which states need to be adjusted for the loop to execute?
 
 
-Example Answer:
+Example Answer 1:
 According to the code, whether the loop can execute depends on the variables `i` and `n`. If n is at least 1, the loop can execute. Before the loop starts, total is 10 does not ensure that the loop will execute , so it needs to be adjusted to `n` is greater than 0 and i is now 1. 
-State: **`total` is 10, `i` is 1, for the loop to execute the first time `n` is greater than 0**
+State: **`total` is 10, `i` is 1,  `n` must be greater than 0**
 
 Example 2:
 State before the loop starts: `total` is 0, students_list is a list of students.
@@ -32,9 +32,9 @@ for index, student in enumerate(students_list):
 Now, please think step by step: Which states need to be adjusted for the loop to execute?
 
 
-Example Answer:
+Example Answer 2:
 According to the code, whether the loop can execute depends on the student_list.  If the list has at least 1 student the loop executes. At the end of the last iteration, total is 0. So for the loop to be executed  the list must have at least 1 student and the index is 0 and student is the first student in the list.
-State: **`total` is 0, for the loop to execute the first time students_list is a list of students with at least 1 student, student is the first student in the list, index is 0**
+State: **`total` is 0,  students_list is a list of students that must have at least 1 student, student is the first student in the list, index is 0**
 
 
 Your Task:

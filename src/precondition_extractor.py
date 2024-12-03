@@ -60,6 +60,15 @@ def count_ways(n):
 
 Precondition: **n is a non-negative integer.**
 
+# Example 6
+
+Problem description: find the average of the positive integers in a list.
+Function definition:
+```
+def func_1(numbers):
+```
+Precondition: **numbers is a list of integers.**
+
 # Your task
 
 Problem description: {description}
