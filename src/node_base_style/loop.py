@@ -6,7 +6,9 @@ from node_base_style.helper import extract_result
 
 # The prompt template instructs the model on how to analyze the state of the loop after several(k) iterations.
 LOOP_PROMPT = """
-ou have been assigned the role of a program verifier, responsible for analyzing the program's state after the while loop. The initial state of the code has already been provided. Additionally, you can see how the state changes after the loop executes a few times. The initial state includes the values and relationships of the variables before the program execution. The output state should include the values and relationships of the variables after all the iterations of the while loop have executed. Similar to the initial state, avoid explaining how the program operates; focus solely on the variable values and their interrelations. 
+ou have been assigned the role of a program verifier, responsible for analyzing the program's state after the while loop. The initial state of the code has already been provided. Additionally, you can see how the state changes after the loop executes a few times. 
+In the information given, the output state after the loop executes some number of times include what needed to be true for the loop to execute at least that number of times. 
+The initial state includes the values and relationships of the variables before the program execution. The output state should include the values and relationships of the variables after all the iterations of the while loop have executed. Similar to the initial state, avoid explaining how the program operates; focus solely on the variable values and their interrelations. 
 You must adhere to the text format: Output State: **output state.**
 I am giving you two examples to understand the task better. Then I am giving you your task.
 
@@ -20,9 +22,9 @@ while n > 0:
     n -= 1
 ```
 
-Output State after loop executes 1 times: `factorial` is `n`, `n` is decremented to `n-1`.
-Output State after loop executes 2 times: `factorial` is `n * (n - 1)`, `n` is decremented to `n-2`, initial `n` had greater than 1
-Output State after loop executes 3 times: `factorial` is `n * (n - 1) * (n - 2)`, `n` is decremented to `n-3`, initial `n` had greater than 2.
+Output State after loop executes 1 times:  n must initially be greater than 0, `factorial` is `n`, `n` is decremented to `n-1`.
+Output State after loop executes 2 times: `factorial` is `n * (n - 1)`, `n` is decremented to `n-2`, initial `n` must have been greater than 1
+Output State after loop executes 3 times: `factorial` is `n * (n - 1) * (n - 2)`, `n` is decremented to `n-3`, initial `n` must have been  had greater than 2.
 Now, please think step by step. Using the results from the first few iterations of the loop provided in the example as hints but  mostly from the loop code, determine the loop's output state.
 
 Example Answer 1:
@@ -40,9 +42,9 @@ while students >= 1:
     students -= 1
 ```
 
-Output state after loop executes 1 time: `total` is equal to the initial value of 'students', 'students' becomes 1 less than the initial value of 'students'
-Output state after loop executes 2 times: `total` is equal to twice the initial value of 'students' minus 1, 'students' becomes 2 less than the initial value of 'students'
-Output state after loop executes 3 times: `total` is equal to three times the initial value of 'students' minus 3, 'students' becomes 3 less than the initial value of 'students'
+Output state after loop executes 1 time: `total` is equal to the initial value of 'students', 'students' becomes 1 less than the initial value of 'students', inital value of students must have been greater than 0
+Output state after loop executes 2 times: `total` is equal to twice the initial value of 'students' minus 1, 'students' becomes 2 less than the initial value of 'students', initial value of students must have been greater than 1
+Output state after loop executes 3 times: `total` is equal to three times the initial value of 'students' minus 3, 'students' becomes 3 less than the initial value of 'students', initial value of students must have been greater than 2
 
 Now, please think step by step. Using the results from the first few iterations of the loop provided in the example as hints but  mostly from the loop code, determine the loop's output state.
 
@@ -57,8 +59,11 @@ Code of the loop:
 {loop_code}
 ```
 
+The output state after the loop executes some number of times include what needed to be true for the loop to execute at least that number of times. 
+
 {loop_unrolled}
 Now, please think step by step. Using the results from the first few iterations of the loop provided in the example, determine the loop's output state, after all the iterations of the loop have executed. Make sure to include the values of the variables after the loop has finished especially the any loop control variables. 
+If the state of some variables is dependant on earlier or the oginal value of some variable, make sure to seprate the original value from the current value.
 Use the fomrat Output State: **the output state you calculate**
 """
 

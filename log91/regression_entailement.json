@@ -1,0 +1,258 @@
+[
+    {
+        "id": "test_001",
+        "precondition": "n is an integer, total is 0",
+        "code": "for i in range(n):\n    total += i",
+        "expected_postcondition": "n is an integer, total is the sum of integers from 0 to n-1",
+        "hoareprompt_postcondition": "`total` is equal to the sum of all integers from 0 to n-1, `total` is 0 if `n` is 0, and `i` is `n-1` if `n` is greater than 0.",
+        "is_equivalent": true,
+        "reason": "Both postconditions describe the same semantic state regarding the variable `total`. They both state that `total` is the sum of integers from 0 to `n-1`. The computed postcondition provides additional information about the variable `i` and the special case when `n` is 0, but these details do not contradict or change the semantic meaning of the expected postcondition regarding `total`. Therefore, the core semantic meaning about `total` being the sum of integers from 0 to `n-1` is aligned in both postconditions."
+    },
+    {
+        "id": "test_002",
+        "precondition": "numbers is a list of integers, total is 0",
+        "code": "for num in numbers:\n    total += num",
+        "expected_postcondition": "numbers is a alist of integers, total is the sum of all integers in the list 'numbers'",
+        "hoareprompt_postcondition": "`total` is equal to the sum of all integers in `numbers`, `num` is the last integer in the list if `numbers` is not empty, otherwise `total` is 0.",
+        "is_equivalent": false,
+        "reason": "The expected postcondition states that `total` is the sum of all integers in the list `numbers` and doesn't mention what happens if the list is empty. The computed postcondition, however, provides additional information: if `numbers` is not empty, `total` is as expected, but if `numbers` is empty, `total` is 0. The computed postcondition also introduces a variable `num`, representing the last integer in the list, which the expected postcondition does not mention. Therefore, the computed postcondition describes a more specific and slightly different program state than the expected postcondition."
+    },
+    {
+        "id": "test_003",
+        "precondition": "counter is an integer greater than 0, total is 0",
+        "code": "while counter > 0:\n    total += counter\n    counter -= 1",
+        "expected_postcondition": "total is the sum of integers from the initial value of 'counter' to 1, counter is 0",
+        "hoareprompt_postcondition": "`counter` is 0, `total` is the sum of all integers from 1 to the original value of `counter`.",
+        "is_equivalent": true,
+        "reason": "Both postconditions describe the same final state of the program. They both specify that the variable `counter` is 0 and that `total` is the sum of integers from 1 to the initial value of `counter`. The difference in wording arises from the direction in which the summation is described (from the initial value to 1 vs. from 1 to the initial value), but mathematically, these represent the same sum. Therefore, semantically, the postconditions align."
+    },
+    {
+        "id": "test_004",
+        "precondition": "numbers is a list of integers, total is 0",
+        "code": "while numbers:\n    total += numbers.pop()",
+        "expected_postcondition": "total is the sum of all integers in 'numbers', and 'numbers' is an empty list",
+        "hoareprompt_postcondition": "`numbers` is an empty list, `total` is the sum of all integers in the original list of `numbers`.",
+        "is_equivalent": true,
+        "reason": "Both postconditions describe the same final state of the program. They indicate that the list `numbers` is empty and that the variable `total` holds the sum of all integers that were originally in the `numbers` list. The semantic meaning is aligned, as both indicate that `numbers` has been processed to become empty and `total` accurately reflects the sum of its original elements."
+    },
+    {
+        "id": "test_005",
+        "precondition": "matrix is a 2D list of integers, total is 0",
+        "code": "for row in matrix:\n    for num in row:\n        total += num",
+        "expected_postcondition": "total is the sum of all integers in the matrix, matrix is a 2D list of integers",
+        "hoareprompt_postcondition": "`total` is equal to the sum of all integers in `matrix`, `matrix` is a 2D list of integers.",
+        "is_equivalent": true,
+        "reason": "Both the expected and computed postconditions describe the same state semantically. They both assert that `total` should be the sum of all integers present in `matrix`, and they both recognize that `matrix` is a 2D list of integers. The wording is slightly different, but the logical meaning and program behavior they describe are identical."
+    },
+    {
+        "id": "test_006",
+        "precondition": "outer_counter and inner_counter are integers greater than 0, total is 0",
+        "code": "while outer_counter > 0:\n    while inner_counter > 0:\n        total += inner_counter\n        inner_counter -= 1\n    outer_counter -= 1",
+        "expected_postcondition": "total is the sum of integers from inner_counter to 1 for each value of outer_counter, inner_counter is 0, outer_counter is 0",
+        "hoareprompt_postcondition": "`outer_counter` is 0, `inner_counter` is 0, `total` is the sum of all integers from the original value of `inner_counter` down to 1 multiplied by the original value of `outer_counter`.",
+        "is_equivalent": false,
+        "reason": "The expected postcondition describes `total` as the sum of integers from `inner_counter` to 1 for each value of `outer_counter`, implying that this summation process happens multiple times based on `outer_counter`. Meanwhile, the computed postcondition describes `total` as the sum of integers from the original `inner_counter` down to 1, multiplied by the original value of `outer_counter`, which implies a single computation based on initial values and multiplication, rather than iterating over `outer_counter`. These represent different logical states: one is accumulative over iterations, while the other is a direct computation involving multiplication."
+    },
+    {
+        "id": "test_007",
+        "precondition": "x is an integer, y can have any value",
+        "code": "if x > 0:\n    y = x + 1",
+        "expected_postcondition": "If x > 0, y is x + 1. Otherwise, y is can have any value.",
+        "hoareprompt_postcondition": "*`x` is an integer. If `x` is greater than 0, then `y` is set to `x + 1`. If `x` is less than or equal to 0, the value of `y` remains unchanged.",
+        "is_equivalent": false,
+        "reason": "The expected postcondition allows for 'y' to have any value if 'x' is not greater than 0, implying that 'y' could potentially be assigned any arbitrary value or be left unchanged. The computed postcondition, however, specifies that if 'x' is less than or equal to 0, 'y' remains unchanged, which is a more specific condition than allowing 'y' to take any value. This difference in the permissiveness regarding the value of 'y' when 'x' is not greater than 0 creates a semantic difference between the two postconditions."
+    },
+    {
+        "id": "test_008",
+        "precondition": "x is an integer, y can have any value",
+        "code": "if x > 0:\n    y = x\nelse:\n    y = -x",
+        "expected_postcondition": "x is an integer , if x > 0, y is x. Otherwise, y is -x.",
+        "hoareprompt_postcondition": "*`x` is an integer. If `x` is greater than 0, then `y` is equal to `x`. Otherwise, if `x` is less than or equal to 0, then `y` is either 0 or a positive integer.",
+        "is_equivalent": false,
+        "reason": "The expected postcondition specifies that if `x` is greater than 0, then `y` should be equal to `x`, and if `x` is less than or equal to 0, then `y` should be `-x`. This means that `y` should be the negative of `x` when `x` is less than or equal to 0, which would make `y` either 0 or a positive integer. However, the computed postcondition states that if `x` is less than or equal to 0, then `y` is either 0 or a positive integer without explicitly stating that `y` is `-x`. The computed postcondition does not account for the case where `x` is negative and `y` should be equal to `-x`, hence they do not semantically align."
+    },
+    {
+        "id": "test_009",
+        "precondition": "x is an integer",
+        "code": "if x > 0:\n    y = 'positive'\nelif x == 0:\n    y = 'zero'\nelse:\n    y = 'negative'",
+        "expected_postcondition": "x is an integer, y is a string. If x > 0, y is 'positive'. If x == 0, y is 'zero'. Otherwise, y is 'negative'.",
+        "hoareprompt_postcondition": "*`x` is an integer. If `x` is greater than 0, then `y` is 'positive'. If `x` is equal to 0, then `y` is 'zero'. If `x` is less than 0, then `y` is 'negative'.",
+        "is_equivalent": true,
+        "reason": "Both the Expected Postcondition and the Computed Postcondition describe the same logical state of the program. In both cases, they agree that `x` is an integer and `y` is a string. They also specify the same conditions for the value of `y`: if `x` is greater than 0, `y` should be 'positive'; if `x` is equal to 0, `y` should be 'zero'; and if `x` is less than 0, `y` should be 'negative'. The wording might differ slightly, but the semantic meaning and logical conditions described are identical."
+    },
+    {
+        "id": "test_010",
+        "precondition": "x and y are integers",
+        "code": "if x > 0:\n    if y > 0:\n        z = x + y\n    else:\n        z = x - y\nelse:\n    z = y",
+        "expected_postcondition": "x and y are integers. If x > 0 and y > 0, z is x + y. If x > 0 and y <= 0, z is x - y. If x <= 0, z is y.",
+        "hoareprompt_postcondition": "*`x` and `y` are integers. If `x` is greater than 0, then if `y` is greater than 0, `z` is the sum of `x` and `y`; otherwise, `z` is a positive integer greater than `x`. If `x` is less than or equal to 0, then `z` is assigned the value of `y`.",
+        "is_equivalent": false,
+        "reason": "The expected postcondition and the computed postcondition differ in the case where `x > 0` and `y <= 0`. In the expected postcondition, `z` is calculated as `x - y`. However, the computed postcondition states that `z` is a positive integer greater than `x`, which implies a different mathematical operation or outcome than `x - y`. This discrepancy in behavior for the specific condition `x > 0` and `y <= 0` means that the two postconditions are not semantically the same."
+    },
+    {
+        "id": "test_011",
+        "precondition": "x and y are integers, z can have any value",
+        "code": "if x > 0 and y < 0:\n    z = x - y",
+        "expected_postcondition": "If x > 0 and y < 0, z is x - y. Otherwise, z can have any value .",
+        "hoareprompt_postcondition": "*`x` and `y` are integers, and `z` can have any value. If `x` is greater than 0 and `y` is less than 0, then `z` is greater than `x`.",
+        "is_equivalent": false,
+        "reason": "The expected postcondition specifies that if `x > 0` and `y < 0`, then `z` is specifically `x - y`. In contrast, the computed postcondition states that if `x > 0` and `y < 0`, then `z` is greater than `x`. These two conditions are not semantically equivalent because the computed postcondition allows `z` to be any value greater than `x`, which does not necessarily equal `x - y` as specified in the expected postcondition. Thus, they describe different states of the program."
+    },
+    {
+        "id": "test_012",
+        "precondition": "x, y, and z are integers",
+        "code": "if x > 0:\n    y += x\nif y < 0:\n    z -= y",
+        "expected_postcondition": "x, y, and z are integers. If x > 0, y is increased by x. If y < 0, z is decreased by the value of y after the first if statement.",
+        "hoareprompt_postcondition": "*`x`, `y`, and `z` are integers. If `y` is less than 0, `z` is decreased by `y` while `x` remains unchanged and `y` also remains unchanged. If `y` is greater than or equal to 0, `y` and `z` remain unchanged.",
+        "is_equivalent": false,
+        "reason": "The expected postcondition describes two conditional behaviors: if `x > 0`, then `y` is increased by `x`, and if `y < 0` after this modification, `z` is decreased by the new value of `y`. The computed postcondition, however, only addresses the situation when `y < 0` by stating that `z` is decreased by `y` without acknowledging any change to `y` that might have occurred due to `x > 0`. Additionally, the computed postcondition does not cover the possibility of `y` being increased by `x`, which is a crucial step in the expected postcondition. Thus, the semantic meanings of the two postconditions do not align."
+    },
+    {
+        "id": "test_013",
+        "precondition": "x is an integer",
+        "code": "if x > 10:\n    y = x*10 \nelif x > 5:\n    y = 20*x\nelif x > 0:\n    y = 100*x\n",
+        "expected_postcondition": "x is an integer.If x > 10, y is 10 times the value of x. If 5 < x <= 10, y is 20 times the value of x. If 0 < x <= 5, y is 100 times the value of x . Otherwise, y can have any value.",
+        "hoareprompt_postcondition": "*`x` is an integer. If `x` > 10, then `y` is an integer greater than 100. If `x` is less than or equal to 10 and greater than 5, then `y` is either 120, 140, 160, 180, or 200. If `x` is less than or equal to 5 and greater than 0, then `y` is either 100, 200, 300, 400, or 500. If `x` is less than or equal to 0, there are no changes to `y`.",
+        "is_equivalent": false,
+        "reason": "The expected postcondition and the computed postcondition do not semantically describe the same state.\n\nThe expected postcondition outlines a specific relationship between `x` and `y` based on the value of `x`:\n\n1. If `x > 10`, then `y` should be 10 times `x`.\n2. If `5 < x <= 10`, then `y` should be 20 times `x`.\n3. If `0 < x <= 5`, then `y` should be 100 times `x`.\n4. Otherwise, `y` can have any value.\n\nThe computed postcondition, however, provides specific possible values for `y` based on the ranges of `x`:\n\n1. If `x > 10`, `y` is simply stated to be an integer greater than 100, but not necessarily 10 times `x`.\n2. If `5 < x <= 10`, `y` can be one of several specific values (120, 140, 160, 180, 200), which corresponds to 20 times `x` for `x` values 6 through 10.\n3. If `0 < x <= 5`, `y` can be one of several specific values (100, 200, 300, 400, 500), which corresponds to 100 times `x` for `x` values 1 through 5.\n4. If `x <= 0`, no changes to `y` are specified, which does not align with the expected postcondition that `y` can have any value.\n\nThe mismatch arises from the computed postcondition being more specific in terms of possible exact values for `y` in the second and third conditions, and the lack of specification for `y` when `x` is less than or equal to 0. These differences in detail make the two postconditions semantically different."
+    },
+    {
+        "id": "test_014",
+        "precondition": "a, b, and c are integers",
+        "code": "if a > b:\n    if b > c:\n        x = a - c\n    elif c > a:\n        x = c - b\n    else:\n        x = a + b\nelse:\n    x = b + c",
+        "expected_postcondition": "a, b, and c are integers. If a > b and b > c, x is a - c. If a > b and c > a, x is c - b. If a > b and c <= a, x is a + b. If a <= b, x is b + c.",
+        "hoareprompt_postcondition": "*`a`, `b`, and `c` are integers. If `a` is greater than `b`, then if `b` is greater than `c`, `x` is equal to `a - c`. If `c` is greater than `a`, then `x` is a positive integer resulting from `c - b`. Otherwise, `x` is equal to `a + b`. If `a` is less than or equal to `b`, then `x` is equal to `b + c`.",
+        "is_equivalent": true,
+        "reason": "The two postconditions describe the same logical state of the program. Both specify the same conditions and the resulting value of `x` based on comparisons between the integers `a`, `b`, and `c`. Here's the breakdown:\n\n- Both postconditions start by stating that `a`, `b`, and `c` are integers.\n- For the case where `a > b`:\n  - Both postconditions state that if `b > c`, then `x = a - c`.\n  - Both postconditions state that if `c > a`, then `x = c - b`.\n  - Both postconditions state that if `c <= a`, then `x = a + b`.\n- For the case where `a <= b`:\n  - Both postconditions state that `x = b + c`.\n\nThe conditions and resulting actions are described equivalently in both postconditions, showing that they semantically represent the same program state."
+    },
+    {
+        "id": "test_015",
+        "precondition": "prev = 0, curr = 1, i = 0, n is a non-negative integer",
+        "code": "while i <= n:\n    prev, curr = curr, prev * curr\n    i = i + 1",
+        "expected_postcondition": "i is equal to n+1. If n is 0, prev is 1 and curr is 1 after the loop. For n > 0, prev is either 1 or 0 and curr is either 0 or 1.",
+        "hoareprompt_postcondition": "`i` is `n + 1`, `prev` is 0 if `n` is even, 1 if `n` is odd, `curr` is 1 if `n` is even, 0 if `n` is odd.",
+        "is_equivalent": false,
+        "reason": "The expected postcondition and the computed postcondition describe different logical states regarding the variables `prev` and `curr` after the loop. The expected postcondition states that if `n` is 0, then `prev` is 1 and `curr` is 1, and for `n > 0`, `prev` is either 1 or 0 and `curr` is either 0 or 1. However, the computed postcondition specifies a more deterministic behavior where `prev` is 0 if `n` is even and 1 if `n` is odd, and `curr` is 1 if `n` is even and 0 if `n` is odd. These descriptions are not semantically the same because they predict different values for `prev` and `curr` based on the parity of `n`."
+    },
+    {
+        "id": "test_016",
+        "precondition": "prev = 1, curr = 1, i = 0, n is a non-negative integer",
+        "code": "while i <= n:\n    prev, curr = curr, prev * curr\n    i = i + 1",
+        "expected_postcondition": "i is equal to n+1. If n is 0, prev is 1 and curr is 1 after the loop. For n > 0, prev is 1 and curr is 1.",
+        "hoareprompt_postcondition": "`i` is `n + 1`, `prev` is 1, `curr` is 1, `n` is a non-negative integer",
+        "is_equivalent": true,
+        "reason": "The expected postcondition and the computed postcondition describe the same logical state of the program after execution. Both state that `i` is equal to `n + 1` and that `prev` is 1 and `curr` is 1. The expected postcondition provides a conditional expression for when `n` is 0 or greater than 0, but the outcome (`prev` is 1 and `curr` is 1) is consistent in both cases. The computed postcondition encapsulates this by directly stating the values of `prev` and `curr` as 1, without explicitly distinguishing between the cases for `n`, which aligns with the expected postcondition's ultimate result. Additionally, the computed postcondition specifies that `n` is a non-negative integer, which is a reasonable assumption based on the context and does not contradict the expected postcondition. Therefore, semantically, both postconditions describe the same program state."
+    },
+    {
+        "id": "test_017",
+        "precondition": "numerator is a numeric value, denominator is a numeric value.",
+        "code": "try:\n    result = numerator / denominator\nexcept ZeroDivisionError:\n    result = None",
+        "expected_postcondition": "numerator is a numeric value, denominator is a numeric value. If denominator is not zero, result is numerator / denominator. If denominator is zero, result is None.",
+        "hoareprompt_postcondition": "`numerator` and `denominator` are numeric values. If `denominator` is zero, `result` is None; otherwise, `result` is the value of `numerator / denominator.",
+        "is_equivalent": true,
+        "reason": "Both postconditions describe the same logical state of the program. They specify that `numerator` and `denominator` are numeric values and detail the behavior of `result` based on the value of `denominator`. Both conditions state that if the `denominator` is zero, `result` is None, and if the `denominator` is not zero, `result` is equal to `numerator / denominator`. The slight difference in the order of clauses does not affect the semantic meaning, which remains consistent between the two descriptions."
+    },
+    {
+        "id": "test_018",
+        "precondition": "filename is a string representing a valid file path.",
+        "code": "try:\n    file = open(filename, 'r')\n    content = file.read()\nexcept FileNotFoundError:\n    content = \"\"",
+        "expected_postcondition": "filename is a string representing a valid file path.If the file exists, content contains the text of the file. If the file does not exist, content is an empty string.",
+        "hoareprompt_postcondition": "`filename` is a string representing a valid file path; if the file is found, `file` is an open file object in read mode and `content` is the string read from the file; if the file is not found, `content` is set to an empty string.",
+        "is_equivalent": true,
+        "reason": "Both postconditions describe a scenario where `filename` is a string that represents a valid file path. They agree that if the file exists, `content` contains the text of the file. If the file does not exist, both agree that `content` is an empty string. While the Computed Postcondition adds the detail that `file` is an open file object in read mode when the file is found, this does not contradict or change the state described by the Expected Postcondition regarding `content`. Thus, semantically, they describe the same state regarding the content of the file and its handling."
+    },
+    {
+        "id": "test_019",
+        "precondition": "input_string is a string.",
+        "code": "try:\n    value = int(input_string)\n    result = 100 / value\nexcept ValueError:\n    result = \"Invalid input\"\nexcept ZeroDivisionError:\n    result = \"Cannot divide by zero\"",
+        "expected_postcondition": "input_string is a string. If input_string represents a valid non-zero integer, result is 100 / value. If input_string does not represent a valid integer, result is 'Invalid input'. If input_string respresents zero, result is 'Cannot divide by zero'.",
+        "hoareprompt_postcondition": "`input_string` is a string. If the input is valid and non-zero, the function returns `100` divided by `value`; if the input is invalid, `result` is 'Invalid input'; if the input is zero, `result` is 'Cannot divide by zero'.",
+        "is_equivalent": true,
+        "reason": "Both the Expected Postcondition and the Computed Postcondition describe the same logical outcomes based on the state of `input_string`. They both assert that `input_string` is a string. They specify that if `input_string` represents a valid non-zero integer, the result is the division of `100` by `value`. If `input_string` does not represent a valid integer, the result is 'Invalid input'. Finally, both state that if `input_string` represents zero, the result is 'Cannot divide by zero'. Despite minor differences in wording, the semantic content and logical conditions described are equivalent."
+    },
+    {
+        "id": "test_020",
+        "precondition": "numbers is a list, index is an integer.",
+        "code": "try:\n    value = numbers[index]\nexcept IndexError:\n    value = None",
+        "expected_postcondition": "numbers is a list, index is an integer. If index is within the bounds of numbers, value is numbers[index]. If index is out of bounds of the list numbers, value is None.",
+        "hoareprompt_postcondition": "`numbers` is a list, `index` is an integer. If `index` is valid, `value` is the element at `numbers[index]`, otherwise `value` is None.",
+        "is_equivalent": true,
+        "reason": "Both postconditions describe the same logical state of the program. They both specify that `numbers` is a list and `index` is an integer. They also agree on the behavior of `value`: if `index` is within the bounds of the list `numbers`, `value` should be the element at `numbers[index]`; if `index` is out of bounds, `value` should be `None`. The wording differs slightly, but the semantic meaning is the same."
+    },
+    {
+        "id": "test_021",
+        "precondition": "data is a dictionary, key is a string.",
+        "code": "try:\n    value = data[key]\nexcept KeyError:\n    value = \"Key not found\"",
+        "expected_postcondition": "data is a dictionary, key is a string. If key exists in data, value is data[key]. If key does not exist, value is 'Key not found'.",
+        "hoareprompt_postcondition": "`data` is a dictionary, `key` is a string, and `value` is either the value associated with `key` in `data` or 'Key not found' if the key does not exist.",
+        "is_equivalent": true,
+        "reason": "Both postconditions describe the state of the program in a semantically similar way. They both assert that `data` is a dictionary and `key` is a string. They also both claim that if `key` exists in `data`, then `value` will be the associated value from `data`, otherwise `value` will be 'Key not found'. The logical description of the program state is the same, even though the wording is slightly different."
+    },
+    {
+        "id": "test_022",
+        "precondition": "x is an integer",
+        "code": "if x > 0:\n    return 'Positive'\nelse:\n    y = -x",
+        "expected_postcondition": "x is an integer. x is 0 or negative. y is -x.",
+        "hoareprompt_postcondition": "`x` is an integer and `x` is less than or equal to 0; `y` is either 0 or a positive integer.",
+        "is_equivalent": true,
+        "reason": "Both postconditions describe the following state after the program execution: `x` is an integer that is either 0 or negative (i.e., `x <= 0`). The value of `y` is the negation of `x`, meaning that if `x` is 0, `y` is 0, otherwise `y` is positive. This aligns with the computed postcondition where `y` is described as either 0 or a positive integer. Therefore, semantically, both postconditions describe the same logical state of the program."
+    },
+    {
+        "id": "test_023",
+        "precondition": "x is a positive integer",
+        "code": "if x % 2 == 0:\n    return 'Even'",
+        "expected_postcondition": "x is an odd positive integer.",
+        "hoareprompt_postcondition": "*`x` is a positive integer, and `x` is an odd integer.",
+        "is_equivalent": true,
+        "reason": "Both the expected and computed postconditions describe the same logical state: `x` is a positive integer and is odd. The expected postcondition combines these two properties into a single statement, while the computed postcondition explicitly states them as separate conditions. Semantically, both describe the same state of `x` being a positive odd integer."
+    },
+    {
+        "id": "test_024",
+        "precondition": "x is an integer",
+        "code": "if x > 10:\n    return 'Large'\nelif x > 0:\n    return 'Small'\nelse:\n    return 'Negative'",
+        "expected_postcondition": "x is an integer.",
+        "hoareprompt_postcondition": "x is an integer",
+        "is_equivalent": true,
+        "reason": "Both the expected and computed postconditions describe the same state semantically, indicating that the variable x is an integer. The wording is identical, and there is no difference in their logical meaning or the program state they describe."
+    },
+    {
+        "id": "test_025",
+        "precondition": "x and y are integers",
+        "code": "if x > y:\n    if y > 0:\n        return 'X greater and Y positive'\n    else:\n        z = x + y\nelse:\n    return 'X not greater'",
+        "expected_postcondition": "x and y are integers.  x > y , y <= 0 and z =x+y.",
+        "hoareprompt_postcondition": "`x` and `y` are integers; `z` is `x + y`, which is less than `x`.",
+        "is_equivalent": true,
+        "reason": "Both postconditions describe a situation where `x` and `y` are integers, and `z` is calculated as `x + y`. The expected postcondition specifies that `x > y` and `y <= 0`, which implies that `z = x + y` will be less than `x` because `y` is non-positive. The computed postcondition states directly that `z < x`, which aligns with the implication of the expected postcondition that `y` being less than or equal to zero would make `z` less than `x`. Therefore, semantically, both postconditions describe the same logical state."
+    },
+    {
+        "id": "test_026",
+        "precondition": "a is a string",
+        "code": "if len(a) > 5:\n    b = a.upper()\nelse:\n    return 'Too short'",
+        "expected_postcondition": "a is a string.  len(a) > 5, b is the uppercase version of a. ",
+        "hoareprompt_postcondition": "`a` is a string with a length greater than 5; `b` is the uppercase version of `a`",
+        "is_equivalent": true,
+        "reason": "The expected and computed postconditions both describe the same logical state of the program. They specify that `a` is a string with a length greater than 5 and that `b` is the uppercase version of `a`. Despite slight differences in wording, the semantic meaning is equivalent, indicating that both postconditions describe the same program state."
+    },
+    {
+        "id": "test_027",
+        "precondition": "x is an integer, y is an integer",
+        "code": "if x == y:\n    z = x + y\nelif x > y:\n    return 'X is greater'\nelse:\n    z = y - x",
+        "expected_postcondition": "x and y are integers. If x == y, z is the sum of x and y. If x < y, z is the difference between y and x.",
+        "hoareprompt_postcondition": "*`x` and `y` are integers. If `x` is equal to `y`, then `z` is set to `2 * x`. If `x` is not equal to `y` and `x` is less than or equal to `y`, then `z` is a positive integer.",
+        "is_equivalent": false,
+        "reason": "The expected postcondition specifies two scenarios: if `x` equals `y`, then `z` is the sum of `x` and `y`, and if `x` is less than `y`, then `z` is the difference between `y` and `x`. The computed postcondition correctly identifies that when `x` equals `y`, `z` is `2 * x` (which is the same as the sum of `x` and `y`), but it diverges in the second scenario. The computed postcondition states that if `x` is not equal to `y` and `x` is less than or equal to `y`, then `z` is a positive integer, which is less specific and does not align with the expected result of `z` being the difference between `y` and `x`. Thus, the computed postcondition does not fully capture the logic described in the expected postcondition."
+    },
+    {
+        "id": "test_028",
+        "precondition": "x is an integer",
+        "code": "if x > 10:\n    return 'Greater than 10'\nelif x > 5:\n    y = x - 5\nelse:\n    return 'Five or less'",
+        "expected_postcondition": "x is an integer. X is less than or equal to 10 and greater than 5, y is x-5.",
+        "hoareprompt_postcondition": "`x` is an integer, `x` is greater than 5 and less than or equal to 10; `y` is either 1, 2, 3, 4, or 5",
+        "is_equivalent": true,
+        "reason": "Both postconditions describe the same logical state of the program: `x` is an integer between 6 and 10 inclusive, and `y` is `x - 5`. The expected postcondition states `y` is `x - 5`, which results in `y` being 1, 2, 3, 4, or 5 when `x` is between 6 and 10. The computed postcondition directly lists the possible values of `y` that result from this calculation. Therefore, the two postconditions are semantically the same."
+    },
+    {
+        "total_correct": 18,
+        "total": 28
+    }
+]

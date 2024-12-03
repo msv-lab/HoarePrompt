@@ -12,7 +12,7 @@
             "description": "A for loop iterating over a list of integers.",
             "precondition": "numbers is a list of integers, total is 0",
             "code": "for num in numbers:\n    total += num",
-            "expected_postcondition": "numbers is a alist of integers, total is the sum of all integers in the list 'numbers'"
+            "expected_postcondition": "numbers is a alist of integers, total is the sum of all integers in the list 'numbers', if the list is empty, total is 0"
         },
         {
             "id": "test_003",
@@ -40,14 +40,14 @@
             "description": "A nested while loop decrementing counters.",
             "precondition": "outer_counter and inner_counter are integers greater than 0, total is 0",
             "code": "while outer_counter > 0:\n    while inner_counter > 0:\n        total += inner_counter\n        inner_counter -= 1\n    outer_counter -= 1",
-            "expected_postcondition": "total is the sum of integers from inner_counter to 1 for each value of outer_counter, inner_counter is 0, outer_counter is 0"
+            "expected_postcondition": "total is the sum of integers from inner_counter to 1 multiplied by the original value of the outer_counter, inner_counter is 0, outer_counter is 0"
         },
         {
             "id": "test_007",
             "description": "A simple if statement checking a condition.",
             "precondition": "x is an integer, y can have any value",
             "code": "if x > 0:\n    y = x + 1",
-            "expected_postcondition": "If x > 0, y is x + 1. Otherwise, y is can have any value."
+            "expected_postcondition": "If x > 0, y is x + 1. Otherwise, y remains unchanged so it can still have any value."
         },
         {
             "id": "test_008",
@@ -195,6 +195,55 @@
             "precondition": "x is an integer",
             "code": "if x > 10:\n    return 'Greater than 10'\nelif x > 5:\n    y = x - 5\nelse:\n    return 'Five or less'",
             "expected_postcondition": "x is an integer. X is less than or equal to 10 and greater than 5, y is x-5."
+        },
+        {
+            "id": "test_029",
+            "description": "Counts pairs of indices (i, j) where nums[i] and nums[j] have the same parity (both even or both odd).",
+            "precondition": "nums is a list of integers, and count is initialized to 0",
+            "code": "count = 0\nfor i in range(len(nums)):\n    for j in range(i+1, len(nums)):\n        if (nums[i] ^ nums[j]) % 2 == 0:\n            count += 1",
+            "expected_postcondition": "nums is a list of integers , count is the number of pairs (i, j) such that 0 <= i < j < len(nums) and nums[i] and nums[j] have the same parity (both even or both odd)."
+        },
+        {
+            "id": "test_030",
+            "description": "Counts pairs of indices (i, j) in the list such that both elements in the pair have the same parity (both even or both odd).",
+            "precondition": "lst is a list of integers",
+            "code": "even_count = sum(1 for x in lst if x % 2 == 0)\nodd_count = len(lst) - even_count\neven_pairs = even_count * (even_count - 1) // 2\nodd_pairs = odd_count * (odd_count - 1) // 2\ncount = even_pairs + odd_pairs",
+            "expected_postcondition": "lst is a list of integers, even_count is the number of even integers in lst, odd_count is the number of odd integers in lst. even_pairs is the number of combinations of even elements, odd_pairs is the number of combinations of odd elements. count odd_pairs plus even_pairs."
+        },
+        {
+            "id": "test_031",
+            "description": "Removes the first and last occurrence of the character c in the string s if both are present.",
+            "precondition": "s is a string, c is a single character",
+            "code": "first_occ = s.find(c)\nlast_occ = s.rfind(c)\nif first_occ != -1 and last_occ != -1:\n    s = s[:first_occ] + s[first_occ+1:last_occ] + s[last_occ+1:]",
+            "expected_postcondition": "first_occ is the index of the first occurrence of c in s, or -1 if c is not found. last_occ is the index of the last occurrence of c in s, or -1 if c is not found. If both first_occ and last_occ are not -1, s is the string s with the first and last occurrence of c removed. Otherwise, s remains unchanged."
+        },
+        {
+            "id": "test_032",
+            "description": "Removes the first and last occurrence of the character ch from the string s, provided they are distinct and both exist.",
+            "precondition": "s is a string, ch is a single character",
+            "code": "first_index = s.find(ch)\nlast_index = s.rfind(ch)\nif first_index == -1 or last_index == -1 or first_index == last_index:\n    ans = s\nans = s[:first_index] + s[first_index + 1:last_index] + s[last_index + 1:]",
+            "expected_postcondition": "first_occ is the index of the first occurrence of c in s, or -1 if c is not found. last_occ is the index of the last occurrence of c in s, or -1 if c is not found. If both first_occ and last_occ are not -1 and first_occ != last_occ, s is the string s with the first and last occurrence of c removed. Otherwise, s remains unchanged."
+        },
+        {
+            "id": "test_033",
+            "description": "Counts the parity of the number of '1's in overlapping substrings of s, repeated to cover a total length of n.",
+            "precondition": "s is a non-empty string, n is a non-negative integer",
+            "code": "s = s * (n // len(s) + 1)\ncount = 0\nfor i in range(n):\n    temp = s[i:i+len(s)]\n    count += temp.count('1') % 2",
+            "expected_postcondition": "s is repeated n // len(s) + 1. count is the sum of the parity (0 for even, 1 for odd) of the number of '1's in all overlapping substrings of s (length equal to s) starting at each index 0 <= i < n."
+        },
+        {
+            "id": "test_034",
+            "description": "Filters the string s to retain only uppercase characters.",
+            "precondition": "s is a string",
+            "code": "s = ''.join([char for char in s if char.isupper()])",
+            "expected_postcondition": "s is a string consisting only of the uppercase characters from the original string"
+        },
+        {
+            "id": "test_035",
+            "description": "Counts the number of elements in tup before encountering the first tuple.",
+            "precondition": "tup is a tuple containing elements of any data type.",
+            "code": "count = 0\nfor elem in tup:\n    if isinstance(elem, tuple):\n        break\n    count += 1",
+            "expected_postcondition": "tup is a tuple containing elements of any data type. count is the number of elements in tup before the first tuple is encountered."
         }
     ]
 }

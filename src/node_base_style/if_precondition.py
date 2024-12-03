@@ -44,7 +44,7 @@ Example Answer 3:
 Postcondition: ***x is a positive less than 2***
 
 Example 4:
-Precondition: `m` is an integer, `n` is an integer, a is alist of integers
+Precondition: `m` is an integer, if m is higher than 10 n equals minus m, a is alist of integers
 if condition:
 ```
 if n < 0:
@@ -52,7 +52,7 @@ if n < 0:
 
 
 Example Answer 4:
-Postcondition: ***`m`, `n` are integers. n is lower than 0, a is a list of integers***
+Postcondition: ***`m`,  if m is higher than 10 n equals minus m. a is a list of integers. the current value of  n is lower than 0***
 
 Example 5:
 Precondition: `x` is an integer, a is a list of integers.
@@ -70,7 +70,7 @@ if condition:
 ```
 {program_fragment}
 ```
-Your task is to complete the  postcondition . All the information of the precondition must be included in the postcondition and additionally the if condition must also be included. Give the overall state of the program for the program after it enters the if condition.
+Your task is to complete the  postcondition . All the information of the precondition must be included in the postcondition and additionally the if condition must also be included. If the variables have values related to previous conditions try to put that early in the postcondition and say the current value of the variable from then on. Give the overall state of the program for the program after it enters the if condition.
 Follow the format Postcondition: **the calculated postcondition**
 """
 

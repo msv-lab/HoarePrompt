@@ -61,7 +61,7 @@ def run_tests(test_cases_file, config, log_directory, model, test_ids=[]):
         #create log_directory in the log directory with the id
         log_directory_temp = log_directory / id
         log_directory_temp.mkdir(parents=True, exist_ok=True)
-
+        print(f"Running test case {id}")
         # Get the HoarePrompt postcondition
         hoareprompt_output = compute_postcondition(precondition, code, config, log_directory_temp)
 

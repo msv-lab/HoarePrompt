@@ -21,14 +21,13 @@ Output State: **The program returns string 'str' that has 3 or more characters *
 
 
 Example2:
-Initial State: A is a matrix n x m
+Initial State: `numbers` is an empty list, `total` is the sum of all positive integers that were in the original `numbers` list, `count` is the number of positive integers that were in the original `numbers` list, `average` is equal to `total / count`
 ```
 return A
 ```
 Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate the result.
 Example Answer:
-Output State: **The program returns the n x m sized matrix A**
-
+Output State: **The program returns average whuih is equal to total/count , where total is the sum of all positive integers that were in the original `numbers` list, `count` is the number of positive integers that were in the original `numbers` list**
 
 Example3:
 Initial State: `n` is either 3 or 5
@@ -51,7 +50,7 @@ Example Answer:
 `y' is 0 and 'x' is one so the program returns  0+1=1.
 Output State: **`The program returns y that is greater than 3 plus 1**
 
-xample4:
+Example4:
 Initial State: `count' contains the number of numbers greater than 1 in the list `numbers`, 'numbers' is a list of integers, 'total' is 0
 ```
 retrun count

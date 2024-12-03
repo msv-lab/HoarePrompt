@@ -1,9 +1,9 @@
 
 import os
 
-# #get a division:
-# # def get_division(number1, number2):
-# #     return number1/number2
+#get a division:
+# def get_division(number1, number2):
+#     return number1/number2
 
 # Calculate the average of positive numbers in a list
 def calculate_average(numbers):

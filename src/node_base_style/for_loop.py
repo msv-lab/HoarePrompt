@@ -7,6 +7,7 @@ from node_base_style.helper import extract_result
 # The prompt template instructs the model on how to analyze the state of the loop after several(k) iterations.
 LOOP_PROMPT = """
 You have been assigned the role of a program verifier, responsible for analyzing the program's state after the for loop. The initial state of the code has already been provided. Additionally, you can see how the state changes after the loop executes a few times. The initial state includes the values and relationships of the variables before the program execution. The output state should include the values and relationships of the variables after all the iterations of the for loop have executed. Similar to the initial state, avoid explaining how the program operates; focus solely on the variable values and their interrelations. 
+In the information given, the output state after the loop executes some number of times include what needed to be true for the loop to execute at least that number of times. 
 You must adhere to the text format: Output State: **output state.**
 I am giving you two examples to understand the task better. Then I am giving you your task.
 Example 1: 
@@ -17,9 +18,9 @@ Code of the loop:
 for i in range(1, n + 1):
     factorial *= i
 ```
-Output state after the loop executes 1 times:  `factorial` is `1`, 'i' is 1 , n is at least 1.
-Output state after the loop executes 2 times: `factorial` is 2, 'i' is 2 , n is at least 2.
-Output state after the loop executes 3 times: `factorial` is 6 , 'i' is 3 , n is at least 3.
+Output state after the loop executes 1 times:  `factorial` is `1`, 'i' is 1 , n must be at least 1.
+Output state after the loop executes 2 times: `factorial` is 2, 'i' is 2 , n must be at least 2.
+Output state after the loop executes 3 times: `factorial` is 6 , 'i' is 3 , n must be at least 3.
 
 Now, please think step by step. Using the results from the first few iterations of the loop provided in the example as hints but  mostly from the loop code, determine the loop's output state.
 
@@ -37,9 +38,9 @@ for student in students:
     total += student
     students_num += 1
 ```
-Output State after the loop executes 1 times:  `total` is equal to the first student, 'students_num' is 1, students is a list with at least one student, student is the first student in the list.
-Output State after the loop executes 2 times: `total` is equal to the first student plus the second student, 'students_num' is 2, students is a list with at least 2 students, student is the second student in the list.
-Output State after the loop executes 3 times: `total` is equal to the first student plus the second student plus the third student, 'students_num' is 3, students is a list with at least 3 students, student is the third student in the list.
+Output State after the loop executes 1 times:  `total` is equal to the first student, 'students_num' is 1, students is a list that must have at least one student, student is the first student in the list.
+Output State after the loop executes 2 times: `total` is equal to the first student plus the second student, 'students_num' is 2, students is a list that must have at least 2 students, student is the second student in the list.
+Output State after the loop executes 3 times: `total` is equal to the first student plus the second student plus the third student, 'students_num' is 3, students is a list that must have at least 3 students, student is the third student in the list.
 
 
 Now, please think step by step. Using the results from the first few iterations of the loop provided in the example as hints but  mostly from the loop code, determine the loop's output state.
@@ -55,9 +56,12 @@ Code of the loop:
 ```
 {loop_code}
 ```
+
+The output state after the loop executes some number of times include what needed to be true for the loop to execute at least that number of times. 
 {loop_unrolled}
 
 Now, please think step by step. Use the results from the output states for the first few iterations of the loop provided in the example to help you , but mostly focus on the loop code to determine the loop's output state after ALL THE ITERATIONS OF THE LOOP HAVE FINISHED. Try to understand what  will be the values of the variables after it executes. In the case the loop doesnot execute, what will be the values of the variables.
+If the state of some variables is dependant on earlier or the oginal value of some variable, make sure to seprate the original value from the current value.
 Use the fomrat Output State: **the output state you calculate**
 """
 

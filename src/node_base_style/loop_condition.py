@@ -21,7 +21,7 @@ Now, please think step by step: Which states need to be adjusted for the loop to
 
 Example Answer:
 According to the code, whether the loop can execute depends on the variables `i` and `n`. If `i` is less than `n`, the loop can execute again. At the end of the last iteration, `i` is 4, `n` is greater than 3. `n` being greater than 3 does not ensure that the loop will execute again, so it needs to be adjusted to `n` is greater than 4. No other states need to be adjusted.
-State: **`total` is 10, `i` is 4, for the loop to execute again `n` is greater than 4**
+State: **`total` is 10, `i` is 4,  `n` must be greater than 4**
 
 Example 2:
 State at the end of the previous iteration: `total` is 0,  students is 3 less than its initial value.
@@ -34,7 +34,7 @@ Now, please think step by step: Which states need to be adjusted for the loop to
 
 Example Answer:
 According to the code, whether the loop can execute depends on the variable students.  If students is greater than or equal to 1, the loop can execute again. At the end of the last iteration, students is 3 less than its initial value, So for the loop to be executed one more time the initial value of students needed to have been equal or greater than 4 and students currently must be greater than 1.
-State: **`total` is 0, students is 3 less than its initial value and for the loop to execute agsin students currently is greater or equal to 1**
+State: **`total` is 0, students is 3 less than its initial value and students currently must be greater or equal to 1**
 
 
 Your Task:

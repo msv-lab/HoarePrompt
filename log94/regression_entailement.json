@@ -1,0 +1,15 @@
+[
+    {
+        "id": "test_027",
+        "precondition": "x is an integer, y is an integer",
+        "code": "if x == y:\n    z = x + y\nelif x > y:\n    return 'X is greater'\nelse:\n    z = y - x",
+        "expected_postcondition": "x and y are integers. If x == y, z is the sum of x and y. If x < y, z is the difference between y and x.",
+        "hoareprompt_postcondition": "*`x` and `y` are integers. If `x` is equal to `y`, then `z` is equal to `2 * x`. If `x` is not equal to `y` and `x` is less than or equal to `y`, then `z` is a positive integer equal to `y - x`.",
+        "is_equivalent": true,
+        "reason": "Both postconditions describe the same logical outcomes for the variable `z` based on the values of `x` and `y`. In the expected postcondition, when `x == y`, `z` is described as the sum of `x` and `y`, which is logically equivalent to `2 * x` because `x` and `y` are equal. For the case when `x < y`, the expected postcondition states that `z` is the difference between `y` and `x`, which aligns with the computed postcondition stating `z` is a positive integer equal to `y - x`, as both describe the result of subtracting `x` from `y`. The computed postcondition includes an additional case for when `x` is not equal to `y` and `x` is less than or equal to `y`, which effectively covers the scenario where `x < y` because if `x > y`, this case would not apply. Therefore, semantically, both postconditions are describing the same state and behavior of the program."
+    },
+    {
+        "total_correct": 1,
+        "total": 1
+    }
+]
