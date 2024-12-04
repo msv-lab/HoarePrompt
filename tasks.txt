@@ -1,14 +1,29 @@
-def func_1(matrix):
-    n = len(matrix)
-    total = 0
-    for i in range(n):
-        total += matrix[i][i]
-        
-        total += matrix[i][n - i - 1]
-        
-    #State of the program after the  for loop has been executed: `total` is equal to the sum of the elements on the main diagonal and the secondary diagonal of `matrix`, `matrix` is a 2D list of integers representing a square matrix of dimension n×n where n is a non-negative integer.
-    return total
-    #The program returns total, which is equal to the sum of the elements on the main diagonal and the secondary diagonal of the matrix, where matrix is a 2D list of integers representing a square matrix of dimension n×n.
-#Overall this is what the function does: The function accepts a 2D list of integers representing a square matrix and returns the sum of the elements on the main diagonal and the secondary diagonal of the matrix.
-The program returns total, which is equal to the sum of the elements on the main diagonal and the secondary diagonal of the matrix, where matrix is a 2D list of integers representing a square matrix of dimension n×n.
+def func_2(n, k, dp):
+    if (k == 0) :
+        return 0
+        #The program returns 0
+    #State of the program after the if block has been executed: *`n` is a non-negative integer such that 0 <= n < 10^k, `k` is a positive integer such that 1 <= k <= 10, `dp` is a dictionary that stores previously computed results for pairs (n, k), and `k` is greater than 0.
+    if ((n, k) in dp) :
+        return dp[n, k]
+        #The program returns the previously computed result stored in the dictionary `dp` for the pair (n, k)
+    #State of the program after the if block has been executed: *`n` is a non-negative integer such that 0 <= n < 10^k, `k` is a positive integer such that 1 <= k <= 10, `dp` is a dictionary that stores previously computed results for pairs (n, k), and `k` is greater than 0. The pair (n, k) is not present in the dictionary `dp`.
+    if (n < 10 ** k) :
+        dp[n, k] = n
+    else :
+        dp[n, k] = 9
+        for i in range(1, k):
+            dp[n, k] += 9 * 10 ** (i - 1) * (10 ** (k - i) - 10 ** (i - 1))
+            
+        #State of the program after the  for loop has been executed: `n` is a non-negative integer such that 0 <= n < 10^k; `k` is at least 2; `dp[n, k]` is updated to the cumulative sum based on the loop iterations.
+        dp[n, k] += (10 ** (k - 1) - 10 ** (k - 2)) * (n // 10 ** (k - 1) - 1)
+        dp[n, k] %= MOD
+    #State of the program after the if-else block has been executed: *`n` is a non-negative integer such that 0 <= n < 10^k and `k` is a positive integer such that 1 <= k <= 10. If `n` is less than 10^k, then the entry `dp[n, k]` is updated to `n`, and the pair (n, k) is now present in the dictionary `dp`. Otherwise, if `k` is at least 2, `dp[n, k]` is updated to `dp[n, k] + 90`, and then `dp[n, k]` is updated to `dp[n, k] % MOD`.
+    return dp[n, k]
+    #The program returns the value of dp[n, k] which is either n if n < 10^k, or dp[n, k] + 90 (mod MOD) if k >= 2
+#Overall this is what the function does: The function accepts parameters n (a non-negative integer), k (a positive integer), and dp (a dictionary), and returns 0, a previously computed result from dp for (n, k), or a calculated value based on n and k.
+Case_1: The program returns 0
+
+Case_2: The program returns the previously computed result stored in the dictionary `dp` for the pair (n, k)
+
+Case_3: The program returns the value of dp[n, k] which is either n if n < 10^k, or dp[n, k] + 90 (mod MOD) if k >= 2
 
