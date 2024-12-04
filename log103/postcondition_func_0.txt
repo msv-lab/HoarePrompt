@@ -1,0 +1,1 @@
+The function accepts an integer `n` (where `n` is greater than or equal to 2) and returns the count of prime numbers that are less than `n`. If `n` is 2 or less, it returns 0.

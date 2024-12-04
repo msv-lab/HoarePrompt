@@ -589,6 +589,16 @@ def assess(description, program, module_name, config, log_directory, cex_path):
     postconditions_list =[]
     return_list=[]
     annotated_func_list = []
+    remade_program = ""
+
+    #remake the program with the functions
+    if imports != "":
+        remade_program += imports + "\n\n"
+    if global_code != "":
+        remade_program += global_code + "\n\n"
+    for func in functions_list:
+        remade_program += func + "\n\n"
+
     
     print(f"the imports are\n{imports}\n")
     print(f"the global code is\n{global_code}\n")
@@ -597,7 +607,7 @@ def assess(description, program, module_name, config, log_directory, cex_path):
     
     if config['assessment-mode'] == 'naive':
         print("Using naive assessment mode")
-        return compute_postcondition_naive(description, cleaned_program, config, log_directory)
+        return compute_postcondition_naive(description, remade_program, config, log_directory)
     
     if config['assessment-mode'] == 'single-postcondition' or config['assessment-mode'] == 'single-postcondition-no-fsl':
         print(f"Using {config['assessment-mode']} assessment mode")
@@ -672,10 +682,17 @@ def assess(description, program, module_name, config, log_directory, cex_path):
         entailment_log_dir_default.mkdir(parents=True, exist_ok=True)
 
     if len(postconditions_list)==1:
+
+        if global_code != "":
+            annotated_func = global_code + "\n\n" + annotated_func
+        
+        if imports != "":
+            annotated_func = imports + "\n\n" + annotated_func
+
         if cex_path:
-            result = check_entailment(description, postcondition, imports+"\n" + global_code+"\n"+cleaned_program, module_name, config, entailment_log_dir, return_str, annotated_func,cex_path )
+            result = check_entailment(description, postcondition,remade_program, module_name, config, entailment_log_dir, return_str, annotated_func,cex_path )
         else:
-            result = check_entailment(description, postcondition, imports+"\n" + global_code+"\n" + cleaned_program, module_name, config, entailment_log_dir, return_str, annotated_func)
+            result = check_entailment(description, postcondition, remade_program, module_name, config, entailment_log_dir, return_str, annotated_func)
     else:
         if cex_path:
             result = check_entailment_mult_func(description, postconditions_list, functions_list, imports,global_code, module_name, config, entailment_log_dir, return_list, annotated_func_list,cex_path)
@@ -794,6 +811,9 @@ def check_entailment(description, postcondition, program, module_name, config, l
         model_simple = get_model(config["model"], config["temperature"], log_directory/'entailment_simple')
         model_complex = get_model(config["model"], config["temperature"], log_directory/'entailment_complex')
         model_default = get_model(config["model"], config["temperature"], log_directory/'entailment_default')
+
+    
+    
     # Perform naive entailment checking, generating counterexamples if necessary
     if config['entailment-mode'] == 'naive' and config['assessment-mode'] == 'postcondition-entailment':
         if not cex_path:
@@ -851,7 +871,7 @@ def check_entailment_mult_func(description, postconditions_list, functions_list,
     # for func in functions_list:
     #     program += func
     #add the global code to the last function in function list
-    functions_list[-1] += "\n" +global_code
+    # functions_list[-1] += "\n" +global_code
     for index, post in enumerate(postconditions_list):
         program += f"#Function {index+1}:\n" + functions_list[index]+"\n\n"
         total_post+= f"Output Description for function number {index+1} : {post}+\n"
@@ -859,7 +879,16 @@ def check_entailment_mult_func(description, postconditions_list, functions_list,
         fuctions_simple += f"Function number {index+1} :\n Code:\n '''\n{functions_list[index]}\n''' \n"
         annotated_program += f"#Function {index+1}:\n" + annotated_func_list[index]+"\n\n"
         annotated_program_simple += f"#Function {index+1}:\n" + remove_functionality(annotated_func_list[index])+"\n"
-    
+
+    if global_code != "":
+        annotated_program = global_code + "\n\n" + annotated_program
+        annotated_program_simple = global_code + "\n\n" + annotated_program_simple
+        functions =  global_code + "\n\n" + functions
+        
+    if imports != "":
+        annotated_program = imports + "\n\n" + annotated_program
+        annotated_program_simple = imports + "\n\n" + annotated_program_simple
+        functions =  imports + "\n\n" + functions
     
     # Perform naive entailment checking, generating counterexamples if necessary
     if config['entailment-mode'] == 'naive' and config['assessment-mode'] == 'postcondition-entailment':
