@@ -1,0 +1,1 @@
+n is a non-negative integer such that 0 <= n < 10^k, k is a positive integer such that 1 <= k <= 10, and dp is a dictionary that stores previously computed results for pairs (n, k).

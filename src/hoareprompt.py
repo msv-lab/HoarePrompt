@@ -6,6 +6,7 @@ from pathlib import Path
 from model import get_model
 
 import precondition_extractor
+import precondition_extractor_multi_func
 import entailment
 import entailment_mult_func
 import entailment_annotated
@@ -633,7 +634,7 @@ def assess(description, program, module_name, config, log_directory, cex_path):
     for index, func in enumerate(functions_list):
         # Extract the precondition from the description and program
         
-        precondition = extract_precondition(description, func, config, precondition_log_dir)
+        precondition = extract_precondition(description, func, config, precondition_log_dir,len(functions_list))
         
         # Save the extracted precondition
         with (log_directory / f'precondition_func_{index}.txt').open("w", encoding="utf-8") as f:
@@ -712,11 +713,14 @@ def assess(description, program, module_name, config, log_directory, cex_path):
                 f.write(cex_code)
     return result
 # Extract the precondition from a description and program using a model
-def extract_precondition(description, program, config, log_directory):
+def extract_precondition(description, program, config, log_directory, functions_num =1):
     model = get_model(config["model"], config["temperature"], log_directory)
-    program_def =find_function_definition(program)
-    # Use the precondition extractor model to generate the precondition
-    return precondition_extractor.default(model, description, program_def)
+    if functions_num >1:
+        return precondition_extractor_multi_func.default(model,description, program)
+    else:
+        program_def =find_function_definition(program)
+        # Use the precondition extractor model to generate the precondition
+        return precondition_extractor.default(model, description, program_def)
 
 
 def compute_postcondition_single(description, functions_list, imports, global_code, cleaned_program, module_name, program, config, log_directory):
@@ -738,7 +742,7 @@ def compute_postcondition_single(description, functions_list, imports, global_co
     for index, func in enumerate(functions_list):
         # Extract the precondition from the description and program
         
-        precondition = extract_precondition(description, func, config, precondition_log_dir)
+        precondition = extract_precondition(description, func, config, precondition_log_dir, len(functions_list))
         
         # Save the extracted precondition
         with (log_directory / f'precondition_func_{index}.txt').open("w", encoding="utf-8") as f:
