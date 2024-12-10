@@ -55,19 +55,8 @@ def get_model(name: str, temperature: float, log_directory: Path = None):
         return DeepSeekModel(name, temperature, log_directory)
 
     qwen_models = {
-        # models below solve complicated problem
-        "qwen-max",  # the latest version
-        "qwen-max-0403",
-        "qwen-max-0107",
-        "qwen-max-longcontext",
-        # less-complicated
-        "qwen-plus",  # the latest version
-        "qwen-plus-0806",  # beta stage
-        "qwen-plus-0624",
-        "qwen-plus-0206",
-        # simple
-        "qwen-turbo",  # the latest version
-        "qwen-turbo-0206"
+        "qwq-32b-preview",  # reasoning model
+        "qwen2.5-7b-instruct"  # model better than gpt3.5
     }
 
     if name in qwen_models:
