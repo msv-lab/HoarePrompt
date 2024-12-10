@@ -1,0 +1,1 @@
+matrix is a 2D list of integers representing a square matrix of dimension n×n, where n is a positive integer.

@@ -1,12 +1,12 @@
 def func_2(n, k, dp):
     if (k == 0) :
         return 0
-        #The program returns 0
-    #State of the program after the if block has been executed: *`n` is a non-negative integer such that 0 <= n < 10^k, `k` is a positive integer such that 1 <= k <= 10, `dp` is a dictionary that stores previously computed results for pairs (n, k), and `k` is greater than 0.
+        #The program returns 0, which is explicitly stated in the code.
+    #State of the program after the if block has been executed: *`n` is a non-negative integer less than 10^18, `k` is a positive integer between 1 and 10, `k` is not equal to 0, and `dp` is a dictionary that maps tuples of (n, k) to integers.
     if ((n, k) in dp) :
         return dp[n, k]
-        #The program returns the previously computed result stored in the dictionary `dp` for the pair (n, k)
-    #State of the program after the if block has been executed: *`n` is a non-negative integer such that 0 <= n < 10^k, `k` is a positive integer such that 1 <= k <= 10, `dp` is a dictionary that stores previously computed results for pairs (n, k), and `k` is greater than 0. The pair (n, k) is not present in the dictionary `dp`.
+        #The program returns the value associated with the tuple (n, k) from the dictionary `dp`, where `n` is a non-negative integer less than 10^18 and `k` is a positive integer between 1 and 10, and `k` is not equal to 0.
+    #State of the program after the if block has been executed: *`n` is a non-negative integer less than 10^18, `k` is a positive integer between 1 and 10, `k` is not equal to 0, `dp` is a dictionary that maps tuples of (n, k) to integers, and the tuple (n, k) is not present in the dictionary `dp`.
     if (n < 10 ** k) :
         dp[n, k] = n
     else :
@@ -14,16 +14,16 @@ def func_2(n, k, dp):
         for i in range(1, k):
             dp[n, k] += 9 * 10 ** (i - 1) * (10 ** (k - i) - 10 ** (i - 1))
             
-        #State of the program after the  for loop has been executed: `n` is a non-negative integer such that 0 <= n < 10^k; `k` is at least 2; `dp[n, k]` is updated to the cumulative sum based on the loop iterations.
+        #State of the program after the  for loop has been executed: `n` is a non-negative integer less than 10^18, `k` is a positive integer between 2 and 10, `dp[n, k]` is updated to 9 plus the accumulated value based on the iterations, where `dp[n, k]` reflects the computations from all iterations.
         dp[n, k] += (10 ** (k - 1) - 10 ** (k - 2)) * (n // 10 ** (k - 1) - 1)
         dp[n, k] %= MOD
-    #State of the program after the if-else block has been executed: *`n` is a non-negative integer such that 0 <= n < 10^k and `k` is a positive integer such that 1 <= k <= 10. If `n` is less than 10^k, then the entry `dp[n, k]` is updated to `n`, and the pair (n, k) is now present in the dictionary `dp`. Otherwise, if `k` is at least 2, `dp[n, k]` is updated to `dp[n, k] + 90`, and then `dp[n, k]` is updated to `dp[n, k] % MOD`.
+    #State of the program after the if-else block has been executed: *`n` is a non-negative integer less than 10^18, and `k` is a positive integer between 1 and 10. If `n` is less than 10^k, then `dp[n, k]` is set to `n`. Otherwise, if `k` is between 2 and 10, `dp[n, k]` is updated to `(dp[n, k] + 90) % MOD`.
     return dp[n, k]
-    #The program returns the value of dp[n, k] which is either n if n < 10^k, or dp[n, k] + 90 (mod MOD) if k >= 2
-#Overall this is what the function does: The function accepts parameters n (a non-negative integer), k (a positive integer), and dp (a dictionary), and returns 0, a previously computed result from dp for (n, k), or a calculated value based on n and k.
-Case_1: The program returns 0
+    #The program returns the value of dp[n, k], which is n if n is less than 10^k, otherwise it is updated based on the previously defined conditions.
+#Overall this is what the function does: The function accepts parameters n (a non-negative integer less than 10^18), k (a positive integer between 1 and 10), and dp (a dictionary mapping tuples of (n, k) to integers), and it returns either 0, a value from the dictionary associated with (n, k), or n based on its comparison to 10^k.
+Case_1: The program returns 0, which is explicitly stated in the code.
 
-Case_2: The program returns the previously computed result stored in the dictionary `dp` for the pair (n, k)
+Case_2: The program returns the value associated with the tuple (n, k) from the dictionary `dp`, where `n` is a non-negative integer less than 10^18 and `k` is a positive integer between 1 and 10, and `k` is not equal to 0.
 
-Case_3: The program returns the value of dp[n, k] which is either n if n < 10^k, or dp[n, k] + 90 (mod MOD) if k >= 2
+Case_3: The program returns the value of dp[n, k], which is n if n is less than 10^k, otherwise it is updated based on the previously defined conditions.
 

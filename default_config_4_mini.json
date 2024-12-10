@@ -8,5 +8,5 @@
     "entailment-mode": "naive",
     "cex-mode": "with-postcondition",
     "annotated": false,
-    "fsl": true
+    "fsl": false
 }
