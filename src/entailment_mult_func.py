@@ -7,8 +7,7 @@ import re
 ENTAILMENT_CHECKING_PROMPT_TEMPLATE = """
 You have been assigned the role of a program verifier. Your task is to determine the correctness of a given Python program based on the provided problem description and the description of program's output. If the program is correct, that is it meets the requirements in the problem description,  print Correctness: **True**; otherwise, print  Correctness: **False**. Partially correct programs should be considered incorrect. You have to use the source code and the Output hints to try to understand if there is any missing logic or edge cases that the code is not handling. 
 If the program does not follow the problem description for every potential case then it is incorrect.Since if for at least one input or potential case the program does not work then Correctness **False**.
-You are trying to find any potential case that the porgram does not does what the descriptions says. The output hints summarise the code functionality and might give you examples of some of the cases that the code is not working corectly.
-If those output hints describes certain edge cases that you think the code does not indeed cover then the code is incorrect. If you can't think of an example of the ocde not working as expected then the code is correct.
+The output hints summarise the code functionality and might give you examples of some of the cases that the code is not working corectly, but make sure the hints agree with the code.
 You need to strictly follow the format Correctness: **True or False**.
 
 I am giving you some examples to understand the task better. Then I am giving you your task.
@@ -106,11 +105,8 @@ Functions with output description for each function:
 {functions}
 
 
-First I want you to try to see if the program (including all the functions) does what the description says. Look at only the code and the description and make an initial assesment.Try to think of any edge cases that the code might not be handling.
-
-Then I want you to see if the output hints agree with the code. Sometimes the output hints hallucinate some cases that are not actually valid, so doublecheck. Make sure that the stuff the output hints says are indeed valid and make sense. If they do use them along with the actual code to make a more informed decision and detrmine if the code is correct or not.
-Does the code follow the problem description for every potential case?
-If the program does not follow the problem description for every potential case then  then Correctness **False**. The hints might provide such cases but make sure that the hints indeed agree with the code.
+Does the code do what  the problem description says,  for every potential case?
+If the program does not follow the problem description for every potential case then  then Correctness **False**. The hints might provide such cases but make sure that the hints indeed agree with the code. Also the program description might have examples you need to make sure the program will give the correct output
 But if you can't find an example where the program does not work as expected in the description and all the examples you think work correctly then then Correctness **True**
 
 You need to strictly follow the format Correctness: **True or False**. Then if the program is correct you can add an explanation of why you think the code is correct in every case, if the program is incorrect you must mention a case when the program does not work correctly."""

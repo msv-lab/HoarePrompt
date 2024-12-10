@@ -8,7 +8,9 @@ from model import get_model
 import precondition_extractor
 import precondition_extractor_multi_func
 import entailment
+import entailment_no_fsl
 import entailment_mult_func
+import entailment_mult_func_no_fsl
 import entailment_annotated
 import entailement_mult_func_annotated
 import comment_style
@@ -397,8 +399,8 @@ def main():
     if "fsl" in config:
         if not config["fsl"]:
             #if fsl is set to true then we have to check if the assessment mode is set to postcondition-entailment
-            if config["assessment-mode"] != "naive" and config["assessment-mode"] != "single-postcondition" and config["assessment-mode"] != "single-postcondition-no-fsl":
-                print("Error: FSL mode as False  is only compatible with 'naive' or single-postcondition or single-postcondition-no-fsl assessment mode")
+            if config["annotated"] == True:
+                print("Error: FSL mode as False  is only compatible when annotated is false")
                 return
     else:
         #if the fsl option does not exist in the config file then we have to set it to false
@@ -681,6 +683,8 @@ def assess(description, program, module_name, config, log_directory, cex_path):
         entailment_log_dir_complex.mkdir(parents=True, exist_ok=True)
         entailment_log_dir_default = entailment_log_dir/'entailment_default'
         entailment_log_dir_default.mkdir(parents=True, exist_ok=True)
+        entailment_log_dir_default_no_fsl = entailment_log_dir/'entailment_default_no_fsl'
+        entailment_log_dir_default_no_fsl.mkdir(parents=True, exist_ok=True)
 
     if len(postconditions_list)==1:
 
@@ -815,7 +819,7 @@ def check_entailment(description, postcondition, program, module_name, config, l
         model_simple = get_model(config["model"], config["temperature"], log_directory/'entailment_simple')
         model_complex = get_model(config["model"], config["temperature"], log_directory/'entailment_complex')
         model_default = get_model(config["model"], config["temperature"], log_directory/'entailment_default')
-
+        model_default_no_fsl = get_model(config["model"], config["temperature"], log_directory/'entailment_default_no_fsl')
     
     
     # Perform naive entailment checking, generating counterexamples if necessary
@@ -832,7 +836,13 @@ def check_entailment(description, postcondition, program, module_name, config, l
                     print(f"Annotated type {config['annotated-type']} not supported, only simple and complex are currently implemented")
                     raise NotImplementedError
             else:
-                correctness = entailment.naive(model, description, postcondition, program, module_name, config)
+                if config["fsl"]:
+                    correctness = entailment.naive(model, description, postcondition, program, module_name, config)
+                elif not config["fsl"]:
+                    correctness = entailment_no_fsl.naive(model, description, postcondition, program, module_name, config)
+                else:
+                    print("Error: FSL should not have reached this function")
+                    exit(1)
         else:
             if config["annotated"]:
                 if config["annotated-type"] == "simple":
@@ -843,7 +853,13 @@ def check_entailment(description, postcondition, program, module_name, config, l
                     print(f"Annotated type {config['annotated-type']} not supported, only simple and complex are currently implemented")
                     raise NotImplementedError
             else:
-                correctness = entailment.naive(model, description, postcondition, program, module_name, config, cex_path)
+                if config["fsl"]:
+                    correctness = entailment.naive(model, description, postcondition, program, module_name, config, cex_path)
+                elif not config["fsl"]:
+                    correctness = entailment_no_fsl.naive(model, description, postcondition, program, module_name, config, cex_path)
+                else:
+                    print("Error: FSL should not have reached this function")
+                    exit(1)
             if not correctness[0] :
                 reason = correctness[1].replace("Correctness: **False**", "")
                 cex_generator.output_cex(model, description, postcondition, program, config, cex_path, module_name, reason)
@@ -853,7 +869,8 @@ def check_entailment(description, postcondition, program, module_name, config, l
             correctness_simple = annotated_simple(description,  remove_functionality(annotated_func), model_simple)
             correctness_complex= entailment_annotated.naive(model_complex, description, return_str, annotated_func, module_name, config, cex_path)
             correctness_default = entailment.naive(model_default, description, postcondition, program, module_name, config, cex_path)
-            return [correctness_simple[0], correctness_complex[0], correctness_default[0]]
+            correctness_default_no_fsl = entailment_no_fsl.naive(model_default_no_fsl, description, postcondition, program, module_name, config, cex_path)
+            return [correctness_simple[0], correctness_complex[0], correctness_default[0], correctness_default_no_fsl[0]]
 
     print(f"Entailment mode {config['entailment-mode']} not supported, only naive is currently implemented")
     raise NotImplementedError
@@ -865,6 +882,7 @@ def check_entailment_mult_func(description, postconditions_list, functions_list,
         model_simple = get_model(config["model"], config["temperature"], log_directory/'entailment_simple')
         model_complex = get_model(config["model"], config["temperature"], log_directory/'entailment_complex')
         model_default = get_model(config["model"], config["temperature"], log_directory/'entailment_default')
+        model_default_no_fsl = get_model(config["model"], config["temperature"], log_directory/'entailment_default_no_fsl')
 
     program= imports+"\n"
     total_post=""
@@ -878,8 +896,8 @@ def check_entailment_mult_func(description, postconditions_list, functions_list,
     # functions_list[-1] += "\n" +global_code
     for index, post in enumerate(postconditions_list):
         program += f"#Function {index+1}:\n" + functions_list[index]+"\n\n"
-        total_post+= f"Output Description for function number {index+1} : {post}+\n"
-        functions += f"Function number {index+1} :\n Code:\n '''\n{functions_list[index]}\n''' \n\n Output decription for function{index+1}:  {post}\n"
+        total_post+= f"Output hints for function number {index+1} : {post}+\n"
+        functions += f"Function number {index+1} :\n Code:\n '''\n{functions_list[index]}\n''' \n\n Output hints for function{index+1}:  {post}\n"
         fuctions_simple += f"Function number {index+1} :\n Code:\n '''\n{functions_list[index]}\n''' \n"
         annotated_program += f"#Function {index+1}:\n" + annotated_func_list[index]+"\n\n"
         annotated_program_simple += f"#Function {index+1}:\n" + remove_functionality(annotated_func_list[index])+"\n"
@@ -906,7 +924,13 @@ def check_entailment_mult_func(description, postconditions_list, functions_list,
                     print(f"Annotated type {config['annotated-type']} not supported, only simple and complex are currently implemented")
                     raise NotImplementedError
             else:
-                correctness = entailment_mult_func.naive_mult_func(model, description, functions, module_name, config)
+                if config["fsl"]:
+                    correctness = entailment_mult_func.naive_mult_func(model, description, functions, module_name, config)
+                elif not config["fsl"]:
+                    correctness = entailment_mult_func_no_fsl.naive_mult_func(model, description, functions, module_name, config)
+                else:
+                    print("Error: FSL should not have reached this function")
+                    exit(1)
         
         else:
             if config["annotated"]:
@@ -918,7 +942,13 @@ def check_entailment_mult_func(description, postconditions_list, functions_list,
                     print(f"Annotated type {config['annotated-type']} not supported, only simple and complex are currently implemented")
                     raise NotImplementedError
             else:
-                correctness = entailment_mult_func.naive_mult_func(model, description, functions, module_name, config, cex_path)
+                if config["fsl"]:
+                    correctness = entailment_mult_func.naive_mult_func(model, description, functions, module_name, config, cex_path)
+                elif not config["fsl"]:
+                    correctness = entailment_mult_func_no_fsl.naive_mult_func(model, description, functions, module_name, config, cex_path)
+                else:
+                    print("Error: FSL should not have reached this function")
+                    exit(1)
             if not correctness[0] :
                 reason = correctness[1].replace("Correctness: **False**", "")
                 cex_generator.output_cex(model, description, total_post, program, config, cex_path, module_name, reason)
@@ -928,7 +958,8 @@ def check_entailment_mult_func(description, postconditions_list, functions_list,
             correctness_simple = annotated_simple(description,  annotated_program_simple, model_simple)
             correctness_complex= entailement_mult_func_annotated.naive_mult_func(model_complex, description, annotated_program, module_name, config, cex_path)
             correctness_default =entailment_mult_func.naive_mult_func(model_default, description, functions, module_name, config, cex_path)
-            return [correctness_simple[0], correctness_complex[0], correctness_default[0]]
+            correctness_default_no_fsl =entailment_mult_func_no_fsl.naive_mult_func(model_default_no_fsl, description, functions, module_name, config, cex_path)
+            return [correctness_simple[0], correctness_complex[0], correctness_default[0], correctness_default_no_fsl[0]]
 
     print(f"Entailment mode {config['entailment-mode']} not supported, only naive is currently implemented")
     raise NotImplementedError

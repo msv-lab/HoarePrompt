@@ -1,0 +1,1 @@
+The function `func_1` accepts three integer parameters `l`, `r`, and `k`, where `1 <= l <= r < 10^18` and `1 <= k <= 10`. It calculates and returns the result of the expression \((\text{func\_2}(r, k, dp) - \text{func\_2}(l - 1, k, dp)) \mod \text{MOD}\), leveraging a helper function `func_2` to perform the computation based on the given `l`, `r`, and `k`.
