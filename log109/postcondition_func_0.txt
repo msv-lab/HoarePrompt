@@ -1,1 +1,0 @@
-The function accepts an integer `n` (where `n` is at least 2) and returns the count of prime numbers that are less than `n`. If `n` is less than 2, the function does not handle this case explicitly and will return 0, as the loop will not execute. Thus, the function effectively counts prime numbers less than `n` while not addressing the scenario when `n` is below 2.

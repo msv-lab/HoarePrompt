@@ -1,1 +1,0 @@
-The function accepts an integer `num` and returns `True` if `num` is a prime number (greater than or equal to 2); otherwise, it returns `False` if `num` is less than 2 or if it has any divisors other than 1 and itself. The function does not account for any additional logic involving the parameters `l`, `r`, or `k`, as they are not used within the function itself.

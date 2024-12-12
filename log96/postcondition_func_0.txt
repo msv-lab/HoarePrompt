@@ -1,1 +1,0 @@
-The function `func_1` takes a square matrix of integers as input. It calculates the sum of the diagonal elements of the matrix, considering both the main diagonal and the secondary diagonal, and multiplies this sum by the number of iterations in the loop. The function then returns this total sum.

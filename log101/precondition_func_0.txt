@@ -1,1 +1,0 @@
-l and r are integers such that 1 <= l <= r < 10^18, and k is an integer such that 1 <= k <= 10.

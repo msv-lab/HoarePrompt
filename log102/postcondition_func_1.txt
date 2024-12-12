@@ -1,1 +1,0 @@
-The function accepts an integer `num` and returns `True` if `num` is a prime number (greater than or equal to 2); otherwise, it returns `False`. The function accurately checks for primality by testing divisibility from 2 up to the square root of `num`. Edge cases include returning `False` for any integer less than 2.

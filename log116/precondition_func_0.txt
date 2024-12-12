@@ -1,1 +1,0 @@
-matrix is a 2D list representing a square matrix of dimensions n×n, where n is a positive integer.
