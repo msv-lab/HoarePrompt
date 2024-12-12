@@ -1,0 +1,12 @@
+def func_1(numbers):
+    max_value = 0
+    for num in numbers:
+        if num > max_value:
+            max_value = num
+        
+    #State of the program after the  for loop has been executed: `max_value` is the maximum value in `numbers`, assuming `numbers` is a non-empty list of numbers.
+    return max_value
+    #The program returns the maximum value from the non-empty list of numbers `numbers`
+#Overall this is what the function does: The function accepts a list of numbers and returns the maximum value from that list, assuming the list is not empty.
+The program returns the maximum value from the non-empty list of numbers `numbers`
+
