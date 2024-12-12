@@ -57,7 +57,8 @@ def get_model(name: str, temperature: float, log_directory: Path = None):
 
     qwen_models = {
         "qwq-32b-preview",  # reasoning model
-        "qwen2.5-7b-instruct"  # model better than gpt3.5
+        "qwen2.5-7b-instruct",  # model better than gpt3.5
+        "qwen-plus"
     }
 
     if name in qwen_models:
@@ -210,7 +211,7 @@ class QwenModel(Model):
             base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
         )
 
-    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
+    # @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
     def _query(self, prompt):
         response = self.client.chat.completions.create(
             model=self.name,
