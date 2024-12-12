@@ -45,7 +45,8 @@ def get_model(name: str, temperature: float, log_directory: Path = None):
     }
 
     deepinfra_models = {
-        "meta-llama/Meta-Llama-3.1-70B-Instruct"
+        "meta-llama/Meta-Llama-3.1-70B-Instruct",
+        "meta-llama/Llama-3.3-70B-Instruct"
     }
 
     if name in deepinfra_models:

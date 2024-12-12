@@ -1,1 +1,0 @@
-The function accepts a square 2D list of numbers, `matrix`, with dimensions n x n, and returns the sum of all diagonal and anti-diagonal elements of the matrix. It does not account for cases where the matrix might be empty or not properly formed as a square matrix, which could lead to unintended behavior.
