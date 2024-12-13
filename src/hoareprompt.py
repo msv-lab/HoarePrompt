@@ -15,11 +15,12 @@ import entailment_annotated
 import entailement_mult_func_annotated
 import comment_style
 import node_base_style.complete
-from  node_base_style.naive import naive_question
-from node_base_style.naive_no_fsl import naive_question_no_fsl, naive_question_no_fsl_confidence, naive_question_no_fsl_confidence_2
+from  node_base_style.naive import naive_question, naive_question_with_response
+from node_base_style.naive_no_fsl import naive_question_no_fsl, naive_question_no_fsl_confidence, naive_question_no_fsl_confidence_2, naive_question_no_fsl_with_response
 from node_base_style.annotated_simple import annotated_simple
 from node_base_style.single_post import single_post
 from node_base_style.single_post_no_fsl import single_post_no_fsl
+from verify_entailement import verify_tree ,verify_function_summary
 
 import cex_generator
 from textwrap import dedent
@@ -616,7 +617,7 @@ def assess(description, program, module_name, config, log_directory, cex_path):
         print(f"Using {config['assessment-mode']} assessment mode")
         return compute_postcondition_single(description, functions_list,imports, global_code, cleaned_program, module_name, program, config, log_directory)
     # Ensure assessment mode is set to 'postcondition-entailment'
-    assert config['assessment-mode'] in {'postcondition-entailment', 'total'}
+    assert config['assessment-mode'] in {'postcondition-entailment', 'total', 'verify'}
 
     
     # Save the program and description to the log directory
@@ -675,13 +676,19 @@ def assess(description, program, module_name, config, log_directory, cex_path):
     entailment_log_dir = log_directory / 'check_entailment'
     entailment_log_dir.mkdir(parents=True, exist_ok=True)
 
-    if config["assessment-mode"] == "total":
-        print("Using total entailment mode")
+    if config["assessment-mode"] == "total" or config["assessment-mode"] == "verify":
+        print("Using total or verify entailment mode")
         entailment_log_dir_simple = entailment_log_dir/'entailment_simple'
         entailment_log_dir_simple.mkdir(parents=True, exist_ok=True)
         entailment_log_dir_complex = entailment_log_dir/'entailment_complex'
         entailment_log_dir_complex.mkdir(parents=True, exist_ok=True)
         entailment_log_dir_default = entailment_log_dir/'entailment_default'
+        entailment_log_dir_default.mkdir(parents=True, exist_ok=True)
+        entailment_log_dir_simple = entailment_log_dir/'entailment_simple_verify'
+        entailment_log_dir_simple.mkdir(parents=True, exist_ok=True)
+        entailment_log_dir_complex = entailment_log_dir/'entailment_complex_verify'
+        entailment_log_dir_complex.mkdir(parents=True, exist_ok=True)
+        entailment_log_dir_default = entailment_log_dir/'entailment_default_verify'
         entailment_log_dir_default.mkdir(parents=True, exist_ok=True)
         entailment_log_dir_default_no_fsl = entailment_log_dir/'entailment_default_no_fsl'
         entailment_log_dir_default_no_fsl.mkdir(parents=True, exist_ok=True)
@@ -814,11 +821,14 @@ def compute_postcondition(precondition, program, config, log_directory):
 # Check if the postcondition implies compliance with the description using entailment
 def check_entailment(description, postcondition, program, module_name, config, log_directory, return_str, annotated_func, cex_path=None):
     model = get_model(config["model"], config["temperature"], log_directory)
-    if config["assessment-mode"] == "total":
-        print("Using total entailment mode")
+    if config["assessment-mode"] == "total" or config["assessment-mode"] == "verify":
+        print("Using total or verify entailment mode")
         model_simple = get_model(config["model"], config["temperature"], log_directory/'entailment_simple')
         model_complex = get_model(config["model"], config["temperature"], log_directory/'entailment_complex')
         model_default = get_model(config["model"], config["temperature"], log_directory/'entailment_default')
+        model_simple_verify = get_model(config["model"], config["temperature"], log_directory/'entailment_simple_verify')
+        model_complex_verify = get_model(config["model"], config["temperature"], log_directory/'entailment_complex_verify')
+        model_default_verify = get_model(config["model"], config["temperature"], log_directory/'entailment_default_verify')
         model_default_no_fsl = get_model(config["model"], config["temperature"], log_directory/'entailment_default_no_fsl')
     
     
@@ -871,17 +881,38 @@ def check_entailment(description, postcondition, program, module_name, config, l
             correctness_default = entailment.naive(model_default, description, postcondition, program, module_name, config, cex_path)
             correctness_default_no_fsl = entailment_no_fsl.naive(model_default_no_fsl, description, postcondition, program, module_name, config, cex_path)
             return [correctness_simple[0], correctness_complex[0], correctness_default[0], correctness_default_no_fsl[0]]
+    elif config['entailment-mode'] == 'naive' and config['assessment-mode'] == 'verify':
+            
+            correctness_simple = annotated_simple(description,  remove_functionality(annotated_func), model_simple)
+            correctness_complex= entailment_annotated.naive(model_complex, description, return_str, annotated_func, module_name, config, cex_path)
+            correctness_default = entailment.naive(model_default, description, postcondition, program, module_name, config, cex_path)
+            correctness_default_no_fsl = entailment_no_fsl.naive(model_default_no_fsl, description, postcondition, program, module_name, config, cex_path)
 
+            correctness_naive, response_naive  = naive_question_with_response(description, program, model)
+            correctness_naive_no_fsl, response_naive_no_fsl  = naive_question_no_fsl_with_response(description, program, model)
+            correctness_simple_verify = verify_tree(model_simple_verify, description,  remove_functionality(annotated_func), program, response_naive, module_name, config, cex_path)
+            correctness_complex_verify = verify_tree(model_complex_verify, description, annotated_func, program , response_naive , module_name, config, cex_path)
+            correctness_default_verify = verify_function_summary(model_default_verify, description, postcondition, program, response_naive, module_name, config, cex_path)
+            correctness_simple_no_fsl_verify = verify_tree(model_simple_verify, description,  remove_functionality(annotated_func), program, response_naive_no_fsl, module_name, config, cex_path)
+            correctness_complex_no_fsl_verify= verify_tree(model_complex_verify, description, annotated_func, program , response_naive_no_fsl , module_name, config, cex_path)
+            correctness_default_no_fsl_verify = verify_function_summary(model_default_verify, description, postcondition, program, response_naive_no_fsl, module_name, config, cex_path)
+            #lets return a dicrionary with the results
+            res_dict= {"naive": correctness_naive, "naive_no_fsl": correctness_naive_no_fsl , "simple": correctness_simple[0], "complex": correctness_complex[0], "default": correctness_default[0], "simple_verify": correctness_simple_verify[0], "complex_verify": correctness_complex_verify[0], "default_verify": correctness_default_verify[0], "simple_no_fsl_verify": correctness_simple_no_fsl_verify[0], "complex_no_fsl_verify": correctness_complex_no_fsl_verify[0], "default_no_fsl_verify": correctness_default_no_fsl_verify[0]}
+            print(res_dict)
+            return res_dict
     print(f"Entailment mode {config['entailment-mode']} not supported, only naive is currently implemented")
     raise NotImplementedError
 
 # Check if the postcondition implies compliance with the description using entailment
 def check_entailment_mult_func(description, postconditions_list, functions_list, imports, global_code, module_name, config, log_directory, return_list, annotated_func_list,cex_path=None):
     model = get_model(config["model"], config["temperature"], log_directory)
-    if config["assessment-mode"] == "total":
+    if config["assessment-mode"] == "total" or config["assessment-mode"] == "verify":
         model_simple = get_model(config["model"], config["temperature"], log_directory/'entailment_simple')
         model_complex = get_model(config["model"], config["temperature"], log_directory/'entailment_complex')
         model_default = get_model(config["model"], config["temperature"], log_directory/'entailment_default')
+        model_simple_verify = get_model(config["model"], config["temperature"], log_directory/'entailment_simple_verify')
+        model_complex_verify = get_model(config["model"], config["temperature"], log_directory/'entailment_complex_verify')
+        model_default_verify = get_model(config["model"], config["temperature"], log_directory/'entailment_default_verify')
         model_default_no_fsl = get_model(config["model"], config["temperature"], log_directory/'entailment_default_no_fsl')
 
     program= imports+"\n"
@@ -898,6 +929,7 @@ def check_entailment_mult_func(description, postconditions_list, functions_list,
         program += f"#Function {index+1}:\n" + functions_list[index]+"\n\n"
         total_post+= f"Output hints for function number {index+1} : {post}+\n"
         functions += f"Function number {index+1} :\n Code:\n '''\n{functions_list[index]}\n''' \n\n Output hints for function{index+1}:  {post}\n"
+        output_hints = f"Output hints for function number {index+1} : {post}+\n"
         fuctions_simple += f"Function number {index+1} :\n Code:\n '''\n{functions_list[index]}\n''' \n"
         annotated_program += f"#Function {index+1}:\n" + annotated_func_list[index]+"\n\n"
         annotated_program_simple += f"#Function {index+1}:\n" + remove_functionality(annotated_func_list[index])+"\n"
@@ -960,6 +992,25 @@ def check_entailment_mult_func(description, postconditions_list, functions_list,
             correctness_default =entailment_mult_func.naive_mult_func(model_default, description, functions, module_name, config, cex_path)
             correctness_default_no_fsl =entailment_mult_func_no_fsl.naive_mult_func(model_default_no_fsl, description, functions, module_name, config, cex_path)
             return [correctness_simple[0], correctness_complex[0], correctness_default[0], correctness_default_no_fsl[0]]
+    elif config['entailment-mode'] == 'naive' and config['assessment-mode'] == 'verify':
+            correctness_simple = annotated_simple(description,  annotated_program_simple, model_simple)
+            correctness_complex= entailement_mult_func_annotated.naive_mult_func(model_complex, description, annotated_program, module_name, config, cex_path)
+            correctness_default =entailment_mult_func.naive_mult_func(model_default, description, functions, module_name, config, cex_path)
+            correctness_default_no_fsl =entailment_mult_func_no_fsl.naive_mult_func(model_default_no_fsl, description, functions, module_name, config, cex_path)
+
+            correctness_naive, response_naive  = naive_question_with_response(description, program, model)
+            correctness_naive_no_fsl, response_naive_no_fsl  = naive_question_no_fsl_with_response(description, program, model)
+
+            correctness_simple_verify = verify_tree(model_simple_verify, description,  annotated_program_simple, program, response_naive, module_name, config, cex_path)
+            correctness_complex_verify= verify_tree(model_complex_verify, description, annotated_program, program , response_naive , module_name, config, cex_path)
+            correctness_default_verify = verify_function_summary(model_default_verify, description, output_hints, program, response_naive, module_name, config, cex_path)
+            correctness_simple_no_fsl_verify = verify_tree(model_simple_verify, description,  annotated_program_simple, program, response_naive_no_fsl, module_name, config, cex_path)
+            correctness_complex_no_fsl_verify= verify_tree(model_complex_verify, description, annotated_program, program , response_naive_no_fsl , module_name, config, cex_path)
+            correctness_default_no_fsl_verify = verify_function_summary(model_default_verify, description, output_hints, program, response_naive_no_fsl, module_name, config, cex_path)
+            #lets return a dicrionary with the results
+            res_dict= {"naive": correctness_naive, "naive_no_fsl": correctness_naive_no_fsl , "simple": correctness_simple[0], "complex": correctness_complex[0], "default": correctness_default[0], "simple_verify": correctness_simple_verify[0], "complex_verify": correctness_complex_verify[0], "default_verify": correctness_default_verify[0], "simple_no_fsl_verify": correctness_simple_no_fsl_verify[0], "complex_no_fsl_verify": correctness_complex_no_fsl_verify[0], "default_no_fsl_verify": correctness_default_no_fsl_verify[0]}
+            print(res_dict)
+            return res_dict
 
     print(f"Entailment mode {config['entailment-mode']} not supported, only naive is currently implemented")
     raise NotImplementedError
