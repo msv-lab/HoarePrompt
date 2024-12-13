@@ -11,7 +11,7 @@ class QwenModel:
         self.temperature = temperature
 
         self.client = OpenAI(
-            api_key="sk-2ca22d7ba0cd4c5fa337c10246ed817b",
+            api_key=os.environ.get("DASHSCOPE_API_KEY"),
             base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
         )
 
@@ -32,7 +32,7 @@ def main():
         return
 
     # Initialize the QwenModel
-    model = QwenModel(name="qwq-32b-preview", temperature=0.7)
+    model = QwenModel(name="qwen2.5-coder-7b-instruct", temperature=0.7)
 
     # Define your prompt
     prompt = "What is the capital of France?"

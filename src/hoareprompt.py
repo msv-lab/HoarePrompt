@@ -897,7 +897,7 @@ def check_entailment(description, postcondition, program, module_name, config, l
             correctness_complex_no_fsl_verify= verify_tree(model_complex_verify, description, annotated_func, program , response_naive_no_fsl , module_name, config, cex_path)
             correctness_default_no_fsl_verify = verify_function_summary(model_default_verify, description, postcondition, program, response_naive_no_fsl, module_name, config, cex_path)
             #lets return a dicrionary with the results
-            res_dict= {"naive": correctness_naive, "naive_no_fsl": correctness_naive_no_fsl , "simple": correctness_simple[0], "complex": correctness_complex[0], "default": correctness_default[0], "simple_verify": correctness_simple_verify[0], "complex_verify": correctness_complex_verify[0], "default_verify": correctness_default_verify[0], "simple_no_fsl_verify": correctness_simple_no_fsl_verify[0], "complex_no_fsl_verify": correctness_complex_no_fsl_verify[0], "default_no_fsl_verify": correctness_default_no_fsl_verify[0]}
+            res_dict= {"naive": correctness_naive, "naive_no_fsl": correctness_naive_no_fsl , "simple": correctness_simple[0], "complex": correctness_complex[0], "default": correctness_default[0], "default_no_fsl": correctness_default_no_fsl[0], "simple_verify": correctness_simple_verify[0], "complex_verify": correctness_complex_verify[0], "default_verify": correctness_default_verify[0], "simple_no_fsl_verify": correctness_simple_no_fsl_verify[0], "complex_no_fsl_verify": correctness_complex_no_fsl_verify[0], "default_no_fsl_verify": correctness_default_no_fsl_verify[0]}
             print(res_dict)
             return res_dict
     print(f"Entailment mode {config['entailment-mode']} not supported, only naive is currently implemented")
@@ -1008,7 +1008,7 @@ def check_entailment_mult_func(description, postconditions_list, functions_list,
             correctness_complex_no_fsl_verify= verify_tree(model_complex_verify, description, annotated_program, program , response_naive_no_fsl , module_name, config, cex_path)
             correctness_default_no_fsl_verify = verify_function_summary(model_default_verify, description, output_hints, program, response_naive_no_fsl, module_name, config, cex_path)
             #lets return a dicrionary with the results
-            res_dict= {"naive": correctness_naive, "naive_no_fsl": correctness_naive_no_fsl , "simple": correctness_simple[0], "complex": correctness_complex[0], "default": correctness_default[0], "simple_verify": correctness_simple_verify[0], "complex_verify": correctness_complex_verify[0], "default_verify": correctness_default_verify[0], "simple_no_fsl_verify": correctness_simple_no_fsl_verify[0], "complex_no_fsl_verify": correctness_complex_no_fsl_verify[0], "default_no_fsl_verify": correctness_default_no_fsl_verify[0]}
+            res_dict= {"naive": correctness_naive, "naive_no_fsl": correctness_naive_no_fsl , "simple": correctness_simple[0], "complex": correctness_complex[0], "default": correctness_default[0], "default_no_fsl": correctness_default_no_fsl[0], "simple_verify": correctness_simple_verify[0], "complex_verify": correctness_complex_verify[0], "default_verify": correctness_default_verify[0], "simple_no_fsl_verify": correctness_simple_no_fsl_verify[0], "complex_no_fsl_verify": correctness_complex_no_fsl_verify[0], "default_no_fsl_verify": correctness_default_no_fsl_verify[0]}
             print(res_dict)
             return res_dict
 
