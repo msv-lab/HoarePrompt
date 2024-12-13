@@ -111,6 +111,22 @@ def naive_question(description, code, model):
         return False
     return post
 
+def naive_question_with_response(description, code, model):
+   
+    prompt = PROMPT_COMPLEX.format(description=description, code=code)
+    response = model.query(prompt)
+    print(response)
+    post = extract_result(response, "Correctness")
+    print("*" * 50)
+    print(f"{description} \n {code}")
+    print(f"LLM Reply: {post}")
+
+    if 'true' in post.lower().strip() :
+        return True, response
+    if "false" in post.lower().strip() :
+        return False, response
+    return post, response
+
 # def main():
 #     # VariableA (Annotated Code)
 #     code = """
