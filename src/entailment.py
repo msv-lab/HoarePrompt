@@ -90,7 +90,7 @@ Output hints: {postcondition}
 Does the code do what  the problem description says,  for every potential case?
 If the program does not follow the problem description for every potential case then  then Correctness **False**. The hints might provide such cases but make sure that the hints indeed agree with the code. Also the program description might have examples you need to make sure the program will give the correct output
 But if you can't find an example where the program does not work as expected in the description and all the examples you think work correctly then then Correctness **True**
-
+Also we assume that the input will be valid and will not cause any errors in the program. So for example if the program is supposed to accept a list but does not handle the case when the input is not a list or an empty list then the program isstill correct since we assume the user will always provide a valid input. The same if we expecta positive integer and the program does not handle the case when the input is negative or zero.
 You need to strictly follow the format Correctness: **True or False**. Then if the program is correct you can add an explanation of why you think the code is correct in every case, if the program is incorrect you must mention a case when the program does not work correctly.
 """
 

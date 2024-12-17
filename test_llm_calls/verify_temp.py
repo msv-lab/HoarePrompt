@@ -10,15 +10,22 @@ from model import get_model
 from verify_entailement import verify_tree ,verify_function_summary
 
 
+import re
+
 def clean_string(input_string):
     # Find all instances of lines starting with '#Overall this is what the function does:'
-    removed_strings = re.findall(r"#Overall this is what the function does:(.*)", input_string)
+    removed_strings = re.findall(r"#Overall this is what the function does:(.*?)(\n|$)", input_string)
     
-    # Remove these lines from the original string
-    cleaned_string = re.sub(r"#Overall this is what the function does:.*\n", "", input_string)
-    # print(removed_strings)
-    # print(cleaned_string)
+    # Extract the actual strings from the matches
+    removed_strings = [match[0] for match in removed_strings]
+    
+    # Remove these lines from the original string, handling both newline and end-of-file
+    cleaned_string = re.sub(r"#Overall this is what the function does:.*(\n|$)", "", input_string)
+    
     return cleaned_string, removed_strings
+
+#
+
 def remove_imports_and_comments(script: str) -> tuple:
     # Parse the script into an AST
     tree = ast.parse(script)
@@ -235,6 +242,8 @@ def process_directory(input_dir):
         # Check for the 'gpt-4o' and 'llama3-70b' directories
         gpt_dir = os.path.join(naive_dir, "gpt-4o")
         llama_dir = os.path.join(naive_dir, "llama3-70b")
+        if not  os.path.isdir(llama_dir):
+            llama_dir = os.path.join(naive_dir, "llama3point1-70b")
 
         if not os.path.isdir(gpt_dir) or not os.path.isdir(llama_dir):
             print(f"Skipping '{naive_dir}', required subdirectories ('gpt-4o', 'llama3-70b') not found.")
@@ -274,6 +283,8 @@ def process_directory(input_dir):
         # Check for the 'gpt-4o' and 'llama3-70b' directories
         gpt_dir = os.path.join(naive_nfsl_dir, "gpt-4o")
         llama_dir = os.path.join(naive_nfsl_dir, "llama3-70b")
+        if not  os.path.isdir(llama_dir):
+            llama_dir = os.path.join(naive_nfsl_dir, "llama3point1-70b")
 
         if not os.path.isdir(gpt_dir) or not os.path.isdir(llama_dir):
             print(f"Skipping '{naive_nfsl_dir}', required subdirectories ('gpt-4o', 'llama3-70b') not found.")
@@ -312,7 +323,8 @@ def process_directory(input_dir):
         # Check for the 'gpt-4o' and 'llama3-70b' directories
         gpt_dir = os.path.join(noraml_dir, "gpt-4o")
         llama_dir = os.path.join(noraml_dir, "llama3-70b")
-
+        if not  os.path.isdir(llama_dir):
+            llama_dir = os.path.join(noraml_dir, "llama3point1-70b")
         if not os.path.isdir(gpt_dir) or not os.path.isdir(llama_dir):
             print(f"Skipping '{noraml_dir}', required subdirectories ('gpt-4o', 'llama3-70b') not found.")
             continue
@@ -432,6 +444,8 @@ def process_directory(input_dir):
 
         gpt_dir = os.path.join(noraml_dir, "gpt-4o")
         llama_dir = os.path.join(noraml_dir, "llama3-70b")
+        if not  os.path.isdir(llama_dir):
+            llama_dir = os.path.join(noraml_dir, "llama3point1-70b")
         gpt_dir_temp= os.path.join(gpt_dir, "check_entailment")
        # i want to make entailment_gpt_log_dir_simple_verify into a path to do mkdir
 
@@ -476,14 +490,22 @@ def process_directory(input_dir):
 
         annoatated_simple_gpt, functionalities_gpt =clean_string(normal_gpt_annotated)
         annoatated_simple_llama, functionalities_llama =clean_string(normal_llama_annotated)
+
         
         functionality_gpt =""
         for index, func in enumerate(functionalities_gpt):
-            functionality_gpt += f"Output hint for function_{index}: {func} + \n\n"
+            functionality_gpt += f"Output hint for function_{index+1}: {func} \n\n"
+        #remove the final 2 new lines
+        functionality_gpt = functionality_gpt[:-2]
 
         functionality_llama =""
         for index, func in enumerate(functionalities_llama):
-            functionality_llama += f"Output hint for function_{index}: {func} + \n\n"
+            functionality_llama += f"Output hint for function_{index+1}: {func} \n\n"
+        functionality_llama = functionality_llama[:-2]
+        print(f"the functionality_gpt is {functionality_gpt}")
+        print(f"the functionality_llama is {functionality_llama}")
+        print(f"the annoatated_simple_gpt is {annoatated_simple_gpt}")
+        print(f"the annoatated_simple_llama is {annoatated_simple_llama}")
 
         model_simple_verify_gpt = get_model(config["model"], config["temperature"], entailment_gpt_log_dir_simple_verify)
         model_complex_verify_gpt = get_model(config["model"], config["temperature"],entailment_gpt_log_dir_complex_verify)
@@ -495,17 +517,17 @@ def process_directory(input_dir):
 
         correctness_simple_verify_gpt = verify_tree(model_simple_verify_gpt, normal_gpt_description, annoatated_simple_gpt , remade_program_gpt, naive_gpt, subdir, config, "")
         correctness_complex_verify_gpt = verify_tree(model_complex_verify_gpt, normal_gpt_description, normal_gpt_annotated, remade_program_gpt , naive_gpt , subdir, config, "")
-        correctness_default_verify_gpt = verify_function_summary(model_default_verify_gpt, normal_gpt_description, "\n"+normal_gpt_description, remade_program_gpt, naive_gpt, subdir, config, "")
+        correctness_default_verify_gpt = verify_function_summary(model_default_verify_gpt, normal_gpt_description, "\n"+functionality_gpt, remade_program_gpt, naive_gpt, subdir, config, "")
         correctness_simple_no_fsl_verify_gpt = verify_tree(model_simple_verify_gpt, normal_gpt_description, annoatated_simple_gpt , remade_program_gpt, naive_no_fsl_gpt, subdir, config, "")
         correctness_complex_no_fsl_verify_gpt = verify_tree(model_complex_verify_gpt, normal_gpt_description, normal_gpt_annotated, remade_program_gpt , naive_no_fsl_gpt , subdir, config, "")
-        correctness_default_no_fsl_verify_gpt = verify_function_summary(model_default_verify_gpt, normal_gpt_description, "\n"+normal_gpt_description, remade_program_gpt, naive_no_fsl_gpt, subdir, config, "")
+        correctness_default_no_fsl_verify_gpt = verify_function_summary(model_default_verify_gpt, normal_gpt_description, "\n"+functionality_gpt, remade_program_gpt, naive_no_fsl_gpt, subdir, config, "")
 
         correctness_simple_verify_llama = verify_tree(model_simple_verify_llama, normal_llama_description, annoatated_simple_llama , remade_program_llama, naive_llama, subdir, config, "")
         correctness_complex_verify_llama = verify_tree(model_complex_verify_llama, normal_llama_description, normal_llama_annotated, remade_program_llama , naive_llama , subdir, config, "")
-        correctness_default_verify_llama = verify_function_summary(model_default_verify_llama, normal_llama_description, "\n"+normal_llama_description, remade_program_llama, naive_llama, subdir, config, "")
+        correctness_default_verify_llama = verify_function_summary(model_default_verify_llama, normal_llama_description, "\n"+functionality_llama, remade_program_llama, naive_llama, subdir, config, "")
         correctness_simple_no_fsl_verify_llama = verify_tree(model_simple_verify_llama, normal_llama_description, annoatated_simple_llama , remade_program_llama, naive_no_fsl_llama, subdir, config, "")
         correctness_complex_no_fsl_verify_llama = verify_tree(model_complex_verify_llama, normal_llama_description, normal_llama_annotated, remade_program_llama , naive_no_fsl_llama , subdir, config, "")
-        correctness_default_no_fsl_verify_llama = verify_function_summary(model_default_verify_llama, normal_llama_description, "\n"+normal_llama_description, remade_program_llama, naive_no_fsl_llama, subdir, config, "")
+        correctness_default_no_fsl_verify_llama = verify_function_summary(model_default_verify_llama, normal_llama_description, "\n"+functionality_llama, remade_program_llama, naive_no_fsl_llama, subdir, config, "")
         print(f"the correctness_simple_verify_gpt is {correctness_simple_verify_gpt[0]}")
 
         # #find the row in the dataframe where Task ID == subdir and model_created == gpt-4o. if it does not exist find the row in the dataframe where Task ID == Mbpp_{subdir} and model_created == gpt-4o. 
@@ -607,7 +629,7 @@ def process_directory(input_dir):
 
         # Update for llama3-70bllama3-70b
         update_or_log_error('llama3-70bllama3-70b', subdir_num, llama_columns_to_update, 'llama3-70b')
-
+        update_or_log_error('llama3-70bllama3-70b', subdir_num, llama_columns_to_update, 'llama3point1-70b')
 
     # Save the updated dataframe to a new CSV file
     output_csv = os.path.join(input_dir, "total_results.csv")

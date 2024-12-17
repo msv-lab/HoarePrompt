@@ -31,7 +31,9 @@ Annotated Program:
 ```
 {code}
 ```
-The program is correct only if it meets the problem description! The problem description is defined before the program.  Return Correctness: **True** if the program follows the problem description, otherwise return Correctness: **False** if the program does not do what the problem description asks for for every potential case.
+The program is correct only if it meets the problem description! The problem description is defined before the program.  
+Also we assume that the input will be valid and will not cause any errors in the program. So for example if the program is supposed to accept a list but does not handle the case when the input is not a list or an empty list then the program isstill correct since we assume the user will always provide a valid input. The same if we expecta positive integer and the program does not handle the case when the input is negative or zero.
+Return Correctness: **True** if the program follows the problem description, otherwise return Correctness: **False** if the program does not do what the problem description asks for for every potential case.
 If the program is correct explain why it always does what the problem description say. If it is incorrect explain why it does not do what the problem description says or a case where it doesnot follow the problem description.
 """
 

@@ -7,7 +7,13 @@ import re
 VERIFY_PROMPT_TEMPLATE_FUNCTION_SUMMARY = """
 You have been assigned the role of a program verifier. Given a python program and a problem description, we have performed an initial assessment of the program's correctness. We also provide the reasoning behind our assessment. 
 We are additionally providing you with some output hints that summarize the program's functionality.
-Your task is to go through the problem descritpion, the program and the original assessment. Use the outut hints to determine if the original assessment was accurate. Then finally provide a final assessment of the program's correctness. Use the format Final: **True** if you believe the program is correct based on the problem description and the output hints anmd the original assessment. Otherwise, use Final: **False** if you belive the program is incorrect since it does not follow the problem description for every potential case.
+Your task is to analyze the problem description, the program, and the original assessment. Use the provided output hints to systematically evaluate the program's behavior and reasoning. Based on the program, the output hints the problem description and the original assessment, determine the final correctness of the program.
+
+Provide a final assessment of the program's correctness as follows:
+
+If the program meets the problem description and the output hints support the correctness, output: Final: **True**
+If the program does not meet the problem description, output: Final: **False**
+Focus on evidence from the annotations and the original assesment to justify your conclusion. Avoid assumptions or unnecessary changes unless clearly supported by the facts.
 
 You need to strictly follow the format Final: **True or False**.
 
@@ -23,7 +29,8 @@ Now we are giving you the output hints that summarize the code functionality and
 So for example if the program is supposed to accept a list but does not handle the case when the input is not a list or an empty list then the program isstill correct since we assume the user will always provide a valid input. The same if we expecta positive integer and the program does not handle the case when the input is negative or zero.
 Output hints: {postcondition}
 
-Does the original Assessment make sense based on the problem description and the provided code. Do the outpout hints lead you to believe that the original assessment was not accurate?
+Does the original Assessment make sense based on the problem description and the provided code. 
+Based on the output hints, the program  and your reasoning, provide a refined assessment of the program's correctness, either mintaining the original assessment or changing it if the output hints provide a different perspective.
 Use all the information available to you to determine  the final correctness of the program based on the problem description. 
 You need to strictly follow the format Final: **True or False**. If you believe the program is correct then Final: **True**. If you believe the program is incorrect then Final: **False**.
 If you keep the original assessment then you need to provide a reason why you think the original assessment is accurate. If you change the original assessment then you need to provide a reason why you think the original assessment is not accurate.
@@ -32,7 +39,13 @@ If you keep the original assessment then you need to provide a reason why you th
 VERIFY_PROMPT_TEMPLATE_TREE = """
 You have been assigned the role of a program verifier. Given a python program and a problem description, we have performed an initial assessment of the program's correctness. We also provide the reasoning behind our assessment. 
 We are additionally providing you with the program again but this time we are providing you with an annotated version of the program. This annotated version provides the state of the program at different points in the program.
-Your task is to go through the problem descritpion, the program and the original assessment. Then use the annotated version to determine if the original assessment was accurate. Then finally provide a final assessment of the program's correctness. Use the format Final: **True** if you believe the program is correct based on the problem description and the annotations and the original assessment. Otherwise, use Final: **False**.
+Your task is to analyze the problem description, the program, and the original assessment. Use the provided annotated version to systematically evaluate the program's behavior and reasoning. Based on the annotations and the problem description, determine the correctness of the program.
+
+Provide a final assessment of the program's correctness as follows:
+
+If the program meets the problem description and the annotations support the correctness, output: Final: **True**
+If the program does not meet the problem description, output: Final: **False**
+Focus on evidence from the annotations and the original assesment to justify your conclusion. Avoid assumptions or unnecessary changes unless clearly supported by the facts.
 
 You need to strictly follow the format Final: **True or False**.
 
@@ -49,9 +62,9 @@ Also we assume that the input of the program will be valid and will not cause an
 Annotated code:
 {postcondition}
 
-Does the original Assessment make sense based on the problem description and the provided code. Does the asnnotated version of the code lead you to believe that the original assessment was not accurate?
+Does the original Assessment make sense based on the problem description and the provided code. Based on the annotated version of the code  and your reasoning, provide a refined assessment of the program's correctness, either mintaining the original assessment or changing it if the annotated version provides a different perspective.
 Use all the information available to you to determine  the final correctness of the program based on the problem description. 
- You need to strictly follow the format Final: **True or False**. If you believe the program is correct then Final: **True**. If you believe the program is incorrect then Final: **False**.
+You need to strictly follow the format Final: **True or False**. If you believe the program is correct then Final: **True**. If you believe the program is incorrect then Final: **False**.
 If you keep the original assessment then you need to provide a reason why you think the original assessment is accurate. If you change the original assessment then you need to provide a reason why you think the original assessment is not accurate.
 """
 

@@ -684,12 +684,12 @@ def assess(description, program, module_name, config, log_directory, cex_path):
         entailment_log_dir_complex.mkdir(parents=True, exist_ok=True)
         entailment_log_dir_default = entailment_log_dir/'entailment_default'
         entailment_log_dir_default.mkdir(parents=True, exist_ok=True)
-        entailment_log_dir_simple = entailment_log_dir/'entailment_simple_verify'
-        entailment_log_dir_simple.mkdir(parents=True, exist_ok=True)
-        entailment_log_dir_complex = entailment_log_dir/'entailment_complex_verify'
-        entailment_log_dir_complex.mkdir(parents=True, exist_ok=True)
-        entailment_log_dir_default = entailment_log_dir/'entailment_default_verify'
-        entailment_log_dir_default.mkdir(parents=True, exist_ok=True)
+        entailment_log_dir_simple_verify = entailment_log_dir/'entailment_simple_verify'
+        entailment_log_dir_simple_verify.mkdir(parents=True, exist_ok=True)
+        entailment_log_dir_complex_verify = entailment_log_dir/'entailment_complex_verify'
+        entailment_log_dir_complex_verify.mkdir(parents=True, exist_ok=True)
+        entailment_log_dir_default_verify = entailment_log_dir/'entailment_default_verify'
+        entailment_log_dir_default_verify.mkdir(parents=True, exist_ok=True)
         entailment_log_dir_default_no_fsl = entailment_log_dir/'entailment_default_no_fsl'
         entailment_log_dir_default_no_fsl.mkdir(parents=True, exist_ok=True)
 
