@@ -1,12 +1,13 @@
 {
-    "model":  "meta-llama/Llama-3.3-70B-Instruct",
+    "model": "meta-llama/Llama-3.3-70B-Instruct",
     "temperature": 1.0,
-    "assessment-mode": "naive", 
+    "assessment-mode": "naive",
     "postcondition-mode": "hoarecot",
     "postcondition-cot-prompt": "node-based-style",
     "loop-unrolling-count": 3,
     "entailment-mode": "naive",
     "cex-mode": "with-postcondition",
-    "annotated" : false,
-    "fsl": false
+    "annotated": false,
+    "fsl": false,
+    "confidence": false
 }

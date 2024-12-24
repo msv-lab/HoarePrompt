@@ -588,6 +588,7 @@ def assess(description, program, module_name, config, log_directory, cex_path):
     cleaned_program, imports = remove_imports_and_comments(program)
     
     functions_dict = extract_functions(cleaned_program)
+    # print("this is the functions dict", functions_dict)
     functions_list= functions_dict["functions"]
     global_code = functions_dict["global_code"]
     postconditions_list =[]

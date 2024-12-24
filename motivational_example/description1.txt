@@ -1,0 +1,4 @@
+You have two lists of integers, a and b. Each list is already sorted in ascending order and contains distinct integers. Write a function that merges these two lists into a single list, which should also be in ascending order and contain all of the integers from both a and b.
+So the input and expected output are
+Input: Two sorted lists of distinct integers,  a and b
+Expected Output: A single list containing all elements from a and b sorted in ascending order.

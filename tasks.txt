@@ -1,29 +1,29 @@
-def func_2(n, k, dp):
-    if (k == 0) :
-        return 0
-        #The program returns 0, indicating that with k being 0, no different digits are allowed in the number.
-    #State of the program after the if block has been executed: *`n` is a non-negative integer representing a number, `k` is a non-negative integer indicating the maximum number of different digits allowed in the number, `dp` is a dictionary used for memoization that maps tuples of (n, k) to integer results. `k` is greater than 0.
-    if ((n, k) in dp) :
-        return dp[n, k]
-        #The program returns the memoized result for the tuple (n, k) from the dictionary dp, where n is a non-negative integer and k is a non-negative integer indicating the maximum number of different digits allowed, and k is greater than 0.
-    #State of the program after the if block has been executed: *`n` is a non-negative integer representing a number, `k` is a non-negative integer indicating the maximum number of different digits allowed in the number, `dp` is a dictionary used for memoization that maps tuples of (n, k) to integer results. `k` is greater than 0, and the tuple `(n, k)` is not in `dp`.
-    if (n < 10 ** k) :
-        dp[n, k] = n
+def func_1(sessions, user):
+    if (user not in sessions) :
+        return sessions
+        #sessions, which is a dictionary where keys are user IDs (integers) and values are session objects, which are dictionaries containing "ref_count" (an integer >= 0) and "closed" (a boolean), and the user is an integer representing a user ID that is not present in the sessions dictionary
+    #State of the program after the if block has been executed: sessions is a dictionary where keys are user IDs (integers) and values are session objects, which are dictionaries containing "ref_count" (an integer >= 0) and "closed" (a boolean). The user ID `user` is in the `sessions` dictionary.
+    session = sessions[user]
+    if (session['ref_count'] == 0) :
+        return sessions
+        #`sessions` is a dictionary where keys are user IDs (integers) and values are session objects, which are dictionaries containing "ref_count" (an integer >= 0) and "closed" (a boolean); the user ID `user` is in the `sessions` dictionary; `session` is the session object corresponding to the user ID `user` in the `sessions` dictionary; the current value of `session['ref_count']` is 0
     else :
-        dp[n, k] = 9
-        for i in range(1, k):
-            dp[n, k] += 9 * 10 ** (i - 1) * (10 ** (k - i) - 10 ** (i - 1))
-            
-        #State of the program after the  for loop has been executed: `n` is a non-negative integer, `k` is greater than 1, `dp[n, k]` is equal to the cumulative total from all iterations, which is dependent on `k`.
-        dp[n, k] += (10 ** (k - 1) - 10 ** (k - 2)) * (n // 10 ** (k - 1) - 1)
-        dp[n, k] %= MOD
-    #State of the program after the if-else block has been executed: *`n` is a non-negative integer, `k` is a non-negative integer greater than 0, and the tuple `(n, k)` is not in `dp`. If `n` is less than 10 raised to the power of `k`, then `dp` is updated to contain the entry `(n, k): n`. Otherwise, `dp[n, k]` is updated to `dp[n, k] % MOD`, where `k` is greater than 1.
-    return dp[n, k]
-    #The program returns the value of dp[n, k], which is either updated to n if n is less than 10 raised to the power of k, or dp[n, k] % MOD if k is greater than 1.
-#Overall this is what the function does: The function accepts parameters n (a non-negative integer), k (a non-negative integer indicating the maximum number of different digits allowed), and dp (a dictionary for memoization). It returns 0 if k is 0; if k > 0 and (n, k) is in dp, it returns the memoized result; otherwise, it updates and returns the computed value based on the conditions involving n and k.
-Case_1: The program returns 0, indicating that with k being 0, no different digits are allowed in the number.
+        if (session['ref_count'] == 1) :
+            session['ref_count'] = 0
+            session['closed'] = True
+            return sessions
+            #`sessions` is a dictionary where keys are user IDs (integers) and values are session objects, which are dictionaries containing "ref_count" (an integer >= 0) and "closed" (a boolean); the user ID `user` is in the `sessions` dictionary; `session` is the session object corresponding to the user ID `user` in the `sessions` dictionary; `session['ref_count']` is equal to 0; `session['closed']` is `True`.
+        else :
+            session['ref_count'] = session['ref_count'] - 1
+            session['closed'] = False
+            return sessions
+            #`sessions` is a dictionary where keys are user IDs (integers) and values are session objects, which are dictionaries containing "ref_count" (an integer >= 0 and is now `session['ref_count'] - 1` and is not equal to 1) and "closed" (a boolean and is `False`); the user ID `user` is in the `sessions` dictionary; `session` is the session object corresponding to the user ID `user` in the `sessions` dictionary
+#Overall this is what the function does: The function accepts a parameter `sessions`, which is a dictionary where keys are user IDs (integers) and values are session objects (dictionaries containing "ref_count" (an integer >= 0) and "closed" (a boolean)), and a parameter `user`, which is an integer representing a user ID. If `user` is not in `sessions`, it returns a message indicating the user ID is not found. If `user` is in `sessions` and `session['ref_count']` is 0, it returns a message indicating the reference count is 0. If `user` is in `sessions`, the session object corresponding to `user` has `session['ref_count']` equal to 0 and `session['closed']` is `True`. If `user` is in `sessions`, the `session['ref_count']` is decremented by 1 and is no longer equal to 1, and `session['closed']` is `False`.
+Case_1: sessions, which is a dictionary where keys are user IDs (integers) and values are session objects, which are dictionaries containing "ref_count" (an integer >= 0) and "closed" (a boolean), and the user is an integer representing a user ID that is not present in the sessions dictionary
 
-Case_2: The program returns the memoized result for the tuple (n, k) from the dictionary dp, where n is a non-negative integer and k is a non-negative integer indicating the maximum number of different digits allowed, and k is greater than 0.
+Case_2: `sessions` is a dictionary where keys are user IDs (integers) and values are session objects, which are dictionaries containing "ref_count" (an integer >= 0) and "closed" (a boolean); the user ID `user` is in the `sessions` dictionary; `session` is the session object corresponding to the user ID `user` in the `sessions` dictionary; the current value of `session['ref_count']` is 0
 
-Case_3: The program returns the value of dp[n, k], which is either updated to n if n is less than 10 raised to the power of k, or dp[n, k] % MOD if k is greater than 1.
+Case_3: `sessions` is a dictionary where keys are user IDs (integers) and values are session objects, which are dictionaries containing "ref_count" (an integer >= 0) and "closed" (a boolean); the user ID `user` is in the `sessions` dictionary; `session` is the session object corresponding to the user ID `user` in the `sessions` dictionary; `session['ref_count']` is equal to 0; `session['closed']` is `True`.
+
+Case_4: `sessions` is a dictionary where keys are user IDs (integers) and values are session objects, which are dictionaries containing "ref_count" (an integer >= 0 and is now `session['ref_count'] - 1` and is not equal to 1) and "closed" (a boolean and is `False`); the user ID `user` is in the `sessions` dictionary; `session` is the session object corresponding to the user ID `user` in the `sessions` dictionary
 

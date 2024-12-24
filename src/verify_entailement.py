@@ -90,11 +90,18 @@ def verify_function_summary(model, description, postcondition, program, original
     response = model.query(prompt)
     result = extract_correctness_from_response(response)
 
-    if result.lower() == 'true':
+    if 'true' in result.lower():
         return (True , response)
-    if result.lower() == 'false':
+    if 'false' in result.lower():
         return (False , response)
-    raise ValueError('failed to parse entailment checking response')
+    # try one more time
+    response = model.query(prompt)
+    result = extract_correctness_from_response(response)
+    if 'true' in result.lower():
+        return (True , response)
+    if 'false' in result.lower():
+        return (False , response)
+    return("Nan", response)
 
 def verify_tree(model, description, postcondition, program, original_assessment, module_name, config, cex_path=None):
     prompt = VERIFY_PROMPT_TEMPLATE_TREE.format(program=program,
@@ -105,11 +112,18 @@ def verify_tree(model, description, postcondition, program, original_assessment,
     response = model.query(prompt)
     result = extract_correctness_from_response(response)
 
-    if result.lower() == 'true':
+    if 'true' in result.lower():
         return (True , response)
-    if result.lower() == 'false':
+    if 'false' in result.lower():
         return (False , response)
-    raise ValueError('failed to parse entailment checking response')
+    # try one more time
+    response = model.query(prompt)
+    result = extract_correctness_from_response(response)
+    if 'true' in result.lower():
+        return (True , response)
+    if 'false' in result.lower():
+        return (False , response)
+    return("Nan", response)
 
 
 # TBD: WHAT OTHER APPROACH CAN BE USED OTHER THAN NAIVE?

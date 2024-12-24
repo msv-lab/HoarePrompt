@@ -228,11 +228,12 @@ def process_directory(input_dir):
     print(f"CSV file '{csv_file}' loaded successfully into 'total_dataframe'.")
 
     
-
+    done_dirs=[]
     # Iterate over first-level subdirectories
     for subdir in [d for d in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir, d))]:
         subdir_path = os.path.join(input_dir, subdir)
-
+        done_dirs.append(subdir)
+        print(f"Processing subdirectory '{subdir}'...")
         # Check for the '{subdir}_naive' directory
         naive_dir = os.path.join(subdir_path, f"{subdir}_naive")
         if not os.path.isdir(naive_dir):
@@ -631,10 +632,14 @@ def process_directory(input_dir):
         update_or_log_error('llama3-70bllama3-70b', subdir_num, llama_columns_to_update, 'llama3-70b')
         update_or_log_error('llama3-70bllama3-70b', subdir_num, llama_columns_to_update, 'llama3point1-70b')
 
-    # Save the updated dataframe to a new CSV file
+        # Save the updated dataframe to a new CSV file and overwrite the original
+        output_csv = os.path.join(input_dir, "temp_res.csv")
+        total_dataframe.to_csv('output_csv', index=False)
+        # print(f"Results saved to '{csv_file}'.")
+        print(f"Directories processed {len(done_dirs)}: {done_dirs}")
+
     output_csv = os.path.join(input_dir, "total_results.csv")
     total_dataframe.to_csv(output_csv, index=False)
-
 if __name__ == "__main__":
     import sys
     if len(sys.argv) != 2:

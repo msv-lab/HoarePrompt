@@ -1,0 +1,7 @@
+ Write a python function that  Adds an undirected edge (u, v) to 'graph'.
+    'graph' is a dict:
+         {
+           vertex_1: [neighbors...],
+           vertex_2: [neighbors...],
+           ...
+         }
