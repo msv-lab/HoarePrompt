@@ -92,6 +92,22 @@ If the program does not follow the problem description for every potential case 
 You need to strictly reply 1 or 0. 
 """
 
+
+PROMPT_COMPLEX_CONFIDENCE_QWEN = """
+You have been assigned the role of a program verifier. Your task is to determine the correctness of a given Python program based on the provided problem description . If the program is correct, that is it meets the requirements in the problem description, print "True"; otherwise, print "False". You need to strictly follow respond with one word **True or False**.
+
+# Your task:
+Problem description: {description}
+Program:
+```
+{code}
+```
+
+
+The program is correct only if it meets the problem description! The problem description is defined before the program.  
+Return  True if the program follows the problem description, otherwise return False. if the program does not do what the problem description asks for for every potential case.
+Remember to return just one word for your response.
+"""
 # This is the main function, it completes the prompt, queries the model and extracts the result, meaining the output state of that program part
 def naive_question_no_fsl(description, code, model):
    
@@ -110,7 +126,6 @@ def naive_question_no_fsl(description, code, model):
     return post
 
 def naive_question_no_fsl_with_response(description, code, model):
-   
     prompt = PROMPT_COMPLEX.format(description=description, code=code)
     response = model.query(prompt)
     print(response)
@@ -160,6 +175,21 @@ def naive_question_no_fsl_confidence_2(description, code, model):
     if "false" in post.lower().strip() :
         return False, confidence
     return post
+
+def naive_question_no_fsl_confidence_qwen(description, code, model):
+    prompt = PROMPT_COMPLEX_CONFIDENCE_QWEN.format(description=description, code=code)
+    print (f"the Prompt is \n\n\n {prompt}")
+
+    response, confidence = model.query_confidence_qwen(prompt)
+    print(response, confidence)
+    
+    
+
+    if 'true' in response.lower().strip() :
+        return True , confidence
+    if "false" in response.lower().strip() :
+        return False, confidence
+    return response, confidence
 
 # def main():
 #     # VariableA (Annotated Code)

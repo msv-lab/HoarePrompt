@@ -16,7 +16,7 @@ import entailement_mult_func_annotated
 import comment_style
 import node_base_style.complete
 from  node_base_style.naive import naive_question, naive_question_with_response
-from node_base_style.naive_no_fsl import naive_question_no_fsl, naive_question_no_fsl_confidence, naive_question_no_fsl_confidence_2, naive_question_no_fsl_with_response
+from node_base_style.naive_no_fsl import naive_question_no_fsl, naive_question_no_fsl_confidence, naive_question_no_fsl_confidence_2, naive_question_no_fsl_with_response, naive_question_no_fsl_confidence_qwen
 from node_base_style.annotated_simple import annotated_simple
 from node_base_style.single_post import single_post
 from node_base_style.single_post_no_fsl import single_post_no_fsl
@@ -789,10 +789,11 @@ def compute_postcondition_naive(description, program, config, log_directory):
         if config["confidence"]:
             print("FSL is set to False, using naive_question_no_fsl_confidence")
             #dont use few shot learning
-            response1, confidence1 = naive_question_no_fsl_confidence(description, program, model)
-            response2, confidence2 = naive_question_no_fsl_confidence_2(description, program, model)
-            
-            response = (response1, confidence1, response2, confidence2)
+            # response1, confidence1 = naive_question_no_fsl_confidence(description, program, model)
+            # response2, confidence2 = naive_question_no_fsl_confidence_2(description, program, model)
+            response, confidence = naive_question_no_fsl_confidence_qwen(description, program, model)
+            # print("I am here")
+            response = response, confidence
         else:
             print("FSL is set to False, using naive_question_no_fsl")
             #dont use few shot learning

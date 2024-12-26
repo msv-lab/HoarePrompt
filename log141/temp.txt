@@ -1,0 +1,43 @@
+You have been assigned the role of a program verifier. Your task is to determine the correctness of a given Python program based on the provided problem description . If the program is correct, that is it meets the requirements in the problem description, print "True"; otherwise, print "False". You need to strictly follow respond with one word **True or False**.
+
+# Your task:
+PROBLEM DESCRIPTION: You have a sessions dictionary that maps user IDs to session objects, where each session object has two keys:
+
+"ref_count" (an integer >= 0): The number of “open references” or “active connections” for this user’s session.
+"closed" (a boolean): Indicates whether the session is closed (True) or open (False).
+
+If ref_count is 0, the session is marked closed (closed = True).
+If ref_count is greater than 0, the session is be marked open (closed = False).
+We want a functionthta Checks if user is actually in sessions. If not, it does nothing ,Decrements the user’s ref_count by 1  if it’s above 0 and If the resulting ref_count is now 0, set closed = True. Otherwise, set closed = False.
+This was the problem description. Lets move on to the  annotated program. The program must do what the problem description says for it to be correct.
+
+Annotated Program:
+```
+#State of the program right berfore the function call: sessions is a dictionary where keys are user IDs and values are dictionaries with keys "ref_count" (an integer >= 0) and "closed" (a boolean), and user is a string representing a user ID.
+def func_1(sessions, user):
+    if (user not in sessions) :
+        return sessions
+        #The program returns `sessions`, which is a dictionary where keys are user IDs and values are dictionaries with keys "ref_count" (an integer >= 0) and "closed" (a boolean). The user ID represented by `user` is not a key in the `sessions` dictionary.
+    #State of the program after the if block has been executed: sessions is a dictionary where keys are user IDs and values are dictionaries with keys "ref_count" (an integer >= 0) and "closed" (a boolean), and user is a string representing a user ID. The user is in sessions.
+    session = sessions[user]
+    if (session['ref_count'] == 0) :
+        return sessions
+        #The program returns the dictionary `sessions` where each key is a user ID and each value is a dictionary with keys "ref_count" (an integer >= 0) and "closed" (a boolean). For the specific user `user`, `session['ref_count']` is 0.
+    else :
+        if (session['ref_count'] == 1) :
+            session['ref_count'] = 0
+            session['closed'] = True
+            return sessions
+            #The program returns the dictionary `sessions` where each key is a user ID and each value is a dictionary with keys "ref_count" (an integer >= 0) and "closed" (a boolean). For the specific user `user`, `sessions[user]['ref_count']` is 0 and `sessions[user]['closed']` is True.
+        else :
+            session['ref_count'] = session['ref_count'] - 1
+            session['closed'] = False
+            return sessions
+            #The program returns the `sessions` dictionary, where each key is a user ID and each value is a dictionary containing "ref_count" (an integer >= 0) and "closed" (a boolean). For the user ID stored in `user`, the corresponding session dictionary has `session['ref_count']` as a value greater than 0 and equal to its original value minus 1, and `session['closed']` is `False`.
+
+```
+
+
+The program is correct only if it meets the problem description! The problem description is defined before the program.  
+Return  True if the program follows the problem description, otherwise return False. if the program does not do what the problem description asks for for every potential case.
+Remember to return just one word for your response.

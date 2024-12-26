@@ -221,6 +221,29 @@ class QwenModel(Model):
             temperature=self.temperature
         )
         return response.choices[0].message.content
+    
+    def query_confidence_qwen(self, prompt):
+        # Call the API and get the response
+        response = self.client.chat.completions.create(
+            model=self.name,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=self.temperature,
+            logprobs=1
+        )
+
+        # Extract the response message
+        choice = response.choices[0]
+        response_content = choice.message.content.strip()
+
+        # Extract log probabilities
+        logprobs = choice.logprobs.content
+        response_token = logprobs[0]  # The main token (True or False)
+        print(response_token)
+        # Calculate probability
+        probability = math.exp(response_token.logprob)
+
+        # Return the response and its probability
+        return response_content, probability
 
 
 class DeepInfraModel(Model):

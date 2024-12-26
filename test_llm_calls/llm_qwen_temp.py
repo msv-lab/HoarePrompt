@@ -20,8 +20,10 @@ class QwenModel:
         response = self.client.chat.completions.create(
             model=self.name,
             messages=[{"role": "user", "content": prompt}],
-            temperature=self.temperature
+            temperature=self.temperature,
+            logprobs=1 
         )
+        print("Response from Qwen Model:", response)
         return response.choices[0].message.content
 
 # Example usage
@@ -32,9 +34,10 @@ def main():
         return
 
     # Initialize the QwenModel
-    model = QwenModel(name="qwen2.5-coder-7b-instruct", temperature=1.0)
+    model = QwenModel(name="qwen2.5-7b-instruct", temperature=1.0)
     #read the content of the file
-    with open('/home/jim/HoarePrompt/log_134/check_entailment/0000.prompt.md', 'r') as file:
+    with open('/home/jim/HoarePrompt/log141/temp.txt', 'r') as file:
+    # with open('/home/jim/HoarePrompt/log_134/check_entailment/0000.prompt.md', 'r') as file:
         prompt = file.read()
 
     
@@ -46,14 +49,14 @@ def main():
     except Exception as e:
         print("Error occurred:", e)
     print("-------------------------------------------------------------------------\n\n\n")
-    with open('/home/jim/HoarePrompt/log131/0000.prompt.md', 'r') as file:
-        prompt2 = file.read()
+    # with open('/home/jim/HoarePrompt/log131/0000.prompt.md', 'r') as file:
+    #     prompt2 = file.read()
 
-    try:
-        response2 = model._query(prompt2)
-        print("Response from Qwen Model:", response2)
-    except Exception as e:
-        print("Error occurred:", e)
+    # try:
+    #     response2 = model._query(prompt2)
+    #     print("Response from Qwen Model:", response2)
+    # except Exception as e:
+    #     print("Error occurred:", e)
 if __name__ == "__main__":
     main()
 

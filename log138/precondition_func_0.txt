@@ -1,0 +1,1 @@
+balances is a list of two integers representing the balances of Account A and Account B, and amount is a non-negative integer representing the desired transfer amount.

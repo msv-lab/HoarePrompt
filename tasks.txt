@@ -1,29 +1,17 @@
-def func_1(sessions, user):
-    if (user not in sessions) :
-        return sessions
-        #sessions, which is a dictionary where keys are user IDs (integers) and values are session objects, which are dictionaries containing "ref_count" (an integer >= 0) and "closed" (a boolean), and the user is an integer representing a user ID that is not present in the sessions dictionary
-    #State of the program after the if block has been executed: sessions is a dictionary where keys are user IDs (integers) and values are session objects, which are dictionaries containing "ref_count" (an integer >= 0) and "closed" (a boolean). The user ID `user` is in the `sessions` dictionary.
-    session = sessions[user]
-    if (session['ref_count'] == 0) :
-        return sessions
-        #`sessions` is a dictionary where keys are user IDs (integers) and values are session objects, which are dictionaries containing "ref_count" (an integer >= 0) and "closed" (a boolean); the user ID `user` is in the `sessions` dictionary; `session` is the session object corresponding to the user ID `user` in the `sessions` dictionary; the current value of `session['ref_count']` is 0
+def func_1(balances, amount):
+    A = balances['A']
+    B = balances['B']
+    if (amount <= A) :
+        A = A - amount
+        B = B + amount
     else :
-        if (session['ref_count'] == 1) :
-            session['ref_count'] = 0
-            session['closed'] = True
-            return sessions
-            #`sessions` is a dictionary where keys are user IDs (integers) and values are session objects, which are dictionaries containing "ref_count" (an integer >= 0) and "closed" (a boolean); the user ID `user` is in the `sessions` dictionary; `session` is the session object corresponding to the user ID `user` in the `sessions` dictionary; `session['ref_count']` is equal to 0; `session['closed']` is `True`.
-        else :
-            session['ref_count'] = session['ref_count'] - 1
-            session['closed'] = False
-            return sessions
-            #`sessions` is a dictionary where keys are user IDs (integers) and values are session objects, which are dictionaries containing "ref_count" (an integer >= 0 and is now `session['ref_count'] - 1` and is not equal to 1) and "closed" (a boolean and is `False`); the user ID `user` is in the `sessions` dictionary; `session` is the session object corresponding to the user ID `user` in the `sessions` dictionary
-#Overall this is what the function does: The function accepts a parameter `sessions`, which is a dictionary where keys are user IDs (integers) and values are session objects (dictionaries containing "ref_count" (an integer >= 0) and "closed" (a boolean)), and a parameter `user`, which is an integer representing a user ID. If `user` is not in `sessions`, it returns a message indicating the user ID is not found. If `user` is in `sessions` and `session['ref_count']` is 0, it returns a message indicating the reference count is 0. If `user` is in `sessions`, the session object corresponding to `user` has `session['ref_count']` equal to 0 and `session['closed']` is `True`. If `user` is in `sessions`, the `session['ref_count']` is decremented by 1 and is no longer equal to 1, and `session['closed']` is `False`.
-Case_1: sessions, which is a dictionary where keys are user IDs (integers) and values are session objects, which are dictionaries containing "ref_count" (an integer >= 0) and "closed" (a boolean), and the user is an integer representing a user ID that is not present in the sessions dictionary
-
-Case_2: `sessions` is a dictionary where keys are user IDs (integers) and values are session objects, which are dictionaries containing "ref_count" (an integer >= 0) and "closed" (a boolean); the user ID `user` is in the `sessions` dictionary; `session` is the session object corresponding to the user ID `user` in the `sessions` dictionary; the current value of `session['ref_count']` is 0
-
-Case_3: `sessions` is a dictionary where keys are user IDs (integers) and values are session objects, which are dictionaries containing "ref_count" (an integer >= 0) and "closed" (a boolean); the user ID `user` is in the `sessions` dictionary; `session` is the session object corresponding to the user ID `user` in the `sessions` dictionary; `session['ref_count']` is equal to 0; `session['closed']` is `True`.
-
-Case_4: `sessions` is a dictionary where keys are user IDs (integers) and values are session objects, which are dictionaries containing "ref_count" (an integer >= 0 and is now `session['ref_count'] - 1` and is not equal to 1) and "closed" (a boolean and is `False`); the user ID `user` is in the `sessions` dictionary; `session` is the session object corresponding to the user ID `user` in the `sessions` dictionary
+        A = 0
+        B = B + A
+    #State of the program after the if-else block has been executed: *`balances` is a list of two integers. If the amount is less than or equal to the balance of Account A (`A`), then the balance of Account A is decreased by the amount and the balance of Account B is increased by the amount. Otherwise, the balance of Account A is set to 0 and the balance of Account B is increased by the amount.
+    balances['A'] = A
+    balances['B'] = B
+    return balances
+    #The program returns a dictionary 'balances' that contains at least the key-value pair 'A': A and 'B': B
+#Overall this is what the function does: The function accepts a parameter `balances` (a list of two integers) and a parameter `amount` (a non-negative integer). It returns a dictionary containing at least the key-value pairs 'A': balance of Account A and 'B': balance of Account B.
+The program returns a dictionary 'balances' that contains at least the key-value pair 'A': A and 'B': B
 
