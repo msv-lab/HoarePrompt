@@ -1,17 +1,12 @@
-def func_1(balances, amount):
-    A = balances['A']
-    B = balances['B']
-    if (amount <= A) :
-        A = A - amount
-        B = B + amount
-    else :
-        A = 0
-        B = B + A
-    #State of the program after the if-else block has been executed: *`balances` is a list of two integers. If the amount is less than or equal to the balance of Account A (`A`), then the balance of Account A is decreased by the amount and the balance of Account B is increased by the amount. Otherwise, the balance of Account A is set to 0 and the balance of Account B is increased by the amount.
-    balances['A'] = A
-    balances['B'] = B
-    return balances
-    #The program returns a dictionary 'balances' that contains at least the key-value pair 'A': A and 'B': B
-#Overall this is what the function does: The function accepts a parameter `balances` (a list of two integers) and a parameter `amount` (a non-negative integer). It returns a dictionary containing at least the key-value pairs 'A': balance of Account A and 'B': balance of Account B.
-The program returns a dictionary 'balances' that contains at least the key-value pair 'A': A and 'B': B
+def func():
+    max_value = numbers[0]
+    for num in numbers:
+        if num > max_value:
+            max_value = num
+        
+    #State of the program after the  for loop has been executed: `max_value` is the maximum value in the list `numbers`, and the list `numbers` contains at least one element.
+    return max_value
+    #The program returns max_value which is the maximum value in the list 'numbers'
+#Overall this is what the function does: The function accepts a list of integers and returns the maximum value from this list.
+The program returns max_value which is the maximum value in the list 'numbers'
 

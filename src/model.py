@@ -60,7 +60,8 @@ def get_model(name: str, temperature: float, log_directory: Path = None):
         "qwen2.5-7b-instruct",  # model better than gpt3.5
         "qwen-plus",
         "qwen2.5-72b-instruct",
-        "qwen2.5-coder-7b-instruct"
+        "qwen2.5-coder-7b-instruct",
+        "qwen2.5-coder-32b-instruct"
     }
 
     if name in qwen_models:

@@ -13,6 +13,27 @@ def ensure_parsable_program(snippet: str) -> str:
     :param snippet: A string containing the incomplete Python program snippet.
     :return: A modified, parsable Python program.
     """
+
+
+    def remove_comments(line):
+        """
+        Removes the comment part of a line while preserving # inside string literals.
+        """
+        in_string = False
+        escaped = False
+        for i, char in enumerate(line):
+            if char == "\\":
+                escaped = not escaped
+            elif char in ('"', "'"):
+                if not escaped:
+                    in_string = not in_string
+                escaped = False
+            elif char == "#" and not in_string:
+                # This is the start of a comment
+                return line[:i].rstrip()
+            else:
+                escaped = False
+        return line
     def trim_empty_comments_and_imports(lines):
         """
         Remove leading empty lines, comments, and multiline string comments from the snippet.
@@ -39,8 +60,12 @@ def ensure_parsable_program(snippet: str) -> str:
                 continue
 
             # Skip empty lines and single-line comments
+        
             if not stripped or stripped.startswith("#"):
                 continue
+
+            #remove the part of a line after #
+            line = remove_comments(line)
 
             # Extract import statements
             if stripped.startswith(("import ", "from ")):
@@ -65,7 +90,7 @@ def ensure_parsable_program(snippet: str) -> str:
                 return "function_start"
             elif not line.startswith(" "):
                 return "global_start"
-        return "function_start"
+        return "code_start"
 
     def wrap_global_code(lines):
         """
@@ -86,11 +111,11 @@ def ensure_parsable_program(snippet: str) -> str:
         if first_part_lines and first_part_lines[0].strip().startswith(("else", "elif", "except")):
             # Add a placeholder for missing block
             if first_part_lines[0].strip().startswith("else"):
-                placeholder = "if condition:\n    pass\n"
+                placeholder = "if condition:  # ADDED_LINE\n    pass # ADDED_LINE\n"
             elif first_part_lines[0].strip().startswith("elif"):
-                placeholder = "if condition:\n    pass\n"
+                placeholder = "if condition: # ADDED_LINE\n    pass # ADDED_LINE\n"
             elif first_part_lines[0].strip().startswith("except"):
-                placeholder = "try:\n    pass\n"
+                placeholder = "try: # ADDED_LINE\n    pass # ADDED_LINE\n"
             return placeholder + "\n".join(first_part_lines) + "\n" + "\n".join(remaining_lines)
 
         # Handle indentation issues
@@ -129,7 +154,7 @@ def ensure_parsable_program(snippet: str) -> str:
             #if we are currently inside an elif block, add a pass statement with the same identation level and an else
 
             # rest of the cases           
-            return lines + [" " * (indent + 4) + "pass"]
+            return lines + [" " * (indent + 4) + "pass  # ADDED_LINE"]
             
     def fix_incomplete_blocks(lines):
         """
@@ -160,24 +185,24 @@ def ensure_parsable_program(snippet: str) -> str:
             if last_line.startswith("try:"):
                #retrun the lines without the try:
                 lines =lines[:-1]
-                lines.append( " " * (line_indent) + "pass")
+                lines.append( " " * (line_indent) + "pass # ADDED_LINE")
             elif last_line.startswith("elif "):
                 # Add pass and else block
                 lines.concat([
-                    " " * (line_indent + 4) + "pass",
+                    " " * (line_indent + 4) + "pass # ADDED_LINE",
                     " " * line_indent + "else:",
-                    " " * (line_indent + 4) + "pass",
+                    " " * (line_indent + 4) + "pass # ADDED_LINE",
                 ])
                 
             elif last_line.startswith("else:"):
                 # Add pass for else block
-                lines.append( " " * (line_indent + 4) + "pass")
+                lines.append( " " * (line_indent + 4) + "pass # ADDED_LINE")
             elif last_line.startswith("except"):
                 # Add pass for except block
-                lines.append(" " * (line_indent + 4) + "pass")
+                lines.append(" " * (line_indent + 4) + "pass # ADDED_LINE")
             else:
                 # General case: add a pass statement for any other block
-                lines.append(" " * (line_indent + 4) + "pass")
+                lines.append(" " * (line_indent + 4) + "pass # ADDED_LINE")
             return lines
         # Find all `try` blocks and ensure they are closed with an `except`
         try_positions = [i for i, line in enumerate(lines) if line.strip().startswith("try:")]
@@ -199,8 +224,8 @@ def ensure_parsable_program(snippet: str) -> str:
 
             # If no `except` or `finally` found, add them
             if not has_except_or_finally:
-                lines.append(" " * try_indent + "except Exception as e:")
-                lines.append(" " * (try_indent + 4) + "pass")
+                lines.append(" " * try_indent + "except Exception as e: # ADDED_LINE")
+                lines.append(" " * (try_indent + 4) + "pass # ADDED_LINE")
 
         # Check for `elif` blocks and ensure they have an `else`
         elif_positions = [i for i, line in enumerate(lines) if line.strip().startswith("elif:")]
@@ -221,8 +246,8 @@ def ensure_parsable_program(snippet: str) -> str:
 
             # If no `except` or `finally` found, add them
             if not has_else:
-                lines.append( " " * elif_indent + "else:")
-                lines.append( " " * (elif_indent + 4) + "pass")
+                lines.append( " " * elif_indent + "else: # ADDED_LINE")
+                lines.append( " " * (elif_indent + 4) + "pass # ADDED_LINE")
 
 
         return lines
@@ -251,10 +276,17 @@ def ensure_parsable_program(snippet: str) -> str:
             first_part_lines.append(line)
 
         remaining_lines = snippet_lines[len(first_part_lines):]
-        if detect_global_or_function_start(first_part_lines) == "global_start":
+        print(f"First part lines: {first_part_lines}")
+        beginning =detect_global_or_function_start(first_part_lines)
+        print(f"Beginning: {beginning}")
+        if len(first_part_lines) == 0:
+            return remaining_lines
+        if beginning == "global_start":
             print("Global code detected.")
             print(f"First part lines: {first_part_lines}")
             return process_first_part(first_part_lines, remaining_lines)
+        elif beginning == "function_start":
+            return first_part_lines + remaining_lines
         return wrap_global_code(first_part_lines) + remaining_lines
 
     def handle_end(lines):
@@ -291,6 +323,39 @@ def ensure_parsable_program(snippet: str) -> str:
         return imports_str +"\n" +"\n".join(snippet_lines)
     return "\n".join(snippet_lines)
 
+def visit(script, node):
+    # Check if this node corresponds to an added line
+    if hasattr(node, "lineno"):
+        line = script.splitlines()[node.lineno - 1].strip()
+        if line.endswith("# ADDED_LINE"):
+            node.is_added = True  # Mark this node as added
+        else:
+            node.is_added = False
+    visit(script,node)
+    return node
+
+
+
+"""
+Parse the snippet into an AST and mark nodes that were added.
+Added lines are identified by a specific marker (e.g., `# ADDED_LINE`).
+"""
+def mark_node(node, lines):
+    """
+    Mark the node as added or original based on the source line.
+    """
+    if hasattr(node, "lineno"):
+        line = lines[node.lineno - 1].strip()
+        node.is_added = line.endswith("# ADDED_LINE")
+    return node
+
+def traverse_and_mark(tree, lines):
+    """
+    Recursively traverse the AST and mark nodes.
+    """
+    for node in ast.walk(tree):
+        mark_node(node, lines)
+    return tree
 
 #read from a file and test the file contents
 def test():
@@ -310,7 +375,13 @@ def test():
             snippet= ensure_parsable_program(snippet)
         
         try:
-            ast.parse(snippet)
+            tree = ast.parse(snippet)
+            lines = snippet.splitlines()
+            traverse_and_mark(tree, lines)
+            for node in ast.walk(tree):
+                if hasattr(node, "is_added"):
+                    status = "Added" if node.is_added else "Original"
+                    print(f"Node: {ast.dump(node)}, Status: {status}")
             print("The snippet was made parsable.")
         except SyntaxError as e:
             print("The snippet was not made parsable.")

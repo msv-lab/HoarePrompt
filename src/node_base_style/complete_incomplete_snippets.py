@@ -35,8 +35,8 @@ class PostconditionAnalyzer:
         self.config = config
         self.collected_returns = [] # Store postconditions from return statements as a list of tuples (postcondition, depth)
         self.collected=[] # General storage for collected postconditions, storing tuples (postcondition, depth, context, command, is_loop_related)
-        first_line = first_line
-        total_program = program
+        self.first_line = first_line
+        self.total_program = program
 
         # Flags and state trackers
         self.got_return = False              # Indicates if a return statement was encountered at the current recursion level
@@ -47,6 +47,7 @@ class PostconditionAnalyzer:
         self.last_loop_depth = 1000          # Depth of the last loop encountered, initalised with a high value so any loop will have a lower depth
         self.first_for = True                # Tracks if it's the first `for` loop in the current scope
         self.got_if_else_return = False      # Flag to indicate both `if` and `else` branches have unavoidable return statements
+        self.total_precondition = None
 
 
     # Core recursive method to compute the postcondition of a Triple .
@@ -65,8 +66,9 @@ class PostconditionAnalyzer:
 
         #if the postcondition is already known, there was an error calling the function to compute it
         assert triple.postcondition == State.UNKNOWN
-
-        # Generic case: Handle simple commands like assignments or expressions
+        if self.total_precondition is None and self.compare_first_line(triple.command) :
+            self.total_precondition = triple.precondition
+             # Generic case: Handle simple commands like assignments or expressions
         if isinstance(triple.command,(ast.Assign, ast.AugAssign, ast.Expr, ast.Raise, ast.Pass, ast.Break, ast.Continue)):
             post = complete_triple(triple, self.model)
             
@@ -498,7 +500,8 @@ class PostconditionAnalyzer:
             # Summarize functionality and integrate it into the code tree
             final = summarize_functionality_tree(total_tree, return_conditions_str, self.model)
             updated_total_tree = replace_functionality(total_tree, final)
-
+            if self.total_precondition is not None:
+                return (final, return_conditions_str, updated_total_tree, self.total_precondition)
             return (final, return_conditions_str, updated_total_tree)
          
         # Handle import statements and assertions as they dont change the state
@@ -510,16 +513,25 @@ class PostconditionAnalyzer:
     def compare_first_line(self, cur_node):
         program = self.total_program
         first_line = self.first_line
-        if program is None or first_line is None:\
+
+        # Ensure program and first_line are valid
+        if program is None or first_line is None:
             return False
+
+        # Split program into lines
+        program_lines = program.splitlines()
+
         if hasattr(cur_node, "lineno") and hasattr(cur_node, "col_offset"):
             # Extract the line of code corresponding to this cur_node
-            cur_node_line = program[cur_node.lineno - 1].strip()  # Adjust for 0-based indexing
-            
+            cur_node_line = program_lines[cur_node.lineno - 1].strip()  # Adjust for 0-based indexing
+            print(f"Comparing lines:\nCur_node_line: '{cur_node_line}'\nFirst_line: '{first_line.strip()}'")
+
             # Compare the line from the source code with the first_line
             if cur_node_line == first_line.strip():
                 print(f"Flagged cur_node found: Line {cur_node.lineno}, Code: {cur_node_line}")
-                return True  # Return the matched AST node
+                return True  # Match found
+        return False
+
 
 # Function to compute the postcondition of a whole program
 # This is the function that does the heavy lifting
