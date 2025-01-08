@@ -109,9 +109,8 @@ def remove_added_lines(original_with_comments, annotated_version):
         print(line)
         if "# ADDED LINE" in  line.strip():
             start_index += 1
-            print(f"Start index found: {start_index}")
         else:
-            print(f"Start index: {start_index}")
+           
             break
 
     end_index = len(original_lines)
@@ -124,9 +123,7 @@ def remove_added_lines(original_with_comments, annotated_version):
     # Step 2: Extract code lines at the identified indexes
     added_start_line = original_lines[start_index - 1].split("# ADDED LINE")[0].rstrip() if start_index > 0 else None
     added_end_line = original_lines[end_index].split("# ADDED LINE")[0].rstrip() if end_index < len(original_lines) else None
-    print(f"Added start line: {added_start_line}")
-    print(f"Added end line: {added_end_line}")
-    print(f"annotated lines 0: {annotated_lines[0]}")
+    
    
     # Step 3: Find the corresponding indexes in the annotated version
     annotated_start_index=0

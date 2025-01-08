@@ -27,7 +27,7 @@ class PostconditionAnalyzer:
     Handles recursive analysis, collects postconditions, and manages specific cases like loops and returns.
     """
     
-    def __init__(self, model, config, program=None, first_line=None):
+    def __init__(self, model, config):
         """
         Initialize the PostconditionAnalyzer with a model and configuration.
         """
@@ -35,8 +35,6 @@ class PostconditionAnalyzer:
         self.config = config
         self.collected_returns = [] # Store postconditions from return statements as a list of tuples (postcondition, depth)
         self.collected=[] # General storage for collected postconditions, storing tuples (postcondition, depth, context, command, is_loop_related)
-        first_line = first_line
-        total_program = program
 
         # Flags and state trackers
         self.got_return = False              # Indicates if a return statement was encountered at the current recursion level
@@ -506,25 +504,11 @@ class PostconditionAnalyzer:
             return triple.precondition
 
         raise ValueError(f"unsupported statement type: {triple.command} {pprint_cmd(triple.command)}")
-    
-    def compare_first_line(self, cur_node):
-        program = self.total_program
-        first_line = self.first_line
-        if program is None or first_line is None:\
-            return False
-        if hasattr(cur_node, "lineno") and hasattr(cur_node, "col_offset"):
-            # Extract the line of code corresponding to this cur_node
-            cur_node_line = program[cur_node.lineno - 1].strip()  # Adjust for 0-based indexing
-            
-            # Compare the line from the source code with the first_line
-            if cur_node_line == first_line.strip():
-                print(f"Flagged cur_node found: Line {cur_node.lineno}, Code: {cur_node_line}")
-                return True  # Return the matched AST node
 
 # Function to compute the postcondition of a whole program
 # This is the function that does the heavy lifting
-def compute_postcondition(model, precondition, program, config, first_line = None):
-    analyzer = PostconditionAnalyzer(model, config, program, first_line)
+def compute_postcondition(model, precondition, program, config):
+    analyzer = PostconditionAnalyzer(model, config)
     parsed_code = ast.parse(program).body
     triple = Triple(precondition, parsed_code, State.UNKNOWN)
     postcondition = analyzer.complete_triple_cot(triple)

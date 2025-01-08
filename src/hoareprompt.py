@@ -683,16 +683,20 @@ def assess(description, program, module_name, config, log_directory, cex_path):
         entailment_log_dir_simple.mkdir(parents=True, exist_ok=True)
         entailment_log_dir_complex = entailment_log_dir/'entailment_complex'
         entailment_log_dir_complex.mkdir(parents=True, exist_ok=True)
-        entailment_log_dir_default = entailment_log_dir/'entailment_default'
+        entailment_log_dir_default = entailment_log_dir/'entailment_summary'
         entailment_log_dir_default.mkdir(parents=True, exist_ok=True)
         entailment_log_dir_simple_verify = entailment_log_dir/'entailment_simple_verify'
         entailment_log_dir_simple_verify.mkdir(parents=True, exist_ok=True)
         entailment_log_dir_complex_verify = entailment_log_dir/'entailment_complex_verify'
         entailment_log_dir_complex_verify.mkdir(parents=True, exist_ok=True)
-        entailment_log_dir_default_verify = entailment_log_dir/'entailment_default_verify'
+        entailment_log_dir_default_verify = entailment_log_dir/'entailment_summary_verify'
         entailment_log_dir_default_verify.mkdir(parents=True, exist_ok=True)
-        entailment_log_dir_default_no_fsl = entailment_log_dir/'entailment_default_no_fsl'
+        entailment_log_dir_default_no_fsl = entailment_log_dir/'entailment_summary'
         entailment_log_dir_default_no_fsl.mkdir(parents=True, exist_ok=True)
+        entailment_log_dir_naive_fsl= entailment_log_dir/'entailment_naive_fsl'
+        entailment_log_dir_naive_fsl.mkdir(parents=True, exist_ok=True)
+        entailment_log_dir_vanilla= entailment_log_dir/'entailment_vanilla'
+        entailment_log_dir_vanilla.mkdir(parents=True, exist_ok=True)
 
     if len(postconditions_list)==1:
 
@@ -825,13 +829,15 @@ def check_entailment(description, postcondition, program, module_name, config, l
     model = get_model(config["model"], config["temperature"], log_directory)
     if config["assessment-mode"] == "total" or config["assessment-mode"] == "verify":
         print("Using total or verify entailment mode")
+        model_naive= get_model(config["model"], config["temperature"], log_directory/'entailment_naive_fsl')
+        model_vanilla= get_model(config["model"], config["temperature"], log_directory/'entailment_vanilla')
         model_simple = get_model(config["model"], config["temperature"], log_directory/'entailment_simple')
         model_complex = get_model(config["model"], config["temperature"], log_directory/'entailment_complex')
-        model_default = get_model(config["model"], config["temperature"], log_directory/'entailment_default')
+        model_default = get_model(config["model"], config["temperature"], log_directory/'entailment_summary')
         model_simple_verify = get_model(config["model"], config["temperature"], log_directory/'entailment_simple_verify')
         model_complex_verify = get_model(config["model"], config["temperature"], log_directory/'entailment_complex_verify')
-        model_default_verify = get_model(config["model"], config["temperature"], log_directory/'entailment_default_verify')
-        model_default_no_fsl = get_model(config["model"], config["temperature"], log_directory/'entailment_default_no_fsl')
+        model_default_verify = get_model(config["model"], config["temperature"], log_directory/'entailment_summary_verify')
+        model_default_no_fsl = get_model(config["model"], config["temperature"], log_directory/'entailment_summary')
     
     
     # Perform naive entailment checking, generating counterexamples if necessary
@@ -890,8 +896,8 @@ def check_entailment(description, postcondition, program, module_name, config, l
             correctness_default = entailment.naive(model_default, description, postcondition, program, module_name, config, cex_path)
             correctness_default_no_fsl = entailment_no_fsl.naive(model_default_no_fsl, description, postcondition, program, module_name, config, cex_path)
 
-            correctness_naive, response_naive  = naive_question_with_response(description, program, model)
-            correctness_naive_no_fsl, response_naive_no_fsl  = naive_question_no_fsl_with_response(description, program, model)
+            correctness_naive, response_naive  = naive_question_with_response(description, program, model_naive)
+            correctness_naive_no_fsl, response_naive_no_fsl  = naive_question_no_fsl_with_response(description, program, model_vanilla)
             correctness_simple_verify = verify_tree(model_simple_verify, description,  remove_functionality(annotated_func), program, response_naive, module_name, config, cex_path)
             correctness_complex_verify = verify_tree(model_complex_verify, description, annotated_func, program , response_naive , module_name, config, cex_path)
             correctness_default_verify = verify_function_summary(model_default_verify, description, postcondition, program, response_naive, module_name, config, cex_path)
@@ -909,13 +915,15 @@ def check_entailment(description, postcondition, program, module_name, config, l
 def check_entailment_mult_func(description, postconditions_list, functions_list, imports, global_code, module_name, config, log_directory, return_list, annotated_func_list,cex_path=None):
     model = get_model(config["model"], config["temperature"], log_directory)
     if config["assessment-mode"] == "total" or config["assessment-mode"] == "verify":
+        model_naive= get_model(config["model"], config["temperature"], log_directory/'entailment_naive_fsl')
+        model_vanilla= get_model(config["model"], config["temperature"], log_directory/'entailment_vanilla')
         model_simple = get_model(config["model"], config["temperature"], log_directory/'entailment_simple')
         model_complex = get_model(config["model"], config["temperature"], log_directory/'entailment_complex')
-        model_default = get_model(config["model"], config["temperature"], log_directory/'entailment_default')
+        model_default = get_model(config["model"], config["temperature"], log_directory/'entailment_summary')
         model_simple_verify = get_model(config["model"], config["temperature"], log_directory/'entailment_simple_verify')
         model_complex_verify = get_model(config["model"], config["temperature"], log_directory/'entailment_complex_verify')
-        model_default_verify = get_model(config["model"], config["temperature"], log_directory/'entailment_default_verify')
-        model_default_no_fsl = get_model(config["model"], config["temperature"], log_directory/'entailment_default_no_fsl')
+        model_default_verify = get_model(config["model"], config["temperature"], log_directory/'entailment_summary_verify')
+        model_default_no_fsl = get_model(config["model"], config["temperature"], log_directory/'entailment_summary')
 
     program= imports+"\n"
     total_post=""
@@ -1000,8 +1008,8 @@ def check_entailment_mult_func(description, postconditions_list, functions_list,
             correctness_default =entailment_mult_func.naive_mult_func(model_default, description, functions, module_name, config, cex_path)
             correctness_default_no_fsl =entailment_mult_func_no_fsl.naive_mult_func(model_default_no_fsl, description, functions, module_name, config, cex_path)
 
-            correctness_naive, response_naive  = naive_question_with_response(description, program, model)
-            correctness_naive_no_fsl, response_naive_no_fsl  = naive_question_no_fsl_with_response(description, program, model)
+            correctness_naive, response_naive  = naive_question_with_response(description, program, model_naive)
+            correctness_naive_no_fsl, response_naive_no_fsl  = naive_question_no_fsl_with_response(description, program, model_vanilla)
 
             correctness_simple_verify = verify_tree(model_simple_verify, description,  annotated_program_simple, program, response_naive, module_name, config, cex_path)
             correctness_complex_verify= verify_tree(model_complex_verify, description, annotated_program, program , response_naive , module_name, config, cex_path)
