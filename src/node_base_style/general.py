@@ -84,11 +84,77 @@ Now, please think step by step: List the impact of the code on the program, chec
 Be as specific as possible. If a variable has a specific value or is equal to some combination of variables, use that specific value  or expression it is equal to. nclude all the information of the precondition that is still valid after the code has been executed. Just update the values of the variables that have been changed by the code.
 """
 
+PROMPT_COMPLEX = """
+You have been assigned the role of a program executor, responsible for simulating the execution of Python code. You will be provided with an initial state and a Python code snippet consisting of multiple lines. Your task is to execute all the lines in sequence and provide the output state after the entire code block has been run. Avoid describing how the program runs step-by-step for individual lines but instead focus on the combined effect of all lines. When a variable has a specific value, use that specific value directly for calculations.  
+
+Include all the information from the precondition that remains valid after the code execution and update the values of any variables that are modified by the code. Provide the final state in the text format: Output State: **output state**.
+
+Here are some examples to help you understand the task:
+
+Example 1:
+Initial State: `a` is 5, `b` is 3
+```
+c = a + b
+d = c * 2
+```
+
+Example Answer 1:
+The first line assigns the value of `a + b` to `c`. Since `a` is 5 and `b` is 3, `c` becomes 8. The second line assigns the value of `c * 2` to `d`, making `d` equal to 16. No other variables are affected. 
+Output State: **a is 5, b is 3, c is 8, d is 16**
+
+Example 2:
+Initial State: `x` is a positive integer
+```
+n= int(input())
+x += n
+```
+
+Example Answer 2:
+The first line assigns the integer value of the input to `n`. The second line increments `x` by the value of `n`. The value of `x` is a positive integer, and `n` is an integer. No other variables are affected.
+Output State: **x is a positive integer equal to its original value plus n , n is an integer**
+
+Example 3:
+Initial State: `n` is 3, `total` is 1
+```
+total += n
+pass
+n= max(total, n)
+```
+
+Example Answer 3:
+The first line increments `total` by the value of `n`, making `total` equal to 4. The second line does not affect any variables. The third line assigns the maximum value between `total` and `n` to `n`. Since `total` is 4, and n was 3, `n` becomes 4.
+Output State: **n is 4, total is 4**
+
+Your Task:
+Initial State: {pre}
+```
+{program}
+```
+
+Now, please analyze the entire block of code and provide the final output state. List the impact of all lines on the program, check the previous values of affected variables, and calculate the results. Use the text format: Output State: **output state**. Be as specific as possible, combining changes from all lines into a single coherent final state. Include all valid information from the precondition and update only what is modified by the code.
+```
+"""
+
 # This is the main function, it completes the prompt, queries the model and extracts the result, meaining the output state of that program part
 def complete_triple(incomplete_triple: Triple, model):
     pre = print_state(incomplete_triple.precondition)
     program = pprint_cmd(incomplete_triple.command)
     prompt = PROMPT.format(pre=pre, program=program)
+    response = model.query(prompt)
+    post = extract_result(response, "Output State")
+    print("*" * 50)
+    print(incomplete_triple)
+    print(f"LLM post: {post}")
+    return post
+
+def complete_triple_batch(incomplete_triple: Triple, model):
+    if isinstance(incomplete_triple.command, list):
+        if len(incomplete_triple.command) == 1:
+            return complete_triple(incomplete_triple, model)
+    pre = print_state(incomplete_triple.precondition)
+    program = pprint_cmd(incomplete_triple.command)
+    program=program.replace("\n\n","\n")
+    prompt = PROMPT_COMPLEX.format(pre=pre, program=program)
     response = model.query(prompt)
     post = extract_result(response, "Output State")
     print("*" * 50)

@@ -1,12 +1,16 @@
-def func():
-    max_value = numbers[0]
-    for num in numbers:
-        if num > max_value:
-            max_value = num
-        
-    #State of the program after the  for loop has been executed: `max_value` is the maximum value in the list `numbers`, and the list `numbers` contains at least one element.
-    return max_value
-    #The program returns max_value which is the maximum value in the list 'numbers'
-#Overall this is what the function does: The function accepts a list of integers and returns the maximum value from this list.
-The program returns max_value which is the maximum value in the list 'numbers'
+def func_1():
+    x = 10
+
+y = 20
+
+print('Sum:', x + y)
+    try:
+        z = max(x, y)
+    except (Exception):
+        print(e)
+    #State of the program after the try-except block has been executed: `x` is 10, `y` is 20, `z` is 20. No exception is raised, so the value of `e` is not printed.
+    print('Max:', z)
+
+pass
+#Overall this is what the function does: The function accepts no parameters and returns a value.
 

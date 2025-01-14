@@ -1,7 +1,7 @@
 import ast
 
 from node_base_style.hoare_triple import State, Triple, IfTriple, FuncTriple, TryTriple, pprint_cmd, pprint_else_stmt, pprint_if_stmt, pprint_try_stmt, pprint_except_stmt
-from node_base_style.general import complete_triple
+from node_base_style.general import complete_triple, complete_triple_batch
 from node_base_style.if_statement import complete_if_triple
 from node_base_style.function_definition import complete_func_triple, get_func_def
 from node_base_style.loop import complete_loop_triple, get_while_head,get_for_loop_head
@@ -45,6 +45,10 @@ class PostconditionAnalyzer:
         self.last_loop_depth = 1000          # Depth of the last loop encountered, initalised with a high value so any loop will have a lower depth
         self.first_for = True                # Tracks if it's the first `for` loop in the current scope
         self.got_if_else_return = False      # Flag to indicate both `if` and `else` branches have unavoidable return statements
+
+    # Check if a command is a simple statement (e.g., assignment, expression, etc.)
+    def is_simple_statement(self, command):
+        return isinstance(command, (ast.Assign, ast.AugAssign, ast.Expr, ast.Raise, ast.Pass, ast.Break, ast.Continue))
 
 
     # Core recursive method to compute the postcondition of a Triple .
@@ -94,24 +98,73 @@ class PostconditionAnalyzer:
 
         # List case: Handle compound statements (e.g., function body or code blocks)
         # we dont really do anything here just analyse the blocks one by one by calling the complete_triple_cot recursively
+        # if isinstance(triple.command, list):
+        #     pre = triple.precondition
+
+        #     # Recursively compute the postcondition for each sub-command
+        #     for subcmd in triple.command:
+        #         completion = self.complete_triple_cot(Triple(pre, subcmd, State.UNKNOWN), depth=depth, type=type)
+        #         pre = completion
+
+        #         # Exit early if a return statement or both branches of an if-else have returns
+        #         if self.got_return:
+        #             break
+        #         if self.got_if_else_return:
+        #             print("Exiting due to complete if-else returns.")
+        #             self.got_if_else_return = False
+        #             break
+
+        #     return pre
+        
+
         if isinstance(triple.command, list):
             pre = triple.precondition
+            simple_commands = []
 
-            # Recursively compute the postcondition for each sub-command
             for subcmd in triple.command:
-                completion = self.complete_triple_cot(Triple(pre, subcmd, State.UNKNOWN), depth=depth, type=type)
-                pre = completion
+                if self.is_simple_statement(subcmd):
+                    # Collect simple commands in a batch
+                    simple_commands.append(subcmd)
+                else:
+                    # Process the batch of simple commands if we encounter a non-simple command
+                    if simple_commands:
+                        # batch_input = "\n".join([pprint_cmd(cmd) for cmd in simple_commands])
+                        # Call the LLM once for the entire batch
+                        # print(f"I am analysing a batch of simple commands : {pprint_cmd(simple_commands)}")
+                        post = complete_triple_batch(Triple(pre, simple_commands, State.UNKNOWN), self.model)
 
-                # Exit early if a return statement or both branches of an if-else have returns
-                if self.got_return:
-                    break
-                if self.got_if_else_return:
-                    print("Exiting due to complete if-else returns.")
-                    self.got_if_else_return = False
-                    break
+                        # Collect the postcondition for the commands in the batch
+                    
+                        if not self.inside_loop:
+                            context = f"simple commands in {type}" if type else "simple commands"
+                            self.collected.append((str(post), depth, context, pprint_cmd(simple_commands), True))
+
+                        pre= post
+                        simple_commands = []  # Reset the batch
+
+                    # Recursively process the non-simple command
+                    completion = self.complete_triple_cot(Triple(pre, subcmd, State.UNKNOWN), depth=depth, type=type)
+                    pre = completion
+
+                    # Exit early if a return statement or both branches of an if-else have returns
+                    if self.got_return:
+                        break
+                    if self.got_if_else_return:
+                        print("Exiting due to complete if-else returns.")
+                        self.got_if_else_return = False
+                        break
+
+            # Process any remaining simple commands in the batch
+            if simple_commands:
+                # print(f"I am analysing a batch of simple commands : {pprint_cmd(simple_commands)}")
+                pre = complete_triple_batch(Triple(pre, simple_commands, State.UNKNOWN), self.model)
+                
+                if not self.inside_loop:
+                    context = f"simple commands in {type}" if type else "simple commands"
+                    self.collected.append((str(pre), depth, context, pprint_cmd(simple_commands), True))
 
             return pre
-        
+            
         # If case : Handles the analysis of an AST `if-else` statement
         if isinstance(triple.command, ast.If):
 

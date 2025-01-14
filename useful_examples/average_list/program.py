@@ -19,10 +19,7 @@ def calculate_average(numbers):
             count += 1
         else:
             print("Skipping non-positive number:", num)
+            continue
 
-    if count == 0:
-        return None
-    else:   
-        average = total / count
     
-    return average
+    return total / count
