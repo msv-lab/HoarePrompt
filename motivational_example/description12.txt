@@ -1,0 +1,1 @@
+compute the standard deviation of a numeric list

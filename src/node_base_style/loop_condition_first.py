@@ -16,11 +16,11 @@ State right before the while loop: `total` is 10, `i` is 0, `n` is an integer.
 while i < n:
     # the loop body is omit
 ```
-Now, please think step by step: Which states need to be adjusted for the loop to execute one more time?
+Now, please think step by step: Which states need to be adjusted for the loop to execute the first time? Only objects in the loop Head can be adjusted.
 
 
 Example Answer:
-According to the code, whether the loop can execute depends on the variables `i` and `n`. If `i` is less than `n`, the loop can execute. Right before the loop, `i` is 0, `n` is an integer. `n` beinng an integer does not ensure that the loop will execute, so it needs to be adjusted to `n` is greater than 0. No other states need to be adjusted.
+The only variables in the loop head are variables  i and n, so we can only adjust those ones. According to the code, whether the loop can execute depends on the variables `i` and `n`. If `i` is less than `n`, the loop can execute. Right before the loop, `i` is 0, `n` is an integer. `n` beinng an integer does not ensure that the loop will execute, so it needs to be adjusted to `n` is greater than 0. No other states need to be adjusted.
 State: **`total` is 10, `i` is 0, `n` must be greater than 0**
 
 Example 2:
@@ -29,11 +29,11 @@ State right before the while loop: `total` is 0, students is 2 less than its ini
 while students >=1 :
     # the loop body is omit
 ```
-Now, please think step by step: Which states need to be adjusted for the loop to execute one more time?
+Now, please think step by step: Which states need to be adjusted for the loop to execute the first time? Only objects in the loop Head can be adjusted.
 
 
 Example Answer:
-According to the code, whether the loop can execute depends on the variable students.  If students is greater than or equal to 1, the loop can execute . Rigtht before the loop, students is 2 less than its initial value, So for the loop to  executed the first time time the initial value of students needed to have been equal or greater than 3 and students currently must be greater than 1.
+The only variable in the loop head is variable students, so we can only adjust that one. According to the code, whether the loop can execute depends on the variable students.  If students is greater than or equal to 1, the loop can execute . Rigtht before the loop, students is 2 less than its initial value, So for the loop to  executed the first time time the initial value of students needed to have been equal or greater than 3 and students currently must be greater than 1.
 State: **`total` is 0, students is 2 less than its initial value and students currently must be greater or equal to 1**
 
 
@@ -43,7 +43,7 @@ State right before the while loop: {post}
 {loop_head}
     # the loop body is omit
 ```
-Now, please think step by step: Which states need to be adjusted for the loop to execute one more time?
+Now, please think step by step: Which states need to be adjusted for the loop to execute the first time ? Only objects in the loop Head can be adjusted.
 """
 
 # The function to get the precondition so that the next iteration can take place

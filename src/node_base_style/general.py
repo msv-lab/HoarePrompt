@@ -87,7 +87,7 @@ Be as specific as possible. If a variable has a specific value or is equal to so
 PROMPT_COMPLEX = """
 You have been assigned the role of a program executor, responsible for simulating the execution of Python code. You will be provided with an initial state and a Python code snippet consisting of multiple lines. Your task is to execute all the lines in sequence and provide the output state after the entire code block has been run. Avoid describing how the program runs step-by-step for individual lines but instead focus on the combined effect of all lines. When a variable has a specific value, use that specific value directly for calculations.  
 
-Include all the information from the precondition that remains valid after the code execution and update the values of any variables that are modified by the code. Provide the final state in the text format: Output State: **output state**.
+Include all the information from the precondition that remains valid after the code execution and update the values of any variables that are modified by the code. Provide the final state, icluding the state of all the variables after the execution of the code snippet. Use the text format: Output State: **output state**.
 
 Here are some examples to help you understand the task:
 
@@ -131,7 +131,7 @@ Initial State: {pre}
 {program}
 ```
 
-Now, please analyze the entire block of code and provide the final output state. List the impact of all lines on the program, check the previous values of affected variables, and calculate the results. Use the text format: Output State: **output state**. Be as specific as possible, combining changes from all lines into a single coherent final state. Include all valid information from the precondition and update only what is modified by the code.
+Now, please analyze the entire block of code and provide the final output state. List the impact of all lines on the program, check the previous values of affected variables, and calculate the states of the variables after the codeexecutes. Use the text format: Output State: **output state**. Be as specific as possible, combining changes from all lines into a single coherent final state. Include all valid information from the precondition and update only what is modified by the code.
 ```
 """
 

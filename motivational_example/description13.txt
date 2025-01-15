@@ -1,0 +1,1 @@
+Given an array return the minimum absolute difference between consecutive elements in arr, or None if arr has fewer than 2 elements.

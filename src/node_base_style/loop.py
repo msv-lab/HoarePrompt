@@ -2,70 +2,93 @@ import ast
 
 from node_base_style.hoare_triple import pprint_cmd, Triple
 from node_base_style.helper import extract_result
-
-
-# The prompt template instructs the model on how to analyze the state of the loop after several(k) iterations.
 LOOP_PROMPT = """
-ou have been assigned the role of a program verifier, responsible for analyzing the program's state after the while loop. The initial state of the code has already been provided. Additionally, you can see how the state changes after the loop executes a few times. 
-In the information given, the output state after the loop executes some number of times include what needed to be true for the loop to execute at least that number of times. 
-The initial state includes the values and relationships of the variables before the program execution. The output state should include the values and relationships of the variables after all the iterations of the while loop have executed. Similar to the initial state, avoid explaining how the program operates; focus solely on the variable values and their interrelations. 
+Given a Python loop, an initial execution state, and the output states after the first few iterations of the loop, determine the output state after all the executions of the loop have finished. Follow these steps carefully:
+
+1. **Analyze the Code and Initial State**: Think step by step about what the commands in the loop do and how they interact with the initial state.
+2. **Track Variable Changes**: Identify variables that are updated during the loop and those that remain constant or depend on the initial state. Clearly note which variables are **invariant** (do not change across iterations).
+3. **Summarize the Loop Behavior**: Describe how the loop's execution affects the values and relationships of variables after all iterations, considering edge cases like when the loop does not execute.
+4. **Verify Relationships**: Confirm that the relationships and invariants identified from the loop code are consistent with the described iterations and final output state.
+
 You must adhere to the text format: Output State: **output state.**
-I am giving you two examples to understand the task better. Then I am giving you your task.
-
-Example 1: 
-
-Initial State: `n` is a positive integer, `factorial` is 1
-Code of the loop:
-```
-while n > 0:
-    factorial *= n
-    n -= 1
-```
-
-Output State after loop executes 1 times:  n must initially be greater than 0, `factorial` is `n`, `n` is decremented to `n-1`.
-Output State after loop executes 2 times: `factorial` is `n * (n - 1)`, `n` is decremented to `n-2`, initial `n` must have been greater than 1
-Output State after loop executes 3 times: `factorial` is `n * (n - 1) * (n - 2)`, `n` is decremented to `n-3`, initial `n` must have been  had greater than 2.
-Now, please think step by step. Using the results from the first few iterations of the loop provided in the example as hints but  mostly from the loop code, determine the loop's output state.
-
-Example Answer 1:
-if n is greater than 0 the loop will execute at least once and fac will contain the factorial of n and n will be 0. If n is 0 then the loop wont execute and fac will remain 1, which is indeed the factorial of 0 , and the value of n wont change.
-Therefore, the output state of the loop is that `fac` is the factorial of the original value of `n`, 'n' is 0.
-Output State: **n` is 0, `fac` is the factorial of the original value of 'n' **
-
-Example 2: 
-
-Initial State:  `total` is 0, 'students' can hold any value. 
-Code of the loop:
-```
-while students >= 1:
-    total += students
-    students -= 1
-```
-
-Output state after loop executes 1 time: `total` is equal to the initial value of 'students', 'students' becomes 1 less than the initial value of 'students', inital value of students must have been greater than 0
-Output state after loop executes 2 times: `total` is equal to twice the initial value of 'students' minus 1, 'students' becomes 2 less than the initial value of 'students', initial value of students must have been greater than 1
-Output state after loop executes 3 times: `total` is equal to three times the initial value of 'students' minus 3, 'students' becomes 3 less than the initial value of 'students', initial value of students must have been greater than 2
-
-Now, please think step by step. Using the results from the first few iterations of the loop provided in the example as hints but  mostly from the loop code, determine the loop's output state.
-
-Example answer 2:
-The loop calculates the sum of all numbers from 1 to students and stores it in total . The loop will be executed at least once if students is greater or equal to 1 and in the end students will be 0. if students is less thn 1 then the loop will not execute and the value of total will remain 0.
-Output State: **'students' is 0, if students was initially greater or equal to 1 then total` is the sum of all numbers from 1 to the initial value of students, if students is less than 1 the loop doesnt execute and total is 0**
-Your Task:
 
 Initial State: {pre}
 Code of the loop:
-```
 {loop_code}
-```
 
-The output state after the loop executes some number of times include what needed to be true for the loop to execute at least that number of times. 
-
+The output state after the loop executes some number of times includes what needed to be true for the loop to execute at least that number of times:
 {loop_unrolled}
-Now, please think step by step. Using the results from the first few iterations of the loop provided in the example, determine the loop's output state, after all the iterations of the loop have executed. Make sure to include the values of the variables after the loop has finished especially the any loop control variables. 
-If the state of some variables is dependant on earlier or the oginal value of some variable, make sure to seprate the original value from the current value.
-Use the fomrat Output State: **the output state you calculate**
+
+Make sure to include:  
+- Any variables that remain constant throughout the loop.  
+- Final values of all variables after the loop finishes.  
+- Conditions under which the loop executes or does not execute.  
+
+Use the format: Output State: **the output state you calculate.**
 """
+
+# The prompt template instructs the model on how to analyze the state of the loop after several(k) iterations.
+# LOOP_PROMPT = """
+# ou have been assigned the role of a program verifier, responsible for analyzing the program's state after the while loop. The initial state of the code has already been provided. Additionally, you can see how the state changes after the loop executes a few times. 
+# In the information given, the output state after the loop executes some number of times include what needed to be true for the loop to execute at least that number of times. 
+# The initial state includes the values and relationships of the variables before the program execution. The output state should include the values and relationships of the variables after all the iterations of the while loop have executed. Similar to the initial state, avoid explaining how the program operates; focus solely on the variable values and their interrelations. 
+# You must adhere to the text format: Output State: **output state.**
+# I am giving you two examples to understand the task better. Then I am giving you your task.
+
+# Example 1: 
+
+# Initial State: `n` is a positive integer, `factorial` is 1
+# Code of the loop:
+# ```
+# while n > 0:
+#     factorial *= n
+#     n -= 1
+# ```
+
+# Output State after loop executes 1 times:  n must initially be greater than 0, `factorial` is `n`, `n` is decremented to `n-1`.
+# Output State after loop executes 2 times: `factorial` is `n * (n - 1)`, `n` is decremented to `n-2`, initial `n` must have been greater than 1
+# Output State after loop executes 3 times: `factorial` is `n * (n - 1) * (n - 2)`, `n` is decremented to `n-3`, initial `n` must have been  had greater than 2.
+# Now, please think step by step. Using the results from the first few iterations of the loop provided in the example as hints but  mostly from the loop code, determine the loop's output state.
+
+# Example Answer 1:
+# if n is greater than 0 the loop will execute at least once and fac will contain the factorial of n and n will be 0. If n is 0 then the loop wont execute and fac will remain 1, which is indeed the factorial of 0 , and the value of n wont change.
+# Therefore, the output state of the loop is that `fac` is the factorial of the original value of `n`, 'n' is 0.
+# Output State: **n` is 0, `fac` is the factorial of the original value of 'n' **
+
+# Example 2: 
+
+# Initial State:  `total` is 0, 'students' can hold any value. 
+# Code of the loop:
+# ```
+# while students >= 1:
+#     total += students
+#     students -= 1
+# ```
+
+# Output state after loop executes 1 time: `total` is equal to the initial value of 'students', 'students' becomes 1 less than the initial value of 'students', inital value of students must have been greater than 0
+# Output state after loop executes 2 times: `total` is equal to twice the initial value of 'students' minus 1, 'students' becomes 2 less than the initial value of 'students', initial value of students must have been greater than 1
+# Output state after loop executes 3 times: `total` is equal to three times the initial value of 'students' minus 3, 'students' becomes 3 less than the initial value of 'students', initial value of students must have been greater than 2
+
+# Now, please think step by step. Using the results from the first few iterations of the loop provided in the example as hints but  mostly from the loop code, determine the loop's output state.
+
+# Example answer 2:
+# The loop calculates the sum of all numbers from 1 to students and stores it in total . The loop will be executed at least once if students is greater or equal to 1 and in the end students will be 0. if students is less thn 1 then the loop will not execute and the value of total will remain 0.
+# Output State: **'students' is 0, if students was initially greater or equal to 1 then total` is the sum of all numbers from 1 to the initial value of students, if students is less than 1 the loop doesnt execute and total is 0**
+# Your Task:
+
+# Initial State: {pre}
+# Code of the loop:
+# ```
+# {loop_code}
+# ```
+
+# The output state after the loop executes some number of times include what needed to be true for the loop to execute at least that number of times. 
+
+# {loop_unrolled}
+# Now, please think step by step. Using the results from the first few iterations of the loop provided in the example, determine the loop's output state, after all the iterations of the loop have executed. Make sure to include the values of the variables after the loop has finished especially the any loop control variables. 
+# If the state of some variables is dependant on earlier or the oginal value of some variable, make sure to seprate the original value from the current value.
+# Use the fomrat Output State: **the output state you calculate**
+# """
 
 # Format examples of loop iterations into the text format required for the prompt.
 # This will show multiple iterations of a loop and how the state changes.the loop k unrolled

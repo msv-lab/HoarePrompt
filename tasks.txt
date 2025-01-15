@@ -1,16 +1,21 @@
-def func_1():
-    x = 10
+def func_1(arr):
+    if (len(arr) < 2) :
+        return None
+        #The program returns None
+    #State of the program after the if block has been executed: *arr is a list of integers, and the length of arr is greater than or equal to 2
+    min_diff = float('inf')
+    temp = arr[0]
+    for i in range(1, len(arr)):
+        diff = abs(arr[i] - temp)
+        
+        if diff < min_diff:
+            min_diff = diff
+        
+    #State of the program after the  for loop has been executed: `arr` is a list of integers with length greater than or equal to 2, `temp` is equal to `arr[0]`, `min_diff` is the minimum absolute difference between any two consecutive elements in the array starting from the first element, `i` is `len(arr) - 1`, `diff` is `abs(arr[len(arr) - 1] - arr[0])`. If `diff` is less than `min_diff`, `min_diff` is updated to `abs(arr[len(arr) - 1] - arr[0])`.
+    return min_diff
+    #The program returns the minimum absolute difference between any two consecutive elements in the array starting from the first element, or the absolute difference between the last element and the first element if it is smaller.
+#Overall this is what the function does: The function accepts a list of integers `arr`. It returns the minimum absolute difference between any two consecutive elements in the array starting from the first element, or the absolute difference between the last element and the first element if it is smaller. In certain conditions, the function returns `None`.
+Case_1: The program returns None
 
-y = 20
-
-print('Sum:', x + y)
-    try:
-        z = max(x, y)
-    except (Exception):
-        print(e)
-    #State of the program after the try-except block has been executed: `x` is 10, `y` is 20, `z` is 20. No exception is raised, so the value of `e` is not printed.
-    print('Max:', z)
-
-pass
-#Overall this is what the function does: The function accepts no parameters and returns a value.
+Case_2: The program returns the minimum absolute difference between any two consecutive elements in the array starting from the first element, or the absolute difference between the last element and the first element if it is smaller.
 

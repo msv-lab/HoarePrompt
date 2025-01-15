@@ -1,13 +1,12 @@
 {
-    "model": "qwen2.5-7b-instruct",
-    "temperature": 1.0,
-    "assessment-mode": "naive", 
+    "model": "qwen2.5-72b-instruct",
+    "temperature": 0.7,
+    "assessment-mode": "postcondition-entailment", 
     "postcondition-mode": "hoarecot",
     "postcondition-cot-prompt": "node-based-style",
-    "annotated_type" : "simple",
     "loop-unrolling-count": 3,
     "entailment-mode": "naive",
     "cex-mode": "with-postcondition",
-    "annotated" : false,
-    "fsl": false
+    "annotated" : true,
+    "annotated-type" : "simple"
 }

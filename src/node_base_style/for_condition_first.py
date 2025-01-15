@@ -16,11 +16,11 @@ State before the for loop: `total` is 10.
 for i in range(n):
     # the loop body is omit
 ```
-Now, please think step by step: Which states need to be adjusted for the loop to execute?
+Now, please think step by step: Which states need to be adjusted for the loop to execute? Only the states of objects in the loop head can be adjusted.
 
 
 Example Answer 1:
-According to the code, whether the loop can execute depends on the variables `i` and `n`. If n is at least 1, the loop can execute. Before the loop starts, total is 10 does not ensure that the loop will execute , so it needs to be adjusted to `n` is greater than 0 and i is now 1. 
+The only variables in the loop head are variables  i and n, so we can only adjust those ones. According to the code, whether the loop can execute depends on the variables `i` and `n`. If n is at least 1, the loop can execute. Before the loop starts, total is 10 does not ensure that the loop will execute , so it needs to be adjusted to `n` is greater than 0 and i is now 1. 
 State: **`total` is 10, `i` is 1,  `n` must be greater than 0**
 
 Example 2:
@@ -29,11 +29,11 @@ State before the loop starts: `total` is 0, students_list is a list of students.
 for index, student in enumerate(students_list):
     # the loop body is omit
 ```
-Now, please think step by step: Which states need to be adjusted for the loop to execute?
+Now, please think step by step: Which states need to be adjusted for the loop to execute? Only the states of objects in the loop head can be adjusted.
 
 
 Example Answer 2:
-According to the code, whether the loop can execute depends on the student_list.  If the list has at least 1 student the loop executes. At the end of the last iteration, total is 0. So for the loop to be executed  the list must have at least 1 student and the index is 0 and student is the first student in the list.
+The only objects in the loop head are variables  index, students  and list  students_list, so we can only adjust those ones.According to the code, whether the loop can execute depends on the student_list.  If the list has at least 1 student the loop executes. At the end of the last iteration, total is 0. So for the loop to be executed  the list must have at least 1 student and the index is 0 and student is the first student in the list.
 State: **`total` is 0,  students_list is a list of students that must have at least 1 student, student is the first student in the list, index is 0**
 
 
@@ -43,7 +43,7 @@ State before the loop starts: {post}
 {loop_head}
     # the loop body is omit
 ```
-Now, please think step by step: Which states need to be adjusted for the loop to execute?
+Now, please think step by step: Which states need to be adjusted for the loop to execute? Only the states of objects in the loop head can be adjusted.
 """
 
 # The function to get the precondition so that the next iteration can take place

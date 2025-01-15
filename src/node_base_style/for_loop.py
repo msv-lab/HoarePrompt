@@ -3,67 +3,111 @@ import ast
 from node_base_style.hoare_triple import pprint_cmd, Triple
 from node_base_style.helper import extract_result
 
-
-# The prompt template instructs the model on how to analyze the state of the loop after several(k) iterations.
 LOOP_PROMPT = """
-You have been assigned the role of a program verifier, responsible for analyzing the program's state after the for loop. The initial state of the code has already been provided. Additionally, you can see how the state changes after the loop executes a few times. The initial state includes the values and relationships of the variables before the program execution. The output state should include the values and relationships of the variables after all the iterations of the for loop have executed. Similar to the initial state, avoid explaining how the program operates; focus solely on the variable values and their interrelations. 
-In the information given, the output state after the loop executes some number of times include what needed to be true for the loop to execute at least that number of times. 
+Given a Python loop, an initial execution state, and the output states after the first few iterations of the loop, determine the output state after all the executions of the loop have finished. Follow these steps carefully:
+
+1. **Analyze the Code and Initial State**: Think step by step about what the commands in the loop do and how they interact with the initial state.
+2. **Track Variable Changes**: Identify variables that are updated during the loop and those that remain constant or depend on the initial state. Clearly note which variables are **invariant** (do not change across iterations).
+3. **Summarize the Loop Behavior**: Describe how the loop's execution affects the values and relationships of variables after all iterations, considering edge cases like when the loop does not execute.
+4. **Verify Relationships**: Confirm that the relationships and invariants identified from the loop code are consistent with the described iterations and final output state.
+
 You must adhere to the text format: Output State: **output state.**
-I am giving you two examples to understand the task better. Then I am giving you your task.
-Example 1: 
-
-Initial State: `n` is a positive integer, `factorial` is 1.
-Code of the loop:
-```
-for i in range(1, n + 1):
-    factorial *= i
-```
-Output state after the loop executes 1 times:  `factorial` is `1`, 'i' is 1 , n must be at least 1.
-Output state after the loop executes 2 times: `factorial` is 2, 'i' is 2 , n must be at least 2.
-Output state after the loop executes 3 times: `factorial` is 6 , 'i' is 3 , n must be at least 3.
-
-Now, please think step by step. Using the results from the first few iterations of the loop provided in the example as hints but  mostly from the loop code, determine the loop's output state.
-
-Example Answer 1:
-If n is greater than 0 the loop will execute at least once and factorial will contain the factorial of n and i will be n. If n is 0  then the loop wont execute and factorial will remain 1 which is indeed the factorial for 0.
-Therefore, the output state of the loop is that `factorial` is the factorial of `n`
-Output State: **``n` is a non negative  integer, `factorial` is the factorial of 'n'**
-
-Example 2: 
-
-Initial State:  `total` is 0,'students_num' is 0, students is a list of students.
-Code of the loop:
-```
-for student in students:
-    total += student
-    students_num += 1
-```
-Output State after the loop executes 1 times:  `total` is equal to the first student, 'students_num' is 1, students is a list that must have at least one student, student is the first student in the list.
-Output State after the loop executes 2 times: `total` is equal to the first student plus the second student, 'students_num' is 2, students is a list that must have at least 2 students, student is the second student in the list.
-Output State after the loop executes 3 times: `total` is equal to the first student plus the second student plus the third student, 'students_num' is 3, students is a list that must have at least 3 students, student is the third student in the list.
-
-
-Now, please think step by step. Using the results from the first few iterations of the loop provided in the example as hints but  mostly from the loop code, determine the loop's output state.
-
-Example Answer 2:
-The loop calculates the sum of a list students and stores it in total and the number of students in students_num. The loop will be executed at least once if students is a list with at least one student. If the list is empty the loop does not execute and total and students_num are 0.
-Output State: **total is equal to the sum of all students, students_num is the number of students, students is a list of students.**
-
-Your Task:
 
 Initial State: {pre}
 Code of the loop:
-```
 {loop_code}
-```
 
-The output state after the loop executes some number of times include what needed to be true for the loop to execute at least that number of times. 
+The output state after the loop executes some number of times includes what needed to be true for the loop to execute at least that number of times:
 {loop_unrolled}
 
-Now, please think step by step. Use the results from the output states for the first few iterations of the loop provided in the example to help you , but mostly focus on the loop code to determine the loop's output state after ALL THE ITERATIONS OF THE LOOP HAVE FINISHED. Try to understand what  will be the values of the variables after it executes. In the case the loop doesnot execute, what will be the values of the variables.
-If the state of some variables is dependant on earlier or the oginal value of some variable, make sure to seprate the original value from the current value.
-Use the fomrat Output State: **the output state you calculate**
+Make sure to include:  
+- Any variables that remain constant throughout the loop.  
+- Final values of all variables after the loop finishes.  
+- Conditions under which the loop executes or does not execute.  
+
+Use the format: Output State: **the output state you calculate.**
 """
+
+
+# I am giving you two examples to understand the task better. Then I am giving you your task.
+# Example 1: 
+
+# Initial State: `n` is a positive integer, `factorial` is 1.
+# Code of the loop:
+# ```
+# for i in range(1, n + 1):
+#     factorial *= i
+# ```
+# Output state after the loop executes 1 times:  `factorial` is `1`, 'i' is 1 , n must be at least 1.
+# Output state after the loop executes 2 times: `factorial` is 2, 'i' is 2 , n must be at least 2.
+# Output state after the loop executes 3 times: `factorial` is 6 , 'i' is 3 , n must be at least 3.
+
+# Now, please think step by step. Using the results from the first few iterations of the loop provided in the example as hints but  mostly from the loop code, determine the loop's output state.
+
+# Example Answer 1:
+# If n is greater than 0 the loop will execute at least once and factorial will contain the factorial of n and i will be n. If n is 0  then the loop wont execute and factorial will remain 1 which is indeed the factorial for 0.
+# Therefore, the output state of the loop is that `factorial` is the factorial of `n`
+# Output State: **``n` is a non negative  integer, `factorial` is the factorial of 'n'**
+
+# Example 2: 
+
+# Initial State:  `total` is 0,'students_num' is 0, students is a list of students.
+# Code of the loop:
+# ```
+# for student in students:
+#     total += student
+#     students_num += 1
+# ```
+# Output State after the loop executes 1 times:  `total` is equal to the first student, 'students_num' is 1, students is a list that must have at least one student, student is the first student in the list.
+# Output State after the loop executes 2 times: `total` is equal to the first student plus the second student, 'students_num' is 2, students is a list that must have at least 2 students, student is the second student in the list.
+# Output State after the loop executes 3 times: `total` is equal to the first student plus the second student plus the third student, 'students_num' is 3, students is a list that must have at least 3 students, student is the third student in the list.
+
+
+# Now, please think step by step. Using the results from the first few iterations of the loop provided in the example as hints but  mostly from the loop code, determine the loop's output state.
+
+# Example Answer 2:
+# The loop calculates the sum of a list students and stores it in total and the number of students in students_num. The loop will be executed at least once if students is a list with at least one student. If the list is empty the loop does not execute and total and students_num are 0.
+# Output State: **total is equal to the sum of all students, students_num is the number of students, students is a list of students.**
+
+# Your Task:
+# The prompt template instructs the model on how to analyze the state of the loop after several(k) iterations.
+# LOOP_PROMPT = """
+# Given a python loop, an initial execution state and the output states after the first 3 iterations of the loop give us the output state after all the executions of the loop have finished. Think step by step what the commands in the loop do ,try to understand what  will be the values of the variables after it executes. In the case the loop doesnot execute, what will be the values of the variables
+# You must adhere to the text format: Output State: **output state.**
+
+# Initial State: {pre}
+# Code of the loop:
+# ```
+# {loop_code}
+# ```
+
+# The output state after the loop executes some number of times include what needed to be true for the loop to execute at least that number of times. 
+# {loop_unrolled}
+
+# Use the fomrat Output State: **the output state you calculate**
+# """
+
+# Given a python loop, an initial execution state and the output states after the first 3 iterations of the loop give us the output state after all the executions of the loop have finished.Think step by step what the cpommands in the loop do ,try to understand what  will be the values of the variables after it executes. In the case the loop doesnot execute, what will be the values of the variables
+# You must adhere to the text format: Output State: **output state.**
+
+
+# Initial State: `arr` is a list of integers, and the length of `arr` is greater than or equal to 2, `min_diff` is `float('inf')`, `prev` is `arr[0]`
+# Code of the loop:
+# ```
+# for i in range(1, len(arr)):
+#     diff = abs(arr[i] - prev)
+#     if diff < min_diff:
+#         min_diff = diff
+
+# ```
+
+# The output state after the loop executes some number of times include what needed to be true for the loop to execute at least that number of times. 
+# Output State after the loop executes 1 times: *`arr` is a list of integers with a length greater than or equal to 2, `min_diff` is either `float('inf')` or `abs(arr[1] - arr[0])`, `prev` is `arr[0]`, `i` is 1, and `diff` is `abs(arr[1] - arr[0])`. If `diff` is less than `min_diff`, `min_diff` is updated to `abs(arr[1] - arr[0])`.
+# Output State after the loop executes 2 times: *`arr` is a list of integers with a length greater than 2, `prev` is `arr[0]`, `i` is 2, `diff` is `abs(arr[2] - arr[0])`. If `diff` < `min_diff`, `min_diff` is updated to `abs(arr[2] - arr[0])`. Otherwise, `min_diff` remains unchanged.
+# Output State after the loop executes 3 times: *`arr` is a list of integers with a length greater than 3, `prev` is `arr[0]`, `i` is 3. If `diff` (which is `abs(arr[3] - arr[0])`) is less than `min_diff`, then `min_diff` is updated to `abs(arr[3] - arr[0])`. Otherwise, `min_diff` remains unchanged.
+
+# Use the fomrat Output State: **the output state you calculate**
+
 
 # Format examples of loop iterations into the text format required for the prompt.
 # This will show multiple iterations of a loop and how the state changes.the loop k unrolled

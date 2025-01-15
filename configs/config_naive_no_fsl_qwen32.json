@@ -1,5 +1,5 @@
 {
-    "model": "qwen2.5-7b-instruct",
+    "model": "qwen2.5-coder-32b-instruct",
     "temperature": 1.0,
     "assessment-mode": "naive", 
     "postcondition-mode": "hoarecot",

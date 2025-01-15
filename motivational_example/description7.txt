@@ -1,0 +1,1 @@
+You are implementing a function to calculate the net balance of a user after applying a series of transactions. Each transaction either increases or decreases the balance. If the balance ever goes negative, a penalty of 10 units should be applied, and the balance should reset to 0. The function should return the final balance.
