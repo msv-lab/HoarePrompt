@@ -1,4 +1,5 @@
-from node_base_style.helper import extract_result
+# from node_base_style.helper import extract_result
+import re
 
 # while i < n:
 #     total += i
@@ -45,10 +46,21 @@ State at the end of the previous iteration: {post}
 ```
 Now, please think step by step: Which states need to be adjusted for the loop to execute one more time? Only the states of objects in the loop head can be adjusted.
 """
+def extract_result(s: str, keyword: str) :
+    pattern = fr"{keyword}:\s*\*\*(.*?)\*\*"
+    matches = re.findall(pattern, s, re.DOTALL)
+    if matches:
+        # Select the last match
+        res = matches[-1]
+        # Clean up the beginning and end of the string for any weird characters like * or newlines
+        return res.strip(), True
+    return s, False
 
 # The function to get the precondition so that the next iteration can take place
-def get_precondition(model, post: str, loop_head: str) -> str:
+def get_precondition(model, post: str, loop_head: str, retry =True) -> str:
     prompt = PROMPT.format(post=post, loop_head=loop_head)
     response = model.query(prompt)
-    pre = extract_result(response, "State")
+    pre, found = extract_result(response, "State")
+    if retry and not found:
+        return  get_precondition(model, post, loop_head, retry=False)
     return pre

@@ -1,0 +1,1 @@
+Given an input list, calculate the maximum product of all possible continuous sublists. A continuous sublist is defined as a sequence of one or more consecutive elements from the list. The sublist can start and end at any index within the list. The goal is to find the maximum product among all such sublists. If the list is empty return -inf.

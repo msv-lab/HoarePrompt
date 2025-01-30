@@ -1,14 +1,12 @@
 import re
 
-from node_base_style.hoare_triple import Triple, pprint_cmd, print_state
-from node_base_style.helper import extract_result
+# from node_base_style.hoare_triple import Triple, pprint_cmd, print_state
+# from node_base_style.helper import extract_result
 
 
 # This script's responsible for executing small code snippets and determining the resulting program state based on the provided initial state and program code. It is the general script for a simple program statement (not loops or ifs, try etc)
 PROMPT = """
-
-
-You have been assigned the role of a program verifier, responsible for simulating the execution of Python code. You will be provided with a function description and a Python function code snippet. You need to provide if the code does what the function description says. Please avoid describing how the program runs. If the code satisfies the description reply CORRECT, otherwise reply INCORRECT with an explanation. You must adhere to the text format: RESULT: **Correct or Incorrect**.
+You will be provided with a function description and a Python function code snippet. You need to provide if the code does what the function description says. Please avoid describing how the program runs. If the code satisfies the description reply CORRECT, otherwise reply INCORRECT with an explanation. You must adhere to the text format: RESULT: **Correct or Incorrect**.
 
 Description: {description}
 Python Fucntion:
@@ -58,7 +56,7 @@ Use the format: RESULT: **Correct or Incorrect**.
 PROMPT_COMPLEX= """
 Your task is to determine if a given Python program is correct based on the provided problem description. Assume valid inputs as described in the problem description.
 
-First explain your reasoning  then reply Correctness: **True**  if the given program is correct or Correctness: **False**  if the given program is incorrect.
+First explain your reasoning step by step,   then reply Correctness: **True**  if the given program is correct or Correctness: **False**  if the given program is incorrect.
 
 # Problem:
 {description}
@@ -68,6 +66,22 @@ First explain your reasoning  then reply Correctness: **True**  if the given pro
 
 # Your response:
 Reasoning:  
+Correctness: **True** or **False**
+
+"""
+
+PROMPT_COMPLEX_NO_COT= """
+Your task is to determine if a given Python program is correct based on the provided problem description. Assume valid inputs as described in the problem description.
+
+Reply Correctness: **True**  if the given program is correct or Correctness: **False**  if the given program is incorrect.
+
+# Problem:
+{description}
+
+# Program:
+{code}
+
+# Your response:
 Correctness: **True** or **False**
 
 """
@@ -126,28 +140,59 @@ The program is correct only if it meets the problem description! The problem des
 Return  True if the program follows the problem description, otherwise return False. if the program does not do what the problem description asks for for every potential case.
 Remember to return just one word for your response.
 """
+
+def extract_result(s: str, keyword: str):
+    pattern = fr"{keyword}:\s*\*\*(.*?)\*\*"
+    matches = re.findall(pattern, s, re.DOTALL)
+    if matches:
+        # Select the last match
+        res = matches[-1]
+        # Clean up the beginning and end of the string for any weird characters like * or newlines
+        return res.strip(), True
+    return s, False
+
 # This is the main function, it completes the prompt, queries the model and extracts the result, meaining the output state of that program part
-def naive_question_no_fsl(description, code, model):
+def naive_question_no_fsl(description, code, model, retry=True):
    
     prompt = PROMPT_COMPLEX.format(description=description, code=code)
     response = model.query(prompt)
     print(response)
-    post = extract_result(response, "Correctness")
+    post, found = extract_result(response, "Correctness")
     print("*" * 50)
     print(f"{description} \n {code}")
     print(f"LLM Reply: {post}")
-
+    if retry and not found:
+        return naive_question_no_fsl(description, code, model, retry=False)
     if 'true' in post.lower().strip() :
         return True
     if "false" in post.lower().strip() :
         return False
     return post
 
-def naive_question_no_fsl_with_response(description, code, model):
+def naive_question_no_fsl_no_cot(description, code, model, retry=True):
+   
+    prompt = PROMPT_COMPLEX_NO_COT.format(description=description, code=code)
+    response = model.query(prompt)
+    print(response)
+    post, found = extract_result(response, "Correctness")
+    print("*" * 50)
+    print(f"{description} \n {code}")
+    print(f"LLM Reply: {post}")
+    if retry and not found:
+        return naive_question_no_fsl(description, code, model, retry=False)
+    if 'true' in post.lower().strip() :
+        return True
+    if "false" in post.lower().strip() :
+        return False
+    return post
+
+def naive_question_no_fsl_with_response(description, code, model, retry=True):
     prompt = PROMPT_COMPLEX.format(description=description, code=code)
     response = model.query(prompt)
     print(response)
-    post = extract_result(response, "Correctness")
+    post, found = extract_result(response, "Correctness")
+    if retry and not found:
+        return naive_question_no_fsl_with_response(description, code, model, retry=False)
     print("*" * 50)
     print(f"{description} \n {code}")
     print(f"LLM Reply: {post}")
@@ -158,12 +203,14 @@ def naive_question_no_fsl_with_response(description, code, model):
         return False , response
     return post , response
 
-def naive_question_no_fsl_confidence(description, code, model):
+def naive_question_no_fsl_confidence(description, code, model, retry=True):
     prompt = PROMPT_Confidence.format(description=description, code=code)
     response, confidence = model.query_confidence(prompt)
     print(response)
     print(confidence)
-    post = extract_result(response, "Correctness")
+    post, found = extract_result(response, "Correctness")
+    if retry and not found:
+        return naive_question_no_fsl_confidence(description, code, model, retry=False)
     print("*" * 50)
     print(f"{description} \n {code}")
     print(f"LLM Reply: {post}")
@@ -176,13 +223,16 @@ def naive_question_no_fsl_confidence(description, code, model):
     return post , confidence
 
 
-def naive_question_no_fsl_confidence_2(description, code, model):
+def naive_question_no_fsl_confidence_2(description, code, model, retry=True):
     prompt = PROMPT_COMPLEX_CONFIDENCE.format(description=description, code=code)
     response = model.query(prompt)
     print(response)
     
-    post = extract_result(response, "Correctness")
-    confidence = extract_result(response, "Confidence")
+    post, found1 = extract_result(response, "Correctness")
+    confidence, found2 = extract_result(response, "Confidence")
+    if retry :
+        if not found1 or not found2:
+            return naive_question_no_fsl_confidence_2(description, code, model, retry=False)
     print("*" * 50)
     print(f"{description} \n {code}")
     print(f"LLM Reply: {post}")
@@ -194,7 +244,7 @@ def naive_question_no_fsl_confidence_2(description, code, model):
         return False, confidence
     return post
 
-def naive_question_no_fsl_confidence_qwen(description, code, model):
+def naive_question_no_fsl_confidence_qwen(description, code, model, retry=True):
     prompt = PROMPT_COMPLEX_CONFIDENCE_QWEN.format(description=description, code=code)
     print (f"the Prompt is \n\n\n {prompt}")
 

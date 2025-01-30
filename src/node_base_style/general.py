@@ -1,8 +1,8 @@
 import re
 
 from node_base_style.hoare_triple import Triple, pprint_cmd, print_state
-from node_base_style.helper import extract_result
-
+# from node_base_style.helper import extract_result
+import re
 
 # This script's responsible for executing small code snippets and determining the resulting program state based on the provided initial state and program code. It is the general script for a simple program statement (not loops or ifs, try etc)
 PROMPT = """
@@ -80,8 +80,10 @@ Initial State: {pre}
 ```
 {program}
 ```
-Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate the result. You must adhere to the text format: Output State: **output state**.
+
+Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate the result. 
 Be as specific as possible. If a variable has a specific value or is equal to some combination of variables, use that specific value  or expression it is equal to. nclude all the information of the precondition that is still valid after the code has been executed. Just update the values of the variables that have been changed by the code.
+In your response strictly use the format: Output State: **the output state you calculate.**, and describe this output state in Natural language easily understandable by humans
 """
 
 PROMPT_COMPLEX = """
@@ -130,33 +132,45 @@ Initial State: {pre}
 ```
 {program}
 ```
-
-Now, please analyze the entire block of code and provide the final output state. List the impact of all lines on the program, check the previous values of affected variables, and calculate the states of the variables after the codeexecutes. Use the text format: Output State: **output state**. Be as specific as possible, combining changes from all lines into a single coherent final state. Include all valid information from the precondition and update only what is modified by the code.
-```
+Now, please analyze the entire block of code and provide the final output state. List the impact of all lines on the program, check the previous values of affected variables, and calculate the states of the variables after the codeexecutes. Be as specific as possible, combining changes from all lines into a single coherent final state. Include all valid information from the precondition and update only what is modified by the code.
+In your response strictly use the format: Output State: **the output state you calculate.**, and describe this output state in Natural language easily understandable by humans
 """
+def extract_result(s: str, keyword: str):
+    pattern = fr"{keyword}:\s*\*\*(.*?)\*\*"
+    matches = re.findall(pattern, s, re.DOTALL)
+    if matches:
+        # Select the last match
+        res = matches[-1]
+        # Clean up the beginning and end of the string for any weird characters like * or newlines
+        return res.strip(), True
+    return s, False
 
 # This is the main function, it completes the prompt, queries the model and extracts the result, meaining the output state of that program part
-def complete_triple(incomplete_triple: Triple, model):
+def complete_triple(incomplete_triple: Triple, model , retry=True):
     pre = print_state(incomplete_triple.precondition)
     program = pprint_cmd(incomplete_triple.command)
     prompt = PROMPT.format(pre=pre, program=program)
     response = model.query(prompt)
-    post = extract_result(response, "Output State")
+    post, found= extract_result(response, "Output State")
+    if retry and not found:
+        return complete_triple(incomplete_triple, model, retry=False)
     print("*" * 50)
     print(incomplete_triple)
     print(f"LLM post: {post}")
     return post
 
-def complete_triple_batch(incomplete_triple: Triple, model):
+def complete_triple_batch(incomplete_triple: Triple, model, retry=True):
     if isinstance(incomplete_triple.command, list):
         if len(incomplete_triple.command) == 1:
-            return complete_triple(incomplete_triple, model)
+            return complete_triple(incomplete_triple, model, retry=retry)
     pre = print_state(incomplete_triple.precondition)
     program = pprint_cmd(incomplete_triple.command)
     program=program.replace("\n\n","\n")
     prompt = PROMPT_COMPLEX.format(pre=pre, program=program)
     response = model.query(prompt)
-    post = extract_result(response, "Output State")
+    post, found = extract_result(response, "Output State")
+    if retry and not found:
+        return complete_triple_batch(incomplete_triple, model, retry=False)
     print("*" * 50)
     print(incomplete_triple)
     print(f"LLM post: {post}")

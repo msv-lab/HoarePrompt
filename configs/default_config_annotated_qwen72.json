@@ -8,5 +8,6 @@
     "entailment-mode": "naive",
     "cex-mode": "with-postcondition",
     "annotated" : true,
-    "annotated-type" : "simple"
+    "annotated-type" : "simple",
+    "concat_simple": false
 }

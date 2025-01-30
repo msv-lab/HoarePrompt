@@ -1,6 +1,6 @@
 from node_base_style.hoare_triple import IfTriple, parse_stmt, State,  pprint_cmd, pprint_if_else, pprint_outer_if_else
-from node_base_style.helper import extract_postcondition, format_prompt
-
+# from node_base_style.helper import extract_postcondition, format_prompt
+import re
 # prompt template for asking the model to verify and describe if-statements
 VERIFYER_SYSTEM_PROMPT_IF = """You are assigned the role of a program verifier, responsible for completing the overall postcondition of Hoare triples for if statements based on the postconditions of the if and the else part. In addition to the Hoare triples, you will also see the postconditions for the if and else parts. Each Hoare triple is made up of three components: a precondition, a program fragment, and a postcondition. The precondition and the postcondition are expressed in natural language.
 
@@ -100,12 +100,21 @@ Program Fragment:
 if part: {postconditions_if}
 else part: {postconditions_else}
 
-Your task is to complete the overall postcondition of the whole if else block. Summarise all the cases and give the overall state of the program after the if else executes. Follow the format Postcondition: **the calculated postcondition**
+Your task is to complete the overall postcondition of the whole if else block. Summarise all the cases and give the overall postcondition of the program after the if else executes.
+In your response strictly use the format: Postocndition: **the postocndition you calculate.**, and describe this postcondition in Natural language easily understandable by humans
 """
 
-
+def extract_postcondition(s: str) :
+    pattern = r"Postcondition:\s*\*\*(.*?)\*\*"
+    matches = re.findall(pattern, s, re.DOTALL)
+    if matches:
+        # Select the last match
+        res = matches[-1]
+        # Clean up the beginning and end of the string for any weird characters like * or newlines
+        return res.strip(), True
+    return s, False
 # Function to complete the IfTriple by computing its overall postcondition using the model
-def complete_if_triple(incomplete_triple: IfTriple, model):
+def complete_if_triple(incomplete_triple: IfTriple, model, retry=True):
     program = pprint_outer_if_else(incomplete_triple.command)
     prompt = VERIFYER_SYSTEM_PROMPT_IF.format(precondition=incomplete_triple.precondition,
                                               program_fragment=program,
@@ -113,7 +122,9 @@ def complete_if_triple(incomplete_triple: IfTriple, model):
                                               postconditions_else=incomplete_triple.else_postcondition)
     
     response = model.query(prompt)
-    post = extract_postcondition(response)
+    post, found = extract_postcondition(response)
+    if retry and not found:
+        return complete_if_triple(incomplete_triple, model, retry=False)
     # print("*" * 50)
     # print(incomplete_triple)
     # print(f"LLM post: {post}")

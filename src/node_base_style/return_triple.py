@@ -1,8 +1,9 @@
 import re
 
 from node_base_style.hoare_triple import Triple, pprint_cmd, print_state
-from node_base_style.helper import extract_result
-
+# from node_base_style.helper import extract_res
+# ult
+import re
 
 # This script's responsible for executing small code snippets and determining the resulting program state based on the provided initial state and program code. It is the general script for a simple program statement (not loops or ifs, try etc)
 PROMPT = """
@@ -66,16 +67,27 @@ Initial State: {pre}
 {program}
 ```
 Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate what the program returns. Any variable or value that is included in the return, describe all the information we have for it.
-You must adhere to the text format: Output State: **output state**.
+In your response strictly use the format: Output State: **the output state you calculate.**, and describe this output state in Natural language easily understandable by humans
 """
+def extract_result(s: str, keyword: str) :
+    pattern = fr"{keyword}:\s*\*\*(.*?)\*\*"
+    matches = re.findall(pattern, s, re.DOTALL)
+    if matches:
+        # Select the last match
+        res = matches[-1]
+        # Clean up the beginning and end of the string for any weird characters like * or newlines
+        return res.strip(), True
+    return s, False
 
 # This is the main function, it completes the prompt, queries the model and extracts the result, meaining the output state of that program part
-def complete_return_triple(incomplete_triple: Triple, model):
+def complete_return_triple(incomplete_triple: Triple, model, retry=True):
     pre = print_state(incomplete_triple.precondition)
     program = pprint_cmd(incomplete_triple.command)
     prompt = PROMPT.format(pre=pre, program=program)
     response = model.query(prompt)
-    post = extract_result(response, "Output State")
+    post, found = extract_result(response, "Output State")
+    if retry and not found:
+        return complete_return_triple(incomplete_triple, model, retry=False)
     print("*" * 50)
     print(incomplete_triple)
     print(f"LLM post: {post}")

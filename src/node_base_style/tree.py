@@ -1,6 +1,7 @@
 
 from node_base_style.hoare_triple import pprint_cmd, Triple
-from node_base_style.helper import extract_result
+# from node_base_style.helper import extract_result
+import re
 
 # The prompt as defined earlier
 
@@ -114,12 +115,22 @@ Include all potential edge cases and missing functionality if it exists inside y
 
 
 # Functionality: ** The function accepts an integer `n`, calculates the sum of integers from `n` to 0, and returns 'not enough resources' if the sum exceeds 100, or 'Division by zero error' otherwise **
+def extract_result(s: str, keyword: str):
+    pattern = fr"{keyword}:\s*\*\*(.*?)\*\*"
+    matches = re.findall(pattern, s, re.DOTALL)
+    if matches:
+        # Select the last match
+        res = matches[-1]
+        # Clean up the beginning and end of the string for any weird characters like * or newlines
+        return res.strip(), True
+    return s, False
 
-
-def summarize_functionality_tree(annotated_code, return_postconditions, model):
+def summarize_functionality_tree(annotated_code, return_postconditions, model, retry= True):
     prompt = PROMPT.format(code=annotated_code, returns=return_postconditions)
     response = model.query(prompt)
-    post = extract_result(response, "Functionality")
+    post, found = extract_result(response, "Functionality")
+    if retry and not found:
+        return  summarize_functionality_tree(annotated_code, return_postconditions, model, retry=False)
     return post
 
 def extract_functionality(response):
@@ -128,9 +139,9 @@ def extract_functionality(response):
     for line in response.split('\n'):
         if line.strip().startswith('Functionality:'):
             # Return everything after 'Functionality:'
-            return line.partition('Functionality:')[2].strip()
+            return line.partition('Functionality:')[2].strip() , True
     # If not found, return the whole response or handle as needed
-    return response.strip()
+    return response.strip(), False
 
 # # Example usage
 # def main():

@@ -10,5 +10,5 @@ def min_consecutive_diff(arr):
         diff = abs(arr[i] - temp)
         if diff < min_diff:
             min_diff = diff
-    
+        
     return min_diff

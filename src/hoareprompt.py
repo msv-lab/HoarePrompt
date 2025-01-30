@@ -16,7 +16,7 @@ import entailement_mult_func_annotated
 import comment_style
 import node_base_style.complete
 from  node_base_style.naive import naive_question, naive_question_with_response
-from node_base_style.naive_no_fsl import naive_question_no_fsl, naive_question_no_fsl_confidence, naive_question_no_fsl_confidence_2, naive_question_no_fsl_with_response, naive_question_no_fsl_confidence_qwen
+from node_base_style.naive_no_fsl import naive_question_no_fsl, naive_question_no_fsl_confidence, naive_question_no_fsl_confidence_2, naive_question_no_fsl_with_response, naive_question_no_fsl_confidence_qwen, naive_question_no_fsl_no_cot
 from node_base_style.annotated_simple import annotated_simple
 from node_base_style.single_post import single_post
 from node_base_style.single_post_no_fsl import single_post_no_fsl
@@ -418,6 +418,14 @@ def main():
             print("Error: Confidence is not compatible with FSL true")
             return
         
+    if "concat_simple" not in config:
+        config["concat_simple"] = False
+    else:
+        if type(config["concat_simple"]) != bool:
+            print("Error: concat_simple should be a boolean")
+            return 
+
+        
 
     log_directory = None
     if args.log:
@@ -441,7 +449,7 @@ def main():
 
     if args.test is not None:
         # Get the model for testing
-        model = get_model("gpt-4o-2024-08-06", config["temperature"], log_directory)
+        model = get_model("qwq-32b-preview", config["temperature"], log_directory)
         print("Running in test mode")
         
         # Check for regression_test_cases.json file
@@ -697,6 +705,8 @@ def assess(description, program, module_name, config, log_directory, cex_path):
         entailment_log_dir_naive_fsl.mkdir(parents=True, exist_ok=True)
         entailment_log_dir_vanilla= entailment_log_dir/'entailment_vanilla'
         entailment_log_dir_vanilla.mkdir(parents=True, exist_ok=True)
+        entailment_log_dir_vanilla= entailment_log_dir/'entailment_vanilla_no_cot'
+        entailment_log_dir_vanilla.mkdir(parents=True, exist_ok=True)
 
     if len(postconditions_list)==1:
 
@@ -831,6 +841,7 @@ def check_entailment(description, postcondition, program, module_name, config, l
         print("Using total or verify entailment mode")
         model_naive= get_model(config["model"], config["temperature"], log_directory/'entailment_naive_fsl')
         model_vanilla= get_model(config["model"], config["temperature"], log_directory/'entailment_vanilla')
+        model_vanilla_no_cot= get_model(config["model"], config["temperature"], log_directory/'entailment_vanilla_no_cot')
         model_simple = get_model(config["model"], config["temperature"], log_directory/'entailment_simple')
         model_complex = get_model(config["model"], config["temperature"], log_directory/'entailment_complex')
         model_default = get_model(config["model"], config["temperature"], log_directory/'entailment_summary')
@@ -895,6 +906,7 @@ def check_entailment(description, postcondition, program, module_name, config, l
             correctness_complex= entailment_annotated.naive(model_complex, description, return_str, annotated_func, module_name, config, cex_path)
             correctness_default = entailment.naive(model_default, description, postcondition, program, module_name, config, cex_path)
             correctness_default_no_fsl = entailment_no_fsl.naive(model_default_no_fsl, description, postcondition, program, module_name, config, cex_path)
+            correctness_naive_no_fsl_no_cot = naive_question_no_fsl_no_cot(description, program, model_naive)
 
             correctness_naive, response_naive  = naive_question_with_response(description, program, model_naive)
             correctness_naive_no_fsl, response_naive_no_fsl  = naive_question_no_fsl_with_response(description, program, model_vanilla)
@@ -905,7 +917,7 @@ def check_entailment(description, postcondition, program, module_name, config, l
             correctness_complex_no_fsl_verify= verify_tree(model_complex_verify, description, annotated_func, program , response_naive_no_fsl , module_name, config, cex_path)
             correctness_default_no_fsl_verify = verify_function_summary(model_default_verify, description, postcondition, program, response_naive_no_fsl, module_name, config, cex_path)
             #lets return a dicrionary with the results
-            res_dict= {"naive": correctness_naive, "naive_no_fsl": correctness_naive_no_fsl , "simple": correctness_simple[0], "complex": correctness_complex[0], "default": correctness_default[0], "default_no_fsl": correctness_default_no_fsl[0], "simple_verify": correctness_simple_verify[0], "complex_verify": correctness_complex_verify[0], "default_verify": correctness_default_verify[0], "simple_no_fsl_verify": correctness_simple_no_fsl_verify[0], "complex_no_fsl_verify": correctness_complex_no_fsl_verify[0], "default_no_fsl_verify": correctness_default_no_fsl_verify[0]}
+            res_dict= {"naive": correctness_naive, "naive_no_fsl": correctness_naive_no_fsl , "vanilla_no_cot": correctness_naive_no_fsl_no_cot, "simple": correctness_simple[0], "complex": correctness_complex[0], "default": correctness_default[0], "default_no_fsl": correctness_default_no_fsl[0], "simple_verify": correctness_simple_verify[0], "complex_verify": correctness_complex_verify[0], "default_verify": correctness_default_verify[0], "simple_no_fsl_verify": correctness_simple_no_fsl_verify[0], "complex_no_fsl_verify": correctness_complex_no_fsl_verify[0], "default_no_fsl_verify": correctness_default_no_fsl_verify[0]}
             print(res_dict)
             return res_dict
     print(f"Entailment mode {config['entailment-mode']} not supported, only naive is currently implemented")

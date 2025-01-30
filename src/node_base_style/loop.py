@@ -1,14 +1,9 @@
 import ast
-
+import re
 from node_base_style.hoare_triple import pprint_cmd, Triple
-from node_base_style.helper import extract_result
+# from node_base_style.helper import extract_result
 LOOP_PROMPT = """
-Given a Python loop, an initial execution state, and the output states after the first few iterations of the loop, determine the output state after all the executions of the loop have finished. Follow these steps carefully:
-
-1. **Analyze the Code and Initial State**: Think step by step about what the commands in the loop do and how they interact with the initial state.
-2. **Track Variable Changes**: Identify variables that are updated during the loop and those that remain constant or depend on the initial state. Clearly note which variables are **invariant** (do not change across iterations).
-3. **Summarize the Loop Behavior**: Describe how the loop's execution affects the values and relationships of variables after all iterations, considering edge cases like when the loop does not execute.
-4. **Verify Relationships**: Confirm that the relationships and invariants identified from the loop code are consistent with the described iterations and final output state.
+Given a Python loop, an initial execution state, and the output states after the first {times} iterations of the loop, determine the output state after all the executions of the loop have finished.
 
 You must adhere to the text format: Output State: **output state.**
 
@@ -16,15 +11,12 @@ Initial State: {pre}
 Code of the loop:
 {loop_code}
 
-The output state after the loop executes some number of times includes what needed to be true for the loop to execute at least that number of times:
+The output state after the loop executes the first {times} times includes what needed to be true for the loop to execute at least that number of times:
 {loop_unrolled}
 
-Make sure to include:  
-- Any variables that remain constant throughout the loop.  
-- Final values of all variables after the loop finishes.  
-- Conditions under which the loop executes or does not execute.  
+What is the ouput state after the loop executes all the iterations? Change the values of only the variables in the loop head and body.The state of the other variables in the precondition that are not affected by the loop head and body must remain unchanged.
+In your response strictly use the format: Output State: **the output state you calculate.**, and describe this output state in Natural language easily understandable by humans.
 
-Use the format: Output State: **the output state you calculate.**
 """
 
 # The prompt template instructs the model on how to analyze the state of the loop after several(k) iterations.
@@ -92,22 +84,39 @@ Use the format: Output State: **the output state you calculate.**
 
 # Format examples of loop iterations into the text format required for the prompt.
 # This will show multiple iterations of a loop and how the state changes.the loop k unrolled
+
+def extract_result(s: str, keyword: str):
+    pattern = fr"{keyword}:\s*\*\*(.*?)\*\*"
+    matches = re.findall(pattern, s, re.DOTALL)
+    if matches:
+        # Select the last match
+        res = matches[-1]
+        # Clean up the beginning and end of the string for any weird characters like * or newlines
+        return res.strip(), True
+    return s, False
+
+
 def format_examples(examples: list[Triple]):
     s = ""
     i = 1
     for e in examples:
         post = e.postcondition
-        s = s + f"Output State after the loop executes {i} times: {post}\n"
+        if i == 1:
+            s = s + f"Output State after the loop executes {i} time: {post}\n"
+        else:
+            s = s + f"Output State after the loop executes {i} times: {post}\n"
         i += 1
-    return s
+    return s, i-1
 # The model will compute the final state of the program after multiple iterations of the loop.
-def complete_loop_triple(incomplete_triple: Triple, model, examples: list[Triple]):
+def complete_loop_triple(incomplete_triple: Triple, model, examples: list[Triple], retry= True):
     
-    loop_unrolled = format_examples(examples)
+    loop_unrolled, times = format_examples(examples)
     prompt = LOOP_PROMPT.format(loop_unrolled=loop_unrolled, pre=incomplete_triple.precondition,
-                                loop_code=pprint_cmd(incomplete_triple.command))
+                                loop_code=pprint_cmd(incomplete_triple.command), times=times)
     response = model.query(prompt)
-    post = extract_result(response, "Output State")
+    post, found= extract_result(response, "Output State")
+    if retry and not found:
+        complete_loop_triple(incomplete_triple, model, examples, retry=False)
     return post
 
 # Retrieve the head of a while loop, which is its condition 

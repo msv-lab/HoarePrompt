@@ -1,7 +1,7 @@
 import ast
 
 from node_base_style.hoare_triple import FuncTriple
-from node_base_style.helper import extract_result
+import re
 
 # This script handles functions to get its functionality
 # A prompt template to query the language model (LLM) for verifying and describing the functionality of a Python function.
@@ -43,16 +43,28 @@ Parameter constraints: {pre}
 ```
 Output: {body_post}
 Now, please think step by step: What are the parameters the function accepts, and the return value?
+In your response strictly use the format: Functionality: **the functionality you calculate.**, and describe this functionality in Natural language easily understandable by humans
 """
+def extract_result(s: str, keyword: str):
+    pattern = fr"{keyword}:\s*\*\*(.*?)\*\*"
+    matches = re.findall(pattern, s, re.DOTALL)
+    if matches:
+        # Select the last match
+        res = matches[-1]
+        # Clean up the beginning and end of the string for any weird characters like * or newlines
+        return res.strip(), True
+    return s, False
 
 # This function completes the functionality of a function given its precondition, postcondition, and head
-def complete_func_triple(incomplete_triple: FuncTriple, model):
+def complete_func_triple(incomplete_triple: FuncTriple, model, retry=True):
     pre = incomplete_triple.precondition
     body_post = incomplete_triple.body_postcondition
     head = incomplete_triple.head # The function signature, ehich is the function name and parameters
     prompt = PROMPT.format(pre=pre, body_post=body_post, head=head)
     response = model.query(prompt)
-    post = extract_result(response, "Functionality")
+    post , found= extract_result(response, "Functionality")
+    if retry and not found:
+        return  complete_func_triple(incomplete_triple, model, retry=False)
     return post
 
 # This function extracts the function definition (signature) from an AST node 

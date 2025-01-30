@@ -2,6 +2,7 @@ import os
 from abc import ABC, abstractmethod
 from pathlib import Path
 import math
+import json
 
 from groq import Groq
 
@@ -14,6 +15,20 @@ from tenacity import (
 )  # for exponential backoff
 
 import requests
+def log_token_usage(prompt_tokens, completion_tokens, total_tokens):
+    """
+    Appends usage data to a file named tokens.json (JSON-line format).
+    """
+    # Open (or create if doesn't exist) and append to the file
+    with open("/home/jim/HoarePrompt-experiments/tokens.json", "a") as f:
+        record = {
+            "prompt_tokens": prompt_tokens,
+            "completion_tokens": completion_tokens,
+            "total_tokens": total_tokens
+        }
+        f.write(json.dumps(record) + "\n")
+
+
 
 # Returns the appropriate model object based on the model name. Supports OpenAI, Groq, DeepSeek, and Qwen models.
 def get_model(name: str, temperature: float, log_directory: Path = None):
@@ -221,6 +236,16 @@ class QwenModel(Model):
             messages=[{"role": "user", "content": prompt}],
             temperature=self.temperature
         )
+
+            # Extract usage stats (if the API provides them)
+        
+        if response.usage is not None:
+            prompt_tokens = response.usage.prompt_tokens
+            completion_tokens = response.usage.completion_tokens
+            total_tokens = response.usage.total_tokens
+            
+            log_token_usage(prompt_tokens, completion_tokens, total_tokens)
+        
         return response.choices[0].message.content
     
     def query_confidence_qwen(self, prompt):

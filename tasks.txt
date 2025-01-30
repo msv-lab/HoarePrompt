@@ -1,21 +1,26 @@
-def func_1(arr):
-    if (len(arr) < 2) :
-        return None
-        #The program returns None
-    #State of the program after the if block has been executed: *arr is a list of integers, and the length of arr is greater than or equal to 2
-    min_diff = float('inf')
-    temp = arr[0]
-    for i in range(1, len(arr)):
-        diff = abs(arr[i] - temp)
+def func_1(xs):
+    if (not xs) :
+        return float('-inf')
+        #The program returns negative infinity as a floating-point number.
+    #State: xs is a list of integers, and xs is not empty.
+    min_ending_here = xs[0]
+    max_ending_here = xs[0]
+    best_so_far = xs[0]
+    for num in xs[1:]:
+        temp = max_ending_here * num
         
-        if diff < min_diff:
-            min_diff = diff
+        max_ending_here = max(num, temp, min_ending_here * num)
         
-    #State of the program after the  for loop has been executed: `arr` is a list of integers with length greater than or equal to 2, `temp` is equal to `arr[0]`, `min_diff` is the minimum absolute difference between any two consecutive elements in the array starting from the first element, `i` is `len(arr) - 1`, `diff` is `abs(arr[len(arr) - 1] - arr[0])`. If `diff` is less than `min_diff`, `min_diff` is updated to `abs(arr[len(arr) - 1] - arr[0])`.
-    return min_diff
-    #The program returns the minimum absolute difference between any two consecutive elements in the array starting from the first element, or the absolute difference between the last element and the first element if it is smaller.
-#Overall this is what the function does: The function accepts a list of integers `arr`. It returns the minimum absolute difference between any two consecutive elements in the array starting from the first element, or the absolute difference between the last element and the first element if it is smaller. In certain conditions, the function returns `None`.
-Case_1: The program returns None
+        min_ending_here = min(num, temp, min_ending_here * num)
+        
+    #State: `xs` is a list of integers with at least 1 element, `min_ending_here` is the minimum value among the last element of `xs`, `max_ending_here * last_element_of_xs`, and `min_ending_here * last_element_of_xs`, `max_ending_here` is the maximum value among the last element of `xs`, `max_ending_here * last_element_of_xs`, and `min_ending_here * last_element_of_xs`, `best_so_far` is the maximum value encountered during the loop execution, `num` is the last element of `xs`.
+    if (max_ending_here > best_so_far) :
+        best_so_far = max_ending_here
+    #State: *`xs` is a list of integers with at least 1 element, `min_ending_here` is the minimum value among the last element of `xs`, `max_ending_here * last_element_of_xs`, and `min_ending_here * last_element_of_xs`, `max_ending_here` is the maximum value among the last element of `xs`, `max_ending_here * last_element_of_xs`, and `min_ending_here * last_element_of_xs`, `num` is the last element of `xs`. If `max_ending_here` is greater than `best_so_far`, then `best_so_far` is updated to `max_ending_here`. Otherwise, `best_so_far` remains unchanged.
+    return best_so_far
+    #The program returns the value of `best_so_far`, which is the maximum value among the last element of `xs`, `max_ending_here * last_element_of_xs`, and `min_ending_here * last_element_of_xs`, if this maximum value is greater than the previous `best_so_far`. Otherwise, it returns the previous `best_so_far`.
+#Overall this is what the function does: The function accepts a list of integers `xs`. If the list is empty or contains only non-positive numbers, it returns negative infinity. Otherwise, it returns the maximum product of a contiguous subarray within the list.
+Case_1: The program returns negative infinity as a floating-point number.
 
-Case_2: The program returns the minimum absolute difference between any two consecutive elements in the array starting from the first element, or the absolute difference between the last element and the first element if it is smaller.
+Case_2: The program returns the value of `best_so_far`, which is the maximum value among the last element of `xs`, `max_ending_here * last_element_of_xs`, and `min_ending_here * last_element_of_xs`, if this maximum value is greater than the previous `best_so_far`. Otherwise, it returns the previous `best_so_far`.
 

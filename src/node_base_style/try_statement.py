@@ -1,5 +1,6 @@
 from node_base_style.hoare_triple import TryTriple, pprint_cmd, print_state
-from node_base_style.helper import extract_result
+# from node_base_style.helper import extract_result
+import re
 
 # The prompt template to instruct the model to summarize the final state of a try block
 # The model is given the initial state, the try block code, and the except block code and as well as the intermidiate states after try and catch
@@ -78,11 +79,21 @@ Output state after the execution of the except statement(s):
 {except_post}
 
 Now, please think step by step: At which point in the program could such an exception occur? Summarise what the try except statement accomplishes and what the program output state is after it is executed. 
+In your response strictly use the format: Output State: **the output state you calculate.**, and describe this output state in Natural language easily understandable by humans
 """
+def extract_result(s: str, keyword: str):
+    pattern = fr"{keyword}:\s*\*\*(.*?)\*\*"
+    matches = re.findall(pattern, s, re.DOTALL)
+    if matches:
+        # Select the last match
+        res = matches[-1]
+        # Clean up the beginning and end of the string for any weird characters like * or newlines
+        return res.strip(), True
+    return s, False
 
 # This function completes the postcondition for a TryTriple
 # It constructs a prompt describing the try and except blocks, along with the initial state, and intermidiate states and sends it to the model.
-def complete_try_triple(incomplete_triple: TryTriple, model):
+def complete_try_triple(incomplete_triple: TryTriple, model, retry= True):
     pre = print_state(incomplete_triple.precondition)
     try_code = pprint_cmd(incomplete_triple.try_command)
     try_post = incomplete_triple.try_post
@@ -106,5 +117,7 @@ def complete_try_triple(incomplete_triple: TryTriple, model):
     prompt = PROMPT.format(pre=pre, try_code=try_code, try_post=try_post, except_code=except_code,
                             except_post=except_post, code=code)
     response = model.query(prompt)
-    post = extract_result(response, "Output State")
+    post, found = extract_result(response, "Output State")
+    if retry and not found:
+        return complete_try_triple(incomplete_triple, model, retry=False)
     return post

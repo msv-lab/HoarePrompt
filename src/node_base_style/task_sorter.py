@@ -100,20 +100,20 @@ def print_tree(elements):
             if is_comment:
                 element = element.replace("\n", "\n" + indent+"#") #multi line comments if they exist
                 if "a summary of the whole if-else block" in type:
-                    print(f"{indent}#State of the program after the if-else block has been executed: {element}", file=f)
+                    print(f"{indent}#State: {element}", file=f)
                 elif "a summary of the whole if block" in type:
-                    print(f"{indent}#State of the program after the if block has been executed: {element}", file=f)
+                    print(f"{indent}#State: {element}", file=f)
                 elif "a summary of the whole try-except block" in type:
-                    print(f"{indent}#State of the program after the try-except block has been executed: {element}", file=f)
+                    print(f"{indent}#State: {element}", file=f)
                 elif "a summary of the total loop" in type:
-                    print(f"{indent}#State of the program after the loop has been executed: {element}", file=f)
+                    print(f"{indent}#State: {element}", file=f)
                     unrolled_loop =1
                 elif 'the summary for the whole function' in type:
                     print(f"{indent}#Overall this is what the function does: {element}", file=f) 
                 elif "return statement" in type:
                     print(f"{indent}#{element}", file=f)
                 elif "summary of total for loop" in type:
-                    print(f"{indent}#State of the program after the  for loop has been executed: {element}", file=f)
+                    print(f"{indent}#State: {element}", file=f)
                 else:
                     pass
                

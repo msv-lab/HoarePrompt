@@ -17,6 +17,7 @@ def calculate_average(numbers):
         if num > 1:
             total += num
             count += 1
+            
         else:
             print("Skipping non-positive number:", num)
             continue

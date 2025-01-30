@@ -1,6 +1,6 @@
 from node_base_style.hoare_triple import IfTriple, parse_stmt, State,  pprint_cmd
-from node_base_style.helper import extract_postcondition, format_prompt
-
+# from node_base_style.helper import extract_postcondition, format_prompt
+import re
 # prompt template for asking the model to verify and describe if-statements
 VERIFYER_SYSTEM_PROMPT_IF = """You are assigned the role of a program verifier, responsible for finding the postcondition of an if statement based on the condition of the if statement. You will be given the precondition, the if condition and you need to calculate the postcondition to take into account the condition of the if statement. The precondition and the postcondition are expressed in natural language.
 
@@ -71,17 +71,26 @@ if condition:
 {program_fragment}
 ```
 Your task is to complete the  postcondition . All the information of the precondition must be included in the postcondition and additionally the if condition must also be included. If the variables have values related to previous conditions try to put that early in the postcondition and say the current value of the variable from then on. Give the overall state of the program for the program after it enters the if condition.
-Follow the format Postcondition: **the calculated postcondition**
-"""
+In your response strictly use the format: Postcondition: **the postcondition you calculate.**, and describe this postcondition in Natural language easily understandable by humans"""
 
-
+def extract_postcondition(s: str):
+    pattern = r"Postcondition:\s*\*\*(.*?)\*\*"
+    matches = re.findall(pattern, s, re.DOTALL)
+    if matches:
+        # Select the last match
+        res = matches[-1]
+        # Clean up the beginning and end of the string for any weird characters like * or newlines
+        return res.strip(), True
+    return s, False
 # Function to complete the IfTriple by computing its overall postcondition using the model
-def complete_if_precondition(precondition, if_condition, model):
+def complete_if_precondition(precondition, if_condition, model, retry=True):
     prompt = VERIFYER_SYSTEM_PROMPT_IF.format(precondition=precondition,
                                               program_fragment=if_condition)
     
     response = model.query(prompt)
-    post = extract_postcondition(response)
+    post, found = extract_postcondition(response)
+    if retry and not found:
+        return  complete_if_precondition(precondition, if_condition, model, retry=False)
     # print("*" * 50)
     # print(incomplete_triple)
     # print(f"LLM post: {post}")
