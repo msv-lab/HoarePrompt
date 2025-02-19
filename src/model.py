@@ -15,6 +15,8 @@ from tenacity import (
 )  # for exponential backoff
 
 import requests
+
+
 def log_token_usage(prompt_tokens, completion_tokens, total_tokens):
     """
     Appends usage data to a file named tokens.json (JSON-line format).
@@ -27,7 +29,6 @@ def log_token_usage(prompt_tokens, completion_tokens, total_tokens):
             "total_tokens": total_tokens
         }
         f.write(json.dumps(record) + "\n")
-
 
 
 # Returns the appropriate model object based on the model name. Supports OpenAI, Groq, DeepSeek, and Qwen models.
@@ -50,7 +51,7 @@ def get_model(name: str, temperature: float, log_directory: Path = None):
         "llama3-8b-8192",
         "mixtral-8x7b-32768"
     }
-    
+
     if name in groq_models:
         return GroqModel(name, temperature, log_directory)
 
@@ -92,21 +93,21 @@ class Model(ABC):
 
     # Queries the model with a given prompt and logs the interaction if a log directory is set.
     # Since we now create a temporary log dir, all interactions are logged but if log not specified they will be overwritten at the next invocation of the tool
-    def query(self, prompt, token=True):
-        response = self._query(prompt, token)
-        
+    def query(self, prompt):
+        response = self._query(prompt)
+
         if self.log_directory:
             prompt_file = self.log_directory / f"{self.log_counter:04}.prompt.md"
             response_file = self.log_directory / f"{self.log_counter:04}.response.md"
-            with prompt_file.open("w", encoding ="utf-8") as f:
+            with prompt_file.open("w", encoding="utf-8") as f:
                 f.write(prompt)
-            with response_file.open("w", encoding ="utf-8") as f:
+            with response_file.open("w", encoding="utf-8") as f:
                 f.write(response)
             self.log_counter += 1
 
         return response
 
-    #Abstract method that must be implemented by subclasses to handle the model query.
+    # Abstract method that must be implemented by subclasses to handle the model query.
     @abstractmethod
     def _query(self, prompt):
         pass
@@ -125,7 +126,7 @@ class OpenAIModel(Model):
         self.client = OpenAI(
             api_key=os.environ.get("OPENAI_API_KEY"),
         )
-        
+
     # Queries the OpenAI API with a prompt, using exponential backoff for retries in case of failures.
     # When a request to the API fails , the system will automatically try again after waiting for a certain period . Each retry will wait a different time than the previous one to avoid overloading the server.
     @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
@@ -135,7 +136,7 @@ class OpenAIModel(Model):
             messages=[{"role": "user", "content": prompt}] if isinstance(prompt, str) else prompt,
             temperature=self.temperature)
         return response.choices[0].message.content
-    
+
     @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
     def query_confidence(self, prompt):
         response = self.client.completions.create(
@@ -144,8 +145,8 @@ class OpenAIModel(Model):
             max_tokens=50,
             logprobs=5  # Request token-level log probabilities
         )
-        
-         # Get the response content
+
+        # Get the response content
         content = response.choices[0].text.strip()
 
         # Extract log probabilities
@@ -169,12 +170,13 @@ class OpenAIModel(Model):
 
         return content, confidence
 
+
 class GroqModel(Model):
-    
+
     def __init__(self, name, temperature, log_directory):
         self.log_directory = log_directory
         if log_directory:
-            self.log_counter = 0 # Counter for logging interactions
+            self.log_counter = 0  # Counter for logging interactions
         self.name = name
         self.temperature = temperature
 
@@ -192,6 +194,7 @@ class GroqModel(Model):
             temperature=self.temperature)
         return response.choices[0].message.content
 
+
 # Same for the other models
 class DeepSeekModel(Model):
     def __init__(self, name, temperature, log_directory):
@@ -206,33 +209,14 @@ class DeepSeekModel(Model):
             base_url="https://api.deepseek.com"
         )
 
-    # @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
-    def _query(self, prompt, token=True):
+    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
+    def _query(self, prompt):
         response = self.client.chat.completions.create(
             model=self.name,
             messages=[{"role": "user", "content": prompt}],
             temperature=self.temperature
         )
-
-            # Extract usage stats (if the API provides them)
-        
-        if response.usage is not None and token:
-            prompt_tokens = response.usage.prompt_tokens
-            completion_tokens = response.usage.completion_tokens
-            total_tokens = response.usage.total_tokens
-            
-            log_token_usage(prompt_tokens, completion_tokens, total_tokens)
-        
         return response.choices[0].message.content
-    
-    def query_confidence_qwen(self, prompt):
-        # Call the API and get the response
-        response = self.client.chat.completions.create(
-            model=self.name,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=self.temperature,
-            logprobs=1
-        )
 
 
 class QwenModel(Model):
@@ -256,17 +240,17 @@ class QwenModel(Model):
             temperature=self.temperature
         )
 
-            # Extract usage stats (if the API provides them)
-        
+        # Extract usage stats (if the API provides them)
+
         if response.usage is not None:
             prompt_tokens = response.usage.prompt_tokens
             completion_tokens = response.usage.completion_tokens
             total_tokens = response.usage.total_tokens
-            
+
             log_token_usage(prompt_tokens, completion_tokens, total_tokens)
-        
+
         return response.choices[0].message.content
-    
+
     def query_confidence_qwen(self, prompt):
         # Call the API and get the response
         response = self.client.chat.completions.create(
@@ -275,20 +259,6 @@ class QwenModel(Model):
             temperature=self.temperature,
             logprobs=1
         )
-
-        # Extract the response message
-        choice = response.choices[0]
-        response_content = choice.message.content.strip()
-
-        # Extract log probabilities
-        logprobs = choice.logprobs.content
-        response_token = logprobs[0]  # The main token (True or False)
-        print(response_token)
-        # Calculate probability
-        probability = math.exp(response_token.logprob)
-
-        # Return the response and its probability
-        return response_content, probability
 
         # Extract the response message
         choice = response.choices[0]
@@ -332,9 +302,8 @@ class DeepInfraModel(Model):
             headers=headers,
             json=data
         )
-        
+
         if response.status_code == 200:
             return response.json()["choices"][0]["message"]["content"]
         else:
             raise Exception(f"Request failed: {response.status_code}, {response.text}")
-

@@ -105,7 +105,7 @@ def verify_program_output(code, input_data, expected_output):
 
 def naive_test(description, code, model, retry=True):
     prompt = PROMPT.format(description=description, code=code)
-    response = model.query(prompt, False)
+    response = model.query(prompt)
     print(response)
     post, found = extract_result(response, "Correctness")
     print("*" * 50)
@@ -122,7 +122,7 @@ def naive_test(description, code, model, retry=True):
 
 def naive_test_verify_ans(description, code, original_code, model, retry=True):
     prompt = PROMPT.format(description=description, code=code)
-    response = model.query(prompt, False)
+    response = model.query(prompt)
     print(response)
     post, found = extract_result(response, "Correctness")
     print("*" * 50)
