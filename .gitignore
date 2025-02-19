@@ -11,3 +11,5 @@ example2/
 src/HoarePrompt.egg-info
 logs/
 log*/
+yihan_test/
+test_example/

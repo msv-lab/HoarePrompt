@@ -92,8 +92,8 @@ class Model(ABC):
 
     # Queries the model with a given prompt and logs the interaction if a log directory is set.
     # Since we now create a temporary log dir, all interactions are logged but if log not specified they will be overwritten at the next invocation of the tool
-    def query(self, prompt):
-        response = self._query(prompt)
+    def query(self, prompt, token=True):
+        response = self._query(prompt, token)
         
         if self.log_directory:
             prompt_file = self.log_directory / f"{self.log_counter:04}.prompt.md"
@@ -206,14 +206,33 @@ class DeepSeekModel(Model):
             base_url="https://api.deepseek.com"
         )
 
-    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
-    def _query(self, prompt):
+    # @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
+    def _query(self, prompt, token=True):
         response = self.client.chat.completions.create(
             model=self.name,
             messages=[{"role": "user", "content": prompt}],
             temperature=self.temperature
         )
+
+            # Extract usage stats (if the API provides them)
+        
+        if response.usage is not None and token:
+            prompt_tokens = response.usage.prompt_tokens
+            completion_tokens = response.usage.completion_tokens
+            total_tokens = response.usage.total_tokens
+            
+            log_token_usage(prompt_tokens, completion_tokens, total_tokens)
+        
         return response.choices[0].message.content
+    
+    def query_confidence_qwen(self, prompt):
+        # Call the API and get the response
+        response = self.client.chat.completions.create(
+            model=self.name,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=self.temperature,
+            logprobs=1
+        )
 
 
 class QwenModel(Model):
@@ -256,6 +275,20 @@ class QwenModel(Model):
             temperature=self.temperature,
             logprobs=1
         )
+
+        # Extract the response message
+        choice = response.choices[0]
+        response_content = choice.message.content.strip()
+
+        # Extract log probabilities
+        logprobs = choice.logprobs.content
+        response_token = logprobs[0]  # The main token (True or False)
+        print(response_token)
+        # Calculate probability
+        probability = math.exp(response_token.logprob)
+
+        # Return the response and its probability
+        return response_content, probability
 
         # Extract the response message
         choice = response.choices[0]

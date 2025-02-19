@@ -18,6 +18,7 @@ import node_base_style.complete
 from  node_base_style.naive import naive_question, naive_question_with_response
 from node_base_style.naive_no_fsl import naive_question_no_fsl, naive_question_no_fsl_confidence, naive_question_no_fsl_confidence_2, naive_question_no_fsl_with_response, naive_question_no_fsl_confidence_qwen, naive_question_no_fsl_no_cot
 from node_base_style.annotated_simple import annotated_simple
+from node_base_style.naive_test import naive_test, naive_test_verify_ans
 from node_base_style.single_post import single_post
 from node_base_style.single_post_no_fsl import single_post_no_fsl
 from verify_entailement import verify_tree ,verify_function_summary
@@ -621,6 +622,10 @@ def assess(description, program, module_name, config, log_directory, cex_path):
     if config['assessment-mode'] == 'naive':
         print("Using naive assessment mode")
         return compute_postcondition_naive(description, remade_program, config, log_directory)
+
+    if config['assessment-mode'] == 'naive-test':
+        print("Using naive_test assessment mode")
+        return compute_postcondition_naivetest(description, remade_program, program, config, log_directory)
     
     if config['assessment-mode'] == 'single-postcondition' or config['assessment-mode'] == 'single-postcondition-no-fsl':
         print(f"Using {config['assessment-mode']} assessment mode")
@@ -792,7 +797,16 @@ def compute_postcondition_single(description, functions_list, imports, global_co
     else:
         response = naive_question_no_fsl(description, all_funcs, model)
     return response
-            
+
+
+def compute_postcondition_naivetest(description, program, original_program, config, log_directory):
+    model = get_model(config["model"], config["temperature"], log_directory)
+    if config['entailment-mode'] == "verify-answer":
+        response = naive_test_verify_ans(description, program, original_program, model)
+    else:
+        response = naive_test(description, program, model)
+    return response
+
 
 # if the assessment mode is set to 'naive', use the naive_question function to compute the postcondition
 # we just do an llm call to get if the oce is correct or not using the naive_question function from naive.py
