@@ -1,6 +1,6 @@
 import openai
 import os
-
+import requests
 # Replace with your actual OpenAI API key
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 
@@ -8,19 +8,34 @@ def get_response_from_file(file_path):
     # Read prompt from file
     with open(file_path, 'r') as file:
         prompt = file.read()
+        temperature = 0.5
+        api_key = os.environ.get("DEEPINFRA_API_KEY")
+        name="meta-llama/Meta-Llama-3.1-70B-Instruct"
 
-    # Call ChatGPT-3.5
-    response = openai.chat.completions.create(
-            model="gpt-4o-mini-2024-07-18",
-            messages=[{"role": "user", "content": prompt}] ,
-            temperature=0.7)
+   
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        data = {
+            "model": name,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": temperature
+        }
+
+        response = requests.post(
+            "https://api.deepinfra.com/v1/openai/chat/completions",
+            headers=headers,
+            json=data
+        )
         
-
-    # Extract and return the response text
-    return response.choices[0].message.content
+        if response.status_code == 200:
+            return response.json()["choices"][0]["message"]["content"]
+        else:
+            raise Exception(f"Request failed: {response.status_code}, {response.text}")
 
 # Example usage
-file_path = '/home/jim/HoarePrompt/log79/0000.prompt.md'  # Replace with your prompt file path
+file_path = '/home/jim/HoarePrompt/log190/compute-postcondition/0000.prompt.md'  # Replace with your prompt file path
 # file_path = 'log_053/0000.prompt.md'  # Replace with your prompt file path
 
 response = get_response_from_file(file_path)

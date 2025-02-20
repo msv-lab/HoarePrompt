@@ -20,6 +20,20 @@ In your response strictly use the format: Output State: **the output state you c
 
 """
 
+LOOP_PROMPT_0_UNROLL = """
+Given a Python loop, and an initial execution state, determine the output state after all the executions of the loop have finished. 
+
+You must adhere to the text format: Output State: **output state.**
+
+Initial State: {pre}
+Code of the loop:
+{loop_code}
+
+What is the ouput state after the loop executes all the iterations? Change the values of only the variables in the loop head and body.The state of the other variables in the precondition that are not affected by the loop head and body must remain unchanged.
+The output state must be in a similar format as the initial execution state. describe this output state in Natural language easily understandable by humans. In your response strictly use the format: Output State: **the output state you calculate.**.
+
+"""
+
 
 # I am giving you two examples to understand the task better. Then I am giving you your task.
 # Example 1: 
@@ -134,6 +148,17 @@ def complete_for_triple(incomplete_triple: Triple, model, examples: list[Triple]
     post, found = extract_result(response, "Output State")
     if retry and not found:
         return complete_for_triple(incomplete_triple, model, examples, retry=False)
+    return post
+
+def complete_for_triple_0_unroll(incomplete_triple: Triple, model, retry=True):
+    
+    
+    prompt = LOOP_PROMPT_0_UNROLL.format( pre=incomplete_triple.precondition,
+                                loop_code=pprint_cmd(incomplete_triple.command))
+    response = model.query(prompt)
+    post, found = extract_result(response, "Output State")
+    if retry and not found:
+        return complete_for_triple_0_unroll(incomplete_triple, model, retry=False)
     return post
 
 # Retrieve the head of a while loop, which is its condition 

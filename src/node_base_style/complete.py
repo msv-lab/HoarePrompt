@@ -2,11 +2,12 @@ import ast
 
 from node_base_style.hoare_triple import State, Triple, IfTriple, FuncTriple, TryTriple, pprint_cmd, pprint_else_stmt, pprint_if_stmt, pprint_try_stmt, pprint_except_stmt
 from node_base_style.general import complete_triple, complete_triple_batch
+from node_base_style.print_triple import complete_print_triple
 from node_base_style.if_statement import complete_if_triple
 from node_base_style.function_definition import complete_func_triple, get_func_def
-from node_base_style.loop import complete_loop_triple, get_while_head,get_for_loop_head
+from node_base_style.loop import complete_loop_triple, get_while_head,get_for_loop_head, complete_loop_triple_0_unroll
 from node_base_style.loop_1_unroll import complete_loop_triple_1_unroll
-from node_base_style.for_loop import complete_for_triple
+from node_base_style.for_loop import complete_for_triple, complete_for_triple_0_unroll
 from node_base_style.for_loop_1_unroll import complete_for_triple_1_unroll
 from node_base_style.loop_condition import get_precondition
 from node_base_style.loop_condition_first import get_while_precondition_first
@@ -47,12 +48,24 @@ class PostconditionAnalyzer:
         self.got_if_else_return = False      # Flag to indicate both `if` and `else` branches have unavoidable return statements
 
     # Check if a command is a simple statement (e.g., assignment, expression, etc.)
-    def is_simple_statement(self, command):
-        return isinstance(command, (ast.Assign, ast.AugAssign, ast.Expr, ast.Raise, ast.Pass, ast.Break, ast.Continue))
+    def is_simple_statement(self,command):
+        """Checks if a command is a simple statement, excluding print statements."""
+        return isinstance(command, (ast.Assign, ast.AugAssign, ast.Raise, ast.Pass, ast.Break, ast.Continue)) or (
+            isinstance(command, ast.Expr) and not self.is_print(command)
+        )
+
+    def is_print(self,command):
+        """Checks if a command is a print statement in Python 3."""
+        return (
+            isinstance(command, ast.Expr) and 
+            isinstance(command.value, ast.Call) and 
+            isinstance(command.value.func, ast.Name) and 
+            command.value.func.id == "print"
+        )
 
 
     # Core recursive method to compute the postcondition of a Triple .
-    def complete_triple_cot(self, triple: Triple, depth=0, type ="") :
+    def complete_triple_cot(self, triple: Triple, depth=0, type ="", annotate_prints=True ):
         """
         Core recursive method to compute the postcondition of a given Triple.
 
@@ -69,7 +82,7 @@ class PostconditionAnalyzer:
         assert triple.postcondition == State.UNKNOWN
 
         # Generic case: Handle simple commands like assignments or expressions
-        if isinstance(triple.command,(ast.Assign, ast.AugAssign, ast.Expr, ast.Raise, ast.Pass, ast.Break, ast.Continue)):
+        if self.is_simple_statement(triple.command):
             post = complete_triple(triple, self.model)
             
             # Collect the postcondition if not inside a loop
@@ -95,6 +108,17 @@ class PostconditionAnalyzer:
                     self.collected.append((str(post), depth, context, pprint_cmd(triple.command), False))
                 
             return post
+        
+        if self.is_print(triple.command):
+            post = complete_print_triple(triple, self.model)
+            
+            # Collect the postcondition if not inside a loop
+            if not self.inside_loop:
+                context = f"print statement in {type}" if type else "print statement"
+                self.collected.append((str(post), depth, context, pprint_cmd(triple.command), False))
+            
+            return triple.precondition
+
 
         # List case: Handle compound statements (e.g., function body or code blocks)
         # we dont really do anything here just analyse the blocks one by one by calling the complete_triple_cot recursively
@@ -391,6 +415,8 @@ class PostconditionAnalyzer:
             #single unroll case
             if k==1:
                 post = complete_for_triple_1_unroll(triple, self.model, examples)
+            elif k==0: #no unroll case
+                post = complete_for_triple_0_unroll(triple, self.model)
             else: #multiple unroll casse
                 post = complete_for_triple(triple, self.model, examples)  # Aggregate the postconditions of the unrolled iterations
 
@@ -465,6 +491,8 @@ class PostconditionAnalyzer:
             # Compute the overall postcondition for the entire loop, depending on if unroll =1 or multiple
             if k==1:
                 post = complete_loop_triple_1_unroll(triple, self.model, examples)
+            elif k==0:
+                post = complete_loop_triple_0_unroll(triple, self.model)
             else:
                 post = complete_loop_triple(triple, self.model, examples)
             
@@ -537,7 +565,8 @@ class PostconditionAnalyzer:
             # Sort and format the collected items
             self.collected = sort_tasks_by_depth(self.collected)
             total_code = sort_post_by_depth(self.collected)
-            total_tree = print_tree(total_code)
+            
+            total_tree = print_tree(total_code, annotate_prints)
 
             # Debugging: Save return conditions to a file
             with open("tasks.txt", "a") as f:
@@ -564,7 +593,11 @@ def compute_postcondition(model, precondition, program, config):
     analyzer = PostconditionAnalyzer(model, config)
     parsed_code = ast.parse(program).body
     triple = Triple(precondition, parsed_code, State.UNKNOWN)
-    postcondition = analyzer.complete_triple_cot(triple)
+    if "annotate_prints" in config:
+        annotate_prints = config["annotate_prints"]
+    else:
+        annotate_prints = True
+    postcondition = analyzer.complete_triple_cot(triple, annotate_prints=annotate_prints)
     return postcondition
 
 

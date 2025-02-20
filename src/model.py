@@ -28,6 +28,19 @@ def log_token_usage(prompt_tokens, completion_tokens, total_tokens):
         }
         f.write(json.dumps(record) + "\n")
 
+def log_token_usage_fireworks(prompt_tokens, completion_tokens, total_tokens):
+    """
+    Appends usage data to a file named tokens.json (JSON-line format).
+    """
+    # Open (or create if doesn't exist) and append to the file
+    with open("/home/jim/HoarePrompt-experiments/tokens_fireworks.json", "a") as f:
+        record = {
+            "prompt_tokens": prompt_tokens,
+            "completion_tokens": completion_tokens,
+            "total_tokens": total_tokens
+        }
+        f.write(json.dumps(record) + "\n")
+
 
 
 # Returns the appropriate model object based on the model name. Supports OpenAI, Groq, DeepSeek, and Qwen models.
@@ -76,11 +89,19 @@ def get_model(name: str, temperature: float, log_directory: Path = None):
         "qwen-plus",
         "qwen2.5-72b-instruct",
         "qwen2.5-coder-7b-instruct",
-        "qwen2.5-coder-32b-instruct"
+        "qwen2.5-coder-32b-instruct",
+        "llama3.3-70b-instruct"
     }
-
+    fireworks_models = {"qwen2p5-7b-instruct",  # model better than gpt3.5
+        "qwen2p5-coder-32b-instruct",
+        "qwen2p5-72b-instruct"
+    }
     if name in qwen_models:
         return QwenModel(name, temperature, log_directory)
+    
+    if name in fireworks_models:
+        return FireworksModel(name, temperature, log_directory)
+
 
     # Raise an error if the model name does not match any supported models
     raise ValueError(f"unsupported model {name}")
@@ -216,6 +237,40 @@ class DeepSeekModel(Model):
         return response.choices[0].message.content
 
 
+class FireworksModel(Model):
+    def __init__(self, name, temperature, log_directory):
+        self.log_directory = log_directory
+        if log_directory:
+            self.log_counter = 0
+        self.name = name
+        self.temperature = temperature
+
+        self.client = OpenAI(
+            api_key=os.environ.get("FIREWORKS_API_KEY"),
+            base_url="https://api.fireworks.ai/inference/v1"
+        )
+
+    # @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
+    def _query(self, prompt):
+        model_name =f"accounts/fireworks/models/{self.name}"
+        # print(f"the name of the model is {self.name}\n{ model_name}")
+        response = self.client.chat.completions.create(
+            model=model_name,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=self.temperature
+        )
+
+            # Extract usage stats (if the API provides them)
+        
+        if response.usage is not None:
+            prompt_tokens = response.usage.prompt_tokens
+            completion_tokens = response.usage.completion_tokens
+            total_tokens = response.usage.total_tokens
+            
+            log_token_usage_fireworks(prompt_tokens, completion_tokens, total_tokens)
+        
+        return response.choices[0].message.content
+    
 class QwenModel(Model):
     def __init__(self, name, temperature, log_directory):
         self.log_directory = log_directory

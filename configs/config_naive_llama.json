@@ -1,5 +1,5 @@
 {
-    "model":  "meta-llama/Llama-3.3-70B-Instruct",
+    "model":  "llama3.3-70b-instruct",
     "temperature": 1.0,
     "assessment-mode": "naive", 
     "postcondition-mode": "hoarecot",

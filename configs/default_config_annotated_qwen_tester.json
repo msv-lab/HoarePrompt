@@ -9,5 +9,6 @@
     "cex-mode": "with-postcondition",
     "annotated" : true,
     "annotated-type" : "simple",
-    "concat_simple" :true
+    "concat_simple" :true,
+    "tester" :true
 }

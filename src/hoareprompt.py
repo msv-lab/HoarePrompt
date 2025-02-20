@@ -16,7 +16,7 @@ import entailement_mult_func_annotated
 import comment_style
 import node_base_style.complete
 from  node_base_style.naive import naive_question, naive_question_with_response
-from node_base_style.naive_no_fsl import naive_question_no_fsl, naive_question_no_fsl_confidence, naive_question_no_fsl_confidence_2, naive_question_no_fsl_with_response, naive_question_no_fsl_confidence_qwen, naive_question_no_fsl_no_cot
+from node_base_style.naive_no_fsl import naive_question_no_fsl, naive_question_no_fsl_confidence, naive_question_no_fsl_confidence_2, naive_question_no_fsl_with_response, naive_question_no_fsl_confidence_qwen, naive_question_no_fsl_no_cot, tester_call
 from node_base_style.annotated_simple import annotated_simple
 from node_base_style.single_post import single_post
 from node_base_style.single_post_no_fsl import single_post_no_fsl
@@ -25,7 +25,8 @@ from verify_entailement import verify_tree ,verify_function_summary
 import cex_generator
 from textwrap import dedent
 import ast
-
+import os
+import subprocess
 import re
 from testing_equivalence import assess_postcondition_equivalence
 
@@ -343,7 +344,7 @@ def main():
     parser.add_argument('--log', type=str, help="Directory to save detailed logs")
 
     # Add the --command argument, which can be 'assess', 'extract-precondition', 'compute-postcondition', or 'check-entailment'
-    parser.add_argument('--command', type=str, choices=['assess', 'extract-precondition', 'compute-postcondition', 'check-entailment'], help="Specify the command to run")
+    parser.add_argument('--command', type=str, choices=['assess', 'extract-precondition', 'compute-postcondition', 'check-entailment', 'tester'], help="Specify the command to run")
     
 
     # Arguments that could be used in different commands
@@ -376,7 +377,10 @@ def main():
     if "confidence" not in config:
         config["confidence"] = False
 
+    if "tester" not in config:
+        config["tester"] = False
     
+
     #if config annotated is true and  config  "assessment-mode": "naive" print error thaty they are noit compatible and that annotated only with postcondition-entailment
     if "annotated"  in config:
         if config["annotated"] and config["assessment-mode"] == "naive":
@@ -470,8 +474,14 @@ def main():
             print("Error: No program file provided")
             exit(1)
 
+   
+
+        
+        
+
     # Handle the 'assess' command
     if args.command == 'assess':
+
 
          # Ensure required arguments for the 'assess' command are provided
         if not args.description or not args.program:
@@ -484,6 +494,10 @@ def main():
             program = f.read()
         # Get the module name from the program file name
         module_name = os.path.splitext(os.path.basename(args.program))[0]
+
+
+
+        
         # Set the path for the counterexample file if provided
         if args.cex:
             cex_path = Path(args.cex)
@@ -592,7 +606,7 @@ def main():
 
 # Assess if a program is consistent with the description using pre/postconditions and entailment checking
 def assess(description, program, module_name, config, log_directory, cex_path):
-    
+
     cleaned_program, imports = remove_imports_and_comments(program)
     
     functions_dict = extract_functions(cleaned_program)
@@ -611,6 +625,49 @@ def assess(description, program, module_name, config, log_directory, cex_path):
         remade_program += global_code + "\n\n"
     for func in functions_list:
         remade_program += func + "\n\n"
+
+
+    if 'tester' in config:
+        if config['tester']:
+            # print ("Running in tester mode and sving the program to a file")
+            # if the file does not exist then we have to create it
+           
+            with (log_directory / 'program.py').open("w", encoding="utf-8") as f:
+                f.write(remade_program)
+            # print("Program saved to file")
+            model = get_model(config["model"], config["temperature"], log_directory)
+            tests = tester_call(description, remade_program, model)
+
+            # Save the tests to a file
+            test_file_path = log_directory / 'test_script.py'
+            with test_file_path.open("w", encoding="utf-8") as f:
+                f.write(tests)
+
+            try:
+                # Run the test script with a 30-second timeout
+                result = subprocess.run(['python', str(test_file_path)], capture_output=True, text=True, timeout=30)
+
+                if result.returncode == 0:
+                    print("Correctness: True")
+                    return {"tester": "True"} 
+                else:
+                    if "AssertionError" in result.stderr:
+                        print("Correctness: False (Assertions failed)")
+                        return {"tester": "False"} 
+                    else:
+                        print("Error: Test script execution failed (Invalid test or error in test generation)")
+                        print(result.stderr)
+                        return {"tester": "Failed"} 
+
+            except subprocess.TimeoutExpired:
+                print("Error: Test script execution timed out")
+                return {"tester": "Timeout"}
+
+            except Exception as e:
+                print("Error while running the test script:", e)
+                return {"tester": "Error"}
+        
+    
 
     
     print(f"the imports are\n{imports}\n")

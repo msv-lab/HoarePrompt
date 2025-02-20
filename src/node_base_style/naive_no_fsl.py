@@ -56,7 +56,7 @@ Use the format: RESULT: **Correct or Incorrect**.
 PROMPT_COMPLEX= """
 Your task is to determine if a given Python program is correct based on the provided problem description. Assume valid inputs as described in the problem description.
 
-First explain your reasoning step by step,   then reply Correctness: **True**  if the given program is correct or Correctness: **False**  if the given program is incorrect.
+First explain your reasoning step by step, then reply Correctness: **True**  if the given program is correct or Correctness: **False**  if the given program is incorrect.
 
 # Problem:
 {description}
@@ -141,6 +141,48 @@ Return  True if the program follows the problem description, otherwise return Fa
 Remember to return just one word for your response.
 """
 
+TEST_GENERATION_PROMPT = """
+Your task is to generate a Python script with assertions to test the correctness of a given Python program, based on the provided problem description. Assume valid inputs as described in the problem description.
+
+The output must be a complete Python script with assertions that verify the program’s correctness. Do not execute the program yourself; just provide the test code.
+If the code uses `stdin`, include the following helper function to automate input/output capture:
+
+import io
+import sys
+
+def capture_output(func, input_data):
+    sys.stdin = io.StringIO(input_data)
+    captured_output = io.StringIO()
+    sys.stdout = captured_output
+    func()
+    sys.stdout = sys.__stdout__
+    return captured_output.getvalue().strip()
+
+
+# Problem:
+{description}
+
+# Program:
+{code}
+
+# Your response:
+```python
+# Include necessary imports if any
+# Assume the provided program is saved as 'program.py' and can be imported from the same dir.
+
+from program import *
+
+# Write your test cases below
+# Each test case should include assertions based on the problem description
+# Example:
+# assert function_name(input) == expected_output
+
+# Add multiple test cases to ensure correctness across edge cases
+assert ...
+
+# End of script
+"""
+
 def extract_result(s: str, keyword: str):
     pattern = fr"{keyword}:\s*\*\*(.*?)\*\*"
     matches = re.findall(pattern, s, re.DOTALL)
@@ -150,6 +192,39 @@ def extract_result(s: str, keyword: str):
         # Clean up the beginning and end of the string for any weird characters like * or newlines
         return res.strip(), True
     return s, False
+
+import re
+
+def extract_code_from_response(response: str) :
+    """
+    Extracts Python code from a response containing a code block.
+
+    Args:
+        response (str): The LLM response containing the Python code block.
+
+    Returns:
+        str: The extracted Python code.
+    """
+    code_block_pattern = re.compile(r"```python(.*?)```", re.DOTALL)
+    match = code_block_pattern.search(response)
+    if match:
+        return match.group(1).strip(), True
+    else:
+        return response, False
+
+
+ 
+def tester_call(description, code, model, retry=True):
+   
+    prompt = TEST_GENERATION_PROMPT.format(description=description, code=code)
+    response = model.query(prompt)
+    print(response)
+    post, found =extract_code_from_response(response)
+    print("*" * 50)
+    print(f"LLM Reply: {post}")
+    if retry and not found:
+        return tester_call(description, code, model, retry=False)
+    return post
 
 # This is the main function, it completes the prompt, queries the model and extracts the result, meaining the output state of that program part
 def naive_question_no_fsl(description, code, model, retry=True):

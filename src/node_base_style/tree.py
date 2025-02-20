@@ -17,10 +17,7 @@ Your Task:
 
 - Analyze the annotated code and the return postconditions.
 - Determine what parameters the function accepts and what it returns.
-- Provide a concise summary of the function state after it concludes.
-- Keep in mind that some of the annotations may be redundant, irrelevant or missing some important edgecases so try to keep the context of the actual code in mind as well.
-- Also if the annotations say that the code does something but the code has some missing functionality, make sure to include that missing functionality in your summary.
-Please avoid describing how the function operates or implementation details—focus on what the function does from the user's perspective and how it affects the input variables . What is the purpose of the function? what sort of actions does it perform? What is the final state of the progrma after it concludes?
+- Provide a concise summary of the function state after it concludes.Please avoid describing how the function operates or implementation details—focus on what the function does from the user's perspective and how it affects the input variables . What is the purpose of the function? what sort of actions does it perform? What is the final state of the progrma after it concludes?
 
 You must adhere to the text format: Functionality: ** Your response here **
 
@@ -33,11 +30,8 @@ Annotated Code:
 Return Postconditions: {returns}
 
 Now, please think step by step: 
-What is the functionality of the function? Make sure to notice any potential edge cases and missing logic.
-Look at the code line by line and see if the code does what the annotations say.
-You are trying to understand what the code does ans summarise what the state will be after the program executes and the annotations are there to help you.
 The anotation is there to help you understand the code but the code is the truth. Only include in the functionality, actions that the code actually performs, covering all potential cases.
-Include all potential edge cases and missing functionality if it exists inside your response with the format . Functionality: ** your response here **"""
+Use Natural language easily understandable by humans and strictly reply with the format: Functionality: ** your response here **"""
 
 # I am giving you some examples to understand the task better. Then I am giving you your task.
 

@@ -32,7 +32,7 @@ def main():
         return
 
     # Initialize the QwenModel
-    model = QwenModel(name="qwen2.5-coder-7b-instruct", temperature=0.7)
+    model = QwenModel(name="llama3.3-70b-instruct", temperature=0.7)
 
     # Define your prompt
     prompt = "What is the capital of France?"

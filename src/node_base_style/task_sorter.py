@@ -74,7 +74,7 @@ def sort_post_by_depth(elements):
     return total_tree
 
 
-def print_tree(elements):
+def print_tree(elements, annotate_prints=True):
     """
     Format the code tree with comments and write it to a file.
 
@@ -112,6 +112,8 @@ def print_tree(elements):
                     print(f"{indent}#Overall this is what the function does: {element}", file=f) 
                 elif "return statement" in type:
                     print(f"{indent}#{element}", file=f)
+                elif "print statement" in type and annotate_prints:
+                    print(f"{indent}#This is printed: {element}", file=f)
                 elif "summary of total for loop" in type:
                     print(f"{indent}#State: {element}", file=f)
                 else:
