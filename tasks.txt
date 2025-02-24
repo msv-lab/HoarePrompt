@@ -1,23 +1,12 @@
-def func_1(n):
-    if (n == 0) :
-        return 0
-        #The program returns 0.
-    else :
-        if (n == 1) :
-            return 1
-            #The program returns 1
-        else :
-            a, b = 0, 1
-            for _ in range(2, n + 1):
-                a, b = b, a + b + 1
-                
-            #State: `a` is the value of `b` from the previous iteration, `b` is the sum of the previous `a`, `b`, and 1, `_` is `n + 1`.
-            return b
-            #The program returns `b`, which is the sum of the previous `a`, `b`, and 1.
-#Overall this is what the function does: The function `func_1` accepts a parameter `n`, which is a non-negative integer. It returns 0 if `n` is 0, returns 1 if `n` is 1, and returns `b`, which is the sum of the previous `a`, `b`, and 1, for other values of `n`.
-Case_1: The program returns 0.
-
-Case_2: The program returns 1
-
-Case_3: The program returns `b`, which is the sum of the previous `a`, `b`, and 1.
+def func_1(students_A, admins_A, students_B, admins_B, profs_B):
+    total_A = sum(students_A) + sum(admins_A)
+    total_B = sum(students_B) + sum(admins_B) + sum(profs_B)
+    surplus = abs(total_A - total_B)
+    stayers = total_A + total_B - surplus
+    bonus_pool = stayers * 10
+    bonus_per_moved = bonus_pool / surplus
+    return bonus_per_moved
+    #The program returns `bonus_per_moved` which is calculated as `20 * min(total_A, total_B) / abs(total_A - total_B)`
+#Overall this is what the function does: The function accepts five parameters: `students_A`, `admins_A`, `students_B`, `admins_B`, and `profs_B`, which are lists of non-negative integers representing the number of first-semester students, administrators, and professors per class at Buildings A and B respectively. The function calculates `total_A` as the sum of elements in `students_A` and `admins_A`, and `total_B` as the sum of elements in `students_B`, `admins_B`, and `profs_B`. It then computes and returns `bonus_per_moved` using the formula `20 * min(total_A, total_B) / abs(total_A - total_B)`
+The program returns `bonus_per_moved` which is calculated as `20 * min(total_A, total_B) / abs(total_A - total_B)`
 

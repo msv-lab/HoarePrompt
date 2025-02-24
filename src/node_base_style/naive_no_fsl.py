@@ -145,18 +145,32 @@ TEST_GENERATION_PROMPT = """
 Your task is to generate a Python script with assertions to test the correctness of a given Python program, based on the provided problem description. Assume valid inputs as described in the problem description.
 
 The output must be a complete Python script with assertions that verify the program’s correctness. Do not execute the program yourself; just provide the test code.
-If the code uses `stdin`, include the following helper function to automate input/output capture:
+
+If the program defines a function, import it and test it by calling the function directly with arguments and using assertions on its return values.
+
+If the program does not define functions but executes directly, use the following helper function to automate input/output capture and execute `program.py` safely:
 
 import io
 import sys
 
-def capture_output(func, input_data):
-    sys.stdin = io.StringIO(input_data)
-    captured_output = io.StringIO()
-    sys.stdout = captured_output
-    func()
-    sys.stdout = sys.__stdout__
-    return captured_output.getvalue().strip()
+def run_program_with_captured_io(input_data):
+    original_stdin = sys.stdin
+    original_stdout = sys.stdout
+
+    try:
+        sys.stdin = io.StringIO(input_data)
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+
+        with open("program.py", "r", encoding="utf-8") as f:
+            code = f.read()
+            exec(code, {repl})
+
+        return captured_output.getvalue().strip()
+    
+    finally:
+        sys.stdin = original_stdin
+        sys.stdout = original_stdout
 
 
 # Problem:
@@ -170,17 +184,24 @@ def capture_output(func, input_data):
 # Include necessary imports if any
 # Assume the provided program is saved as 'program.py' and can be imported from the same dir.
 
+#if there is a specific function we can call import it
 from program import *
+#otherwise use the run_program_with_captured_io(input_data) function to run the program and capture the output
 
 # Write your test cases below
 # Each test case should include assertions based on the problem description
 # Example:
 # assert function_name(input) == expected_output
 
+# or if the program is a script we must execute 
+# input_data = "input data"
+# expected_output = "expected output"
+# assert run_program_with_captured_io(input_data) == expected_output 
 # Add multiple test cases to ensure correctness across edge cases
-assert ...
+
 
 # End of script
+```
 """
 
 def extract_result(s: str, keyword: str):
@@ -216,7 +237,7 @@ def extract_code_from_response(response: str) :
  
 def tester_call(description, code, model, retry=True):
    
-    prompt = TEST_GENERATION_PROMPT.format(description=description, code=code)
+    prompt = TEST_GENERATION_PROMPT.format(description=description, code=code, repl= f"{{}}")
     response = model.query(prompt)
     print(response)
     post, found =extract_code_from_response(response)

@@ -1,0 +1,2 @@
+given 3 sides of a triangle and a perimeter d. If the sides do not correspond to a triangle then return invalid. IF the triangle has perimeter less than d return too small otherwise categorise the triangle to one of the following categories, equilateral right isosceles, isosceles, scalene, right scalene.
+

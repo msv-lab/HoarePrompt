@@ -70,7 +70,7 @@ if condition:
 ```
 {program_fragment}
 ```
-Your task is to complete the  postcondition . All the information of the precondition must be included in the postcondition and additionally the if condition must also be included. If the variables have values related to previous conditions try to put that early in the postcondition and say the current value of the variable from then on. Give the overall state of the program for the program after it enters the if condition.
+Your task is to complete the  postcondition . Try to understand what the if check does to the input and what must hold true to enter the if. All the information of the precondition must be included in the postcondition and additionally the if condition must also be included. If the variables have values related to previous conditions try to put that early in the postcondition and say the current value of the variable from then on. Give the overall state of the program for the program after it enters the if condition.
 In your response strictly use the format: Postcondition: **the postcondition you calculate.**, and describe this postcondition in Natural language easily understandable by humans"""
 
 def extract_postcondition(s: str):

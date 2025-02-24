@@ -1,0 +1,8 @@
+Given any potential integers a b c and d ,implement a function `compute_stability(a, b, c, d)` that returns a stability metric. If (a + b > c + d), compute the metric as  
+
+100 divided by ((a * c) - (b * d) + (d - c))
+
+otherwise compute it as  
+
+200 divide by ((a + d) - (b + c) + 5)
+ 
