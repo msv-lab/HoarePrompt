@@ -13,3 +13,4 @@ logs/
 log*/
 yihan_test/
 test_example/
+src/model.py

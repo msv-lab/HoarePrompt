@@ -29,6 +29,36 @@ Expected Output:
 ```
 """
 
+PROMPT_COMPLEX = """
+**Role**: As a tester, your task is to create comprehensive test cases for the following coding problem. These test cases should encompass Basic and Edge scenarios to ensure the code's robustness, reliability, and scalability.
+
+**Problem Description**:
+{description}
+
+**1. Basic Test Cases**:
+- **Objective**: To verify the fundamental functionality of the `has_close_elements` function under normal conditions.
+
+**2. Edge Test Cases**:
+- **Objective**: To evaluate the function's behavior under extreme or unusual conditions.
+
+**Instructions**:
+- Implement a comprehensive set of test cases following the guidelines above.
+- Ensure each test case is complete (no omission) and well-documented with comments explaining the scenario it covers.
+- Pay special attention to edge cases as they often reveal hidden bugs.
+- Do not repeat, do not summarize.
+
+All test cases you give need to strictly follow the problem description and format like this:
+# Test 1
+**Input**: 
+```
+
+```
+**Output**: 
+```
+
+```
+"""
+
 
 def extract_input_and_expected(test_str):
     input_pattern = re.compile(r'Input:\s*```\s*(.*?)\s*```', re.DOTALL)
@@ -146,3 +176,46 @@ def naive_test_verify_ans(description, code, original_code, model, retry=True):
     return post
 
 
+def extract_input_output(text):
+    input_pattern = r'\*\*Input\*\*:\s*```\s*(.*?)\s*```'
+    output_pattern = r'\*\*Output\*\*:\s*```\s*(.*?)\s*```'
+
+    inputs = re.findall(input_pattern, text, re.DOTALL)
+    outputs = re.findall(output_pattern, text, re.DOTALL)
+
+    # 将匹配到的内容打印出来
+    input_output_pairs = []
+    for i, input_data in enumerate(inputs):
+        # 提取对应的output
+        output_data = outputs[i] if i < len(outputs) else ""
+        input_output_pairs.append((input_data.strip(), output_data.strip()))
+
+    return input_output_pairs
+
+
+def test_agentcoder(description, code, original_code, model, retry=True):
+    prompt = PROMPT_COMPLEX.format(description=description, code=code)
+    response = model.query(prompt)
+    print(response)
+
+    input_output_pairs = extract_input_output(response)
+    if not input_output_pairs:
+        test_agentcoder(description, code, original_code, model, retry=True)
+
+    test_number = 0
+    correctness = True
+
+    for idx, (input_data, output_data) in enumerate(input_output_pairs, start=1):
+        test_number += 1
+        print(f"Test Case {idx}:")
+        print(f"Input:\n{input_data}")
+        print(f"Output:\n{output_data}")
+        result = verify_program_output(original_code, input_data, output_data)
+        if not result:
+            correctness = False
+        print(result)
+        print("-" * 50)
+        if test_number > 20:
+            break
+    print(f"Test Result: {correctness}")
+    return correctness

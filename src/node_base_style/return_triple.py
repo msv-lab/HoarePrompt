@@ -14,7 +14,7 @@ I am giving you some examples to understand the task better. Then I am giving yo
 Example1:
 Initial State: `str` is a string, 'str' has 3 or more characters
 ```
-eturn str
+return str
 ```
 Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate the result.
 Example Answer:

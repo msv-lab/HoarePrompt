@@ -18,7 +18,7 @@ import node_base_style.complete
 from  node_base_style.naive import naive_question, naive_question_with_response
 from node_base_style.naive_no_fsl import naive_question_no_fsl, naive_question_no_fsl_confidence, naive_question_no_fsl_confidence_2, naive_question_no_fsl_with_response, naive_question_no_fsl_confidence_qwen, naive_question_no_fsl_no_cot
 from node_base_style.annotated_simple import annotated_simple
-from node_base_style.naive_test import naive_test, naive_test_verify_ans
+from node_base_style.naive_test import naive_test, naive_test_verify_ans, test_agentcoder
 from node_base_style.single_post import single_post
 from node_base_style.single_post_no_fsl import single_post_no_fsl
 from verify_entailement import verify_tree ,verify_function_summary
@@ -802,7 +802,8 @@ def compute_postcondition_single(description, functions_list, imports, global_co
 def compute_postcondition_naivetest(description, program, original_program, config, log_directory):
     model = get_model(config["model"], config["temperature"], log_directory)
     if config['entailment-mode'] == "verify-answer":
-        response = naive_test_verify_ans(description, program, original_program, model)
+        response = test_agentcoder(description, program, original_program, model)
+        # response = naive_test_verify_ans(description, program, original_program, model)
     else:
         response = naive_test(description, program, model)
     return response
