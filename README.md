@@ -1,7 +1,7 @@
 <table>
   <tr>
     <td style="width: 35%; text-align: center;">
-      <img src="./assets/HoarePrompt_logo.png" alt="HoarePrompt Logo" width="100"/>
+      <img src="./assets/hoareprompt_logo.png" alt="HoarePrompt Logo" width="100"/>
     </td>
     <td style="width: 65%; text-align: left;">
       <h1>HoarePrompt: Structural Reasoning About Programs in Natural Language</h1>
@@ -249,20 +249,4 @@ HoarePrompt's reasoning process revolves around breaking down programs into smal
 - **Function summarising**: The functionality of a function can be summarised to assist the LLM into infering about the states after its execution 
 - **Entailment Checking**: The postcondition is checked to determine whether it meets the requirements described in the natural language specification.
 
-For more complex control structures, such as conditionals (`if` statements) and exception handling (`try-except` blocks), HoarePrompt generates specialized prompts for the model, ensuring the correct reasoning is applied to those cases. 
-
-## Contributions
-This is a project of Peking Univeristy. Feel free to contribute to HoarePrompt-data by opening issues or submitting pull requests on GitHub. Your contributions are highly appreciated!
-
-<div style="display: flex; justify-content: center;">
-  <table style="table-layout: fixed; text-align: center;">
-    <tr>
-      <td style="width: 50%; text-align: center;">
-        <img src="./assets/PKU.png" alt="Image 1" width="300"/>
-      </td>
-      <td style="width: 50%; text-align: center;">
-        <img src="./assets/HoarePrompt_logo.png" alt="Image 2" width="300"/>
-      </td>
-    </tr>
-  </table>
-</div>
+For more complex control structures, such as conditionals (`if` statements) and exception handling (`try-except` blocks), HoarePrompt generates specialized prompts for the model, ensuring the correct reasoning is applied to those cases.
