@@ -207,6 +207,24 @@ Predefined configurations for classifiers used in the HoarePrompt paper are avai
 - **HoarePrompt (3 unrolls):** `configs/config_hoareprompt_*.json`
 - **HoarePrompt (no unrolls):** `configs/config_hoareprompt_no_unroll_*.json`
 
----
+
+## Related Repositories
+
+The HoarePrompt project consists of multiple repositories, each serving a specific function:
+
+1. **[HoarePrompt (Main Repo)](https://github.com/msv-lab/HoarePrompt)**  
+   - The core repository containing the implementation of HoarePrompt, including the logic for analyzing programs, state propagation, and correctness verification.
+   
+2. **[HoarePrompt-data](https://github.com/msv-lab/HoarePrompt-data)**  
+   - A dedicated repository for storing experimental results and datasets related to HoarePrompt evaluations. This includes correctness assessments, counterexamples, and other findings from our testing.
+   
+3. **[HoarePrompt-experiments](https://github.com/msv-lab/HoarePrompt-experiments)**  
+   - This repository provides scripts and configurations to run large-scale experiments with HoarePrompt on various datasets. It includes automated evaluation scripts and batch processing tools.
+   
+4. **[HoarePrompt Artifacts (ICSE Submission)](https://anonymous.4open.science/r/HoarePrompt-icse/README.md)**  
+   - The repository containing all artifacts submitted for the paper, including code, datasets, and experiment details required for reproduction.
+
+These repositories collectively support the development, evaluation, and reproducibility of HoarePrompt, making it easy for researchers and developers to experiment with and extend its capabilities.
+
 
 
