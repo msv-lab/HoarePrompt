@@ -1,1 +1,0 @@
-The function func_1 accepts a list of integers numbers, processes the list to calculate the average of elements greater than 1, and returns the calculated average. If the list is empty or does not contain any elements greater than 1, the function returns None.

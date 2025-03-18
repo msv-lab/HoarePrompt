@@ -1,1 +1,0 @@
-matrix is a square list of lists of integers, i.e., it is a 2D list where the number of rows equals the number of columns in each row, and all elements are integers.

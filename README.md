@@ -1,7 +1,7 @@
 <table>
   <tr>
     <td style="width: 35%; text-align: center;">
-      <img src="./assets/HoarePrompt_logo.png" alt="HoarePrompt Logo" width="100"/>
+      <img src="./assets/hoareprompt_logo.png" alt="HoarePrompt Logo" width="100"/>
     </td>
     <td style="width: 65%; text-align: left;">
       <h1>HoarePrompt: Structural Reasoning About Programs in Natural Language</h1>

@@ -1,1 +1,0 @@
-input_list is a list of integers.

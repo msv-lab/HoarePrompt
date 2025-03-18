@@ -1,2 +1,0 @@
-You are designing the algorith that calculates the final price of a product. Currently the store has a store wide discount on all products and so you must first apply that discount to cretae the new price. Then on top of that certaion products have a coupon code discount that must be applied on the already-discounted subtotal
-Finally, calculate tax on the  price and give the final price.

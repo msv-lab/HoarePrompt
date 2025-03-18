@@ -1,8 +1,0 @@
-We have an account with:
-
-A balance (the principal).
-A number of days_passed.
-We want to:
-
-If days_passed < 30, apply daily interest for each day.
-If days_passed >= 30, apply 30 days of daily interest and then on top of that apply a one-time monthly interest.

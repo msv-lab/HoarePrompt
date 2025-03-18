@@ -1,1 +1,0 @@
-The function func_1 accepts a square matrix of size n x n, calculates the sum of the diagonal elements in a zigzag pattern, and returns the total sum. The function correctly computes the sum of diagonal elements in the zigzag pattern, considering both the main diagonal and the anti-diagonal. If the matrix is empty (n=0), the function returns 0 as the total sum.

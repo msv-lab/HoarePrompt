@@ -1,1 +1,0 @@
-The function func_1 accepts a square matrix where n is a non-negative integer. It iterates through the matrix and updates the total by summing the values at specific positions within the matrix. The function returns the final value of total after all iterations are completed. If n is 0 or lower, the loop does not execute, and total remains 0.

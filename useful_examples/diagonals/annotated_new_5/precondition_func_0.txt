@@ -1,1 +1,0 @@
-**Precondition**: **matrix is a square matrix (n x n) where n is a non-negative integer. Each element of the matrix is a numerical value.**

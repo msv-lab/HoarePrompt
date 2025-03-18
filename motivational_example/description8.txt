@@ -1,4 +1,0 @@
-Imagine you have three accounts: A, B, and C. You want to:
-
-Transfer a certain amount amountAtoB from A to B (partially, if A lacks sufficient funds).
-Then transfer a certain amount amountBtoC from B to C (again partially, if B lacks sufficient funds).

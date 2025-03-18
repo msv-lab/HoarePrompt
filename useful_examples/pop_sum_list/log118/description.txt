@@ -1,1 +1,0 @@
-Find the sum of the elements in the list that are larger than 0

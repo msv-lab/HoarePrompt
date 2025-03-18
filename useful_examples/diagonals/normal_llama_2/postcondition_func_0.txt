@@ -1,1 +1,0 @@
-The function accepts a square 2D list of integers and returns the sum of the elements on the main diagonal and the anti-diagonal if the matrix is not empty; otherwise, it returns 0. However, if the input matrix is not square or contains non-integer values, the function's behavior is undefined.
