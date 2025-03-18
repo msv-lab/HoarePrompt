@@ -77,6 +77,50 @@ Additional providers and models can be configured in `src/model.py`.
 
 ---
 
+## Motivational Example
+
+To motivate our approach, we first show that annotating a program with natural language descriptions of reachable program states enhances an LLM's reasoning about program correctness.
+
+### State Descriptions Enhance LLM Reasoning
+
+Consider the problem: *Given an integer list, the task is to find the maximum product of any sublist.* The left side of the figure below presents a flawed implementation of Kadane’s algorithm for solving this problem.
+The description and code for this example can be found at `examples/motivating_example/description.txt` and `examples/motivating_example/program.py`.
+<p align="center">
+  <img src="./assets/motivating_example.png" alt="Motivational Example" width="80%"/>
+</p>
+
+The bug in this implementation stems from incorrect indentation, which results in `best_so_far` being updated only once—after the loop ends—instead of being updated during each iteration.
+
+Despite the simplicity of this bug, state-of-the-art  LLMs often fail to identify it consistently, misclassifying the program as correct. Because LLMs exhibit non-deterministic behavior and are sensitive to prompt design, testing their effectiveness in detecting such errors is challenging. To provide objective evidence, we crafted six distinct prompts—including a simple "Vanilla" prompt, a Zero-shot-CoT prompt, and an open-ended prompt—each containing the problem description and the code snippet. We generated **10 responses for each prompt** using three different LLMs and various temperature settings.
+
+| **Model**            | **Not Annotated** | **Annotated** |
+|----------------------|------------------|--------------|
+| Qwen2.5-7B          | 0%               | 11.7%        |
+| Qwen2.5-Coder-32B   | 15%              | 85%          |
+| Qwen2.5-72B         | 35%              | 85%          |
+
+The results above show that without state annotations, LLMs rarely detect the bug. An example of an incorrect response from the Vanilla prompt is presented on the left side of the figure. However, HoarePrompt enhances this process by systematically inferring **natural preconditions and postconditions** from the problem description, then propagating **reachable program states** across the control flow.
+
+By iteratively applying this process, HoarePrompt constructs a structured representation of program states, making it easier for LLMs to reason about correctness. With these annotations, the bug detection rate increases significantly.
+
+---
+
+## Running the Motivational Example
+
+You can run the motivational example using the following command:
+
+```bash
+python src/hoareprompt.py --description examples/motivating_example/description.txt --program examples/motivating_example/program.py --config configs/config_motivational.json
+```
+
+Alternatively, specify the type of command and the log path too:
+
+```bash
+python src/hoareprompt.py --command assess --description examples/motivating_example/description.txt --program examples/motivating_example/program.py --config configs/config_motivational.json --log logs/motivating_example/
+```
+
+
+
 ## Usage
 
 HoarePrompt provides several commands to analyze programs.
