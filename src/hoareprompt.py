@@ -21,15 +21,42 @@ from node_base_style.annotated_simple import annotated_simple
 from node_base_style.single_post import single_post
 from node_base_style.single_post_no_fsl import single_post_no_fsl
 from verify_entailement import verify_tree ,verify_function_summary
+from node_base_style.naive_test import naive_test, naive_test_verify_ans, test_agentcoder
 
 import cex_generator
 from textwrap import dedent
 import ast
 import os
 import subprocess
+
 import re
 from testing_equivalence import assess_postcondition_equivalence
 
+CAPTURES="""
+import io
+import sys
+
+def capture_output(func, input_data):
+    sys.stdin = io.StringIO(input_data)
+    captured_output = io.StringIO()
+    sys.stdout = captured_output
+    func()
+    sys.stdout = sys.__stdout__
+    return captured_output.getvalue().strip()"""
+
+CAPTURES1="""
+import io
+import sys
+"""
+
+CAPTURES2="""
+def capture_output(func, input_data):
+    sys.stdin = io.StringIO(input_data)
+    captured_output = io.StringIO()
+    sys.stdout = captured_output
+    func()
+    sys.stdout = sys.__stdout__
+    return captured_output.getvalue().strip()"""
 
 def load_test_cases(file_path):
     """Load test cases from a JSON file."""
@@ -330,7 +357,7 @@ def extract_functions(script: str) -> dict:
     if not functions:
         dummy_function = "def func():\n    " + "\n    ".join(global_code.splitlines())
         functions = [dummy_function]
-        global_code = ""
+        global_code = "GLOBAL"
 
     return {"global_code": global_code, "functions": functions}
 
@@ -344,7 +371,7 @@ def main():
     parser.add_argument('--log', type=str, help="Directory to save detailed logs")
 
     # Add the --command argument, which can be 'assess', 'extract-precondition', 'compute-postcondition', or 'check-entailment'
-    parser.add_argument('--command', type=str, choices=['assess', 'extract-precondition', 'compute-postcondition', 'check-entailment', 'tester'], help="Specify the command to run")
+    parser.add_argument('--command', type=str, choices=['assess', 'extract-precondition', 'compute-postcondition', 'check-entailment'], help="Specify the command to run")
     
 
     # Arguments that could be used in different commands
@@ -377,10 +404,7 @@ def main():
     if "confidence" not in config:
         config["confidence"] = False
 
-    if "tester" not in config:
-        config["tester"] = False
     
-
     #if config annotated is true and  config  "assessment-mode": "naive" print error thaty they are noit compatible and that annotated only with postcondition-entailment
     if "annotated"  in config:
         if config["annotated"] and config["assessment-mode"] == "naive":
@@ -423,14 +447,18 @@ def main():
             return
         
     if "concat_simple" not in config:
-        config["concat_simple"] = False
+        config["concat_simple"] = True
     else:
         if type(config["concat_simple"]) != bool:
             print("Error: concat_simple should be a boolean")
             return 
-
-        
-
+    if "COT" not in config:
+        config["COT"] = True
+    else:
+        if type(config["COT"]) != bool:
+            print("Error: COT should be a boolean")
+            return 
+    
     log_directory = None
     if args.log:
         log_directory = Path(args.log)
@@ -474,14 +502,8 @@ def main():
             print("Error: No program file provided")
             exit(1)
 
-   
-
-        
-        
-
     # Handle the 'assess' command
     if args.command == 'assess':
-
 
          # Ensure required arguments for the 'assess' command are provided
         if not args.description or not args.program:
@@ -494,10 +516,6 @@ def main():
             program = f.read()
         # Get the module name from the program file name
         module_name = os.path.splitext(os.path.basename(args.program))[0]
-
-
-
-        
         # Set the path for the counterexample file if provided
         if args.cex:
             cex_path = Path(args.cex)
@@ -606,18 +624,24 @@ def main():
 
 # Assess if a program is consistent with the description using pre/postconditions and entailment checking
 def assess(description, program, module_name, config, log_directory, cex_path):
-
-    cleaned_program, imports = remove_imports_and_comments(program)
     
+    cleaned_program, imports = remove_imports_and_comments(program)
+    tester_code =imports +"\n\n" + cleaned_program
     functions_dict = extract_functions(cleaned_program)
     # print("this is the functions dict", functions_dict)
+    is_global=  False
     functions_list= functions_dict["functions"]
     global_code = functions_dict["global_code"]
+    if global_code == "GLOBAL" : 
+        global_code =""
+        is_global= True
     postconditions_list =[]
     return_list=[]
     annotated_func_list = []
     remade_program = ""
 
+
+    
     #remake the program with the functions
     if imports != "":
         remade_program += imports + "\n\n"
@@ -626,49 +650,16 @@ def assess(description, program, module_name, config, log_directory, cex_path):
     for func in functions_list:
         remade_program += func + "\n\n"
 
+    if is_global:
+        test_code =  CAPTURES1 +"\n"+ CAPTURES2+"\n\n"+ remade_program
+        test_code_call =remade_program
+    else:
+        test_code = imports +"\n" + CAPTURES1 +"\n"+ CAPTURES2+"\n\n"+ cleaned_program
+        test_code_call =imports +"\n" + cleaned_program
 
-    if 'tester' in config:
-        if config['tester']:
-            # print ("Running in tester mode and sving the program to a file")
-            # if the file does not exist then we have to create it
-           
-            with (log_directory / 'program.py').open("w", encoding="utf-8") as f:
-                f.write(remade_program)
-            # print("Program saved to file")
-            model = get_model(config["model"], config["temperature"], log_directory)
-            tests = tester_call(description, remade_program, model)
-
-            # Save the tests to a file
-            test_file_path = log_directory / 'test_script.py'
-            with test_file_path.open("w", encoding="utf-8") as f:
-                f.write(tests)
-
-            try:
-                # Run the test script with a 30-second timeout
-                result = subprocess.run(['python', str(test_file_path)], capture_output=True, text=True, timeout=30)
-
-                if result.returncode == 0:
-                    print("Correctness: True")
-                    return {"tester": "True"} 
-                else:
-                    if "AssertionError" in result.stderr:
-                        print("Correctness: False (Assertions failed)")
-                        return {"tester": "False"} 
-                    else:
-                        print("Error: Test script execution failed (Invalid test or error in test generation)")
-                        print(result.stderr)
-                        return {"tester": "Failed"} 
-
-            except subprocess.TimeoutExpired:
-                print("Error: Test script execution timed out")
-                return {"tester": "Timeout"}
-
-            except Exception as e:
-                print("Error while running the test script:", e)
-                return {"tester": "Error"}
-        
-    
-
+    if config['assessment-mode'] == 'naive-test':
+        print("Using naive_test assessment mode")
+        return compute_postcondition_naivetest(description, tester_code, program, config, log_directory)
     
     print(f"the imports are\n{imports}\n")
     print(f"the global code is\n{global_code}\n")
@@ -683,7 +674,7 @@ def assess(description, program, module_name, config, log_directory, cex_path):
         print(f"Using {config['assessment-mode']} assessment mode")
         return compute_postcondition_single(description, functions_list,imports, global_code, cleaned_program, module_name, program, config, log_directory)
     # Ensure assessment mode is set to 'postcondition-entailment'
-    assert config['assessment-mode'] in {'postcondition-entailment', 'total', 'verify'}
+    assert config['assessment-mode'] in {'postcondition-entailment', 'total', 'verify','naive-test'}
 
     
     # Save the program and description to the log directory
@@ -743,7 +734,7 @@ def assess(description, program, module_name, config, log_directory, cex_path):
     entailment_log_dir.mkdir(parents=True, exist_ok=True)
 
     if config["assessment-mode"] == "total" or config["assessment-mode"] == "verify":
-        print("Using total or verify entailment mode")
+        print(f"Using {config['assessment-mode']} entailment mode")
         entailment_log_dir_simple = entailment_log_dir/'entailment_simple'
         entailment_log_dir_simple.mkdir(parents=True, exist_ok=True)
         entailment_log_dir_complex = entailment_log_dir/'entailment_complex'
@@ -804,7 +795,15 @@ def extract_precondition(description, program, config, log_directory, functions_
         program_def =find_function_definition(program)
         # Use the precondition extractor model to generate the precondition
         return precondition_extractor.default(model, description, program_def)
-
+    
+def compute_postcondition_naivetest(description, program, original_program, config, log_directory):
+    model = get_model(config["model"], config["temperature"], log_directory)
+    if config['entailment-mode'] == "verify-answer":
+        response = test_agentcoder(description, program, original_program, model)
+        # response = naive_test_verify_ans(description, program, original_program, model)
+    else:
+        response = naive_test(description, program, model)
+    return response
 
 def compute_postcondition_single(description, functions_list, imports, global_code, cleaned_program, module_name, program, config, log_directory):
     model = get_model(config["model"], config["temperature"], log_directory)
@@ -847,7 +846,10 @@ def compute_postcondition_single(description, functions_list, imports, global_co
     if config["fsl"]:
         response = naive_question(description, all_funcs, model)
     else:
-        response = naive_question_no_fsl(description, all_funcs, model)
+        if config["COT"]:
+            response = naive_question_no_fsl(description, all_funcs, model)
+        else:
+            response = naive_question_no_fsl_no_cot(description, all_funcs, model)
     return response
             
 
@@ -866,9 +868,15 @@ def compute_postcondition_naive(description, program, config, log_directory):
             # print("I am here")
             response = response, confidence
         else:
-            print("FSL is set to False, using naive_question_no_fsl")
+            print("FSL is set to False")
+            if config["COT"]:
+                print("COT is set to TRUE")
+                response = naive_question_no_fsl(description, program, model)
+            else:
+                print("COT is set to FALSE")
+                response = naive_question_no_fsl_no_cot(description, program, model)
             #dont use few shot learning
-            response = naive_question_no_fsl(description, program, model)
+            
     else:
         response = naive_question(description, program, model)
     
@@ -895,7 +903,7 @@ def compute_postcondition(precondition, program, config, log_directory):
 def check_entailment(description, postcondition, program, module_name, config, log_directory, return_str, annotated_func, cex_path=None):
     model = get_model(config["model"], config["temperature"], log_directory)
     if config["assessment-mode"] == "total" or config["assessment-mode"] == "verify":
-        print("Using total or verify entailment mode")
+        print(f"Using {config['assessment-mode']} entailment mode")
         model_naive= get_model(config["model"], config["temperature"], log_directory/'entailment_naive_fsl')
         model_vanilla= get_model(config["model"], config["temperature"], log_directory/'entailment_vanilla')
         model_vanilla_no_cot= get_model(config["model"], config["temperature"], log_directory/'entailment_vanilla_no_cot')
@@ -917,6 +925,7 @@ def check_entailment(description, postcondition, program, module_name, config, l
                     correctness = annotated_simple(description,  remove_functionality(annotated_func), model)
                 elif config["annotated-type"] == "complex":
                     print("Using complex annotated entailment")
+                    
                     correctness = entailment_annotated.naive(model, description, return_str, annotated_func, module_name, config)
                 else:
                     print(f"Annotated type {config['annotated-type']} not supported, only simple and complex are currently implemented")
@@ -963,7 +972,7 @@ def check_entailment(description, postcondition, program, module_name, config, l
             correctness_complex= entailment_annotated.naive(model_complex, description, return_str, annotated_func, module_name, config, cex_path)
             correctness_default = entailment.naive(model_default, description, postcondition, program, module_name, config, cex_path)
             correctness_default_no_fsl = entailment_no_fsl.naive(model_default_no_fsl, description, postcondition, program, module_name, config, cex_path)
-            correctness_naive_no_fsl_no_cot = naive_question_no_fsl_no_cot(description, program, model_naive)
+            correctness_naive_no_fsl_no_cot = naive_question_no_fsl_no_cot(description, program, model_vanilla_no_cot)
 
             correctness_naive, response_naive  = naive_question_with_response(description, program, model_naive)
             correctness_naive_no_fsl, response_naive_no_fsl  = naive_question_no_fsl_with_response(description, program, model_vanilla)
@@ -986,6 +995,7 @@ def check_entailment_mult_func(description, postconditions_list, functions_list,
     if config["assessment-mode"] == "total" or config["assessment-mode"] == "verify":
         model_naive= get_model(config["model"], config["temperature"], log_directory/'entailment_naive_fsl')
         model_vanilla= get_model(config["model"], config["temperature"], log_directory/'entailment_vanilla')
+        model_vanilla_no_cot = get_model(config["model"], config["temperature"], log_directory/'entailment_vanilla_no_cot')
         model_simple = get_model(config["model"], config["temperature"], log_directory/'entailment_simple')
         model_complex = get_model(config["model"], config["temperature"], log_directory/'entailment_complex')
         model_default = get_model(config["model"], config["temperature"], log_directory/'entailment_summary')
@@ -1076,7 +1086,7 @@ def check_entailment_mult_func(description, postconditions_list, functions_list,
             correctness_complex= entailement_mult_func_annotated.naive_mult_func(model_complex, description, annotated_program, module_name, config, cex_path)
             correctness_default =entailment_mult_func.naive_mult_func(model_default, description, functions, module_name, config, cex_path)
             correctness_default_no_fsl =entailment_mult_func_no_fsl.naive_mult_func(model_default_no_fsl, description, functions, module_name, config, cex_path)
-
+            correctness_naive_no_fsl_no_cot = naive_question_no_fsl_no_cot(description, program, model_vanilla_no_cot)
             correctness_naive, response_naive  = naive_question_with_response(description, program, model_naive)
             correctness_naive_no_fsl, response_naive_no_fsl  = naive_question_no_fsl_with_response(description, program, model_vanilla)
 
@@ -1087,7 +1097,7 @@ def check_entailment_mult_func(description, postconditions_list, functions_list,
             correctness_complex_no_fsl_verify= verify_tree(model_complex_verify, description, annotated_program, program , response_naive_no_fsl , module_name, config, cex_path)
             correctness_default_no_fsl_verify = verify_function_summary(model_default_verify, description, output_hints, program, response_naive_no_fsl, module_name, config, cex_path)
             #lets return a dicrionary with the results
-            res_dict= {"naive": correctness_naive, "naive_no_fsl": correctness_naive_no_fsl , "simple": correctness_simple[0], "complex": correctness_complex[0], "default": correctness_default[0], "default_no_fsl": correctness_default_no_fsl[0], "simple_verify": correctness_simple_verify[0], "complex_verify": correctness_complex_verify[0], "default_verify": correctness_default_verify[0], "simple_no_fsl_verify": correctness_simple_no_fsl_verify[0], "complex_no_fsl_verify": correctness_complex_no_fsl_verify[0], "default_no_fsl_verify": correctness_default_no_fsl_verify[0]}
+            res_dict= {"naive": correctness_naive, "naive_no_fsl": correctness_naive_no_fsl , "vanilla_no_cot": correctness_naive_no_fsl_no_cot, "simple": correctness_simple[0], "complex": correctness_complex[0], "default": correctness_default[0], "default_no_fsl": correctness_default_no_fsl[0], "simple_verify": correctness_simple_verify[0], "complex_verify": correctness_complex_verify[0], "default_verify": correctness_default_verify[0], "simple_no_fsl_verify": correctness_simple_no_fsl_verify[0], "complex_no_fsl_verify": correctness_complex_no_fsl_verify[0], "default_no_fsl_verify": correctness_default_no_fsl_verify[0]}
             print(res_dict)
             return res_dict
 

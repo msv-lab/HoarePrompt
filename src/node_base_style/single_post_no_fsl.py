@@ -1,7 +1,7 @@
 import re
 
-# from node_base_style.hoare_triple import Triple, pprint_cmd, print_state
-# from node_base_style.helper import extract_result
+from node_base_style.hoare_triple import Triple, pprint_cmd, print_state
+from node_base_style.helper import extract_result
 
 
 
@@ -20,26 +20,15 @@ Program:
 
 Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate the result. You must adhere to the text format: Output State: **output state**.
 """
-def extract_result(s: str, keyword: str):
-    pattern = fr"{keyword}:\s*\*\*(.*?)\*\*"
-    matches = re.findall(pattern, s, re.DOTALL)
-    if matches:
-        # Select the last match
-        res = matches[-1]
-        # Clean up the beginning and end of the string for any weird characters like * or newlines
-        return res.strip(), True
-    return s, False
 
 
 # This is the main function, it completes the prompt, queries the model and extracts the result, meaining the output state of that program part
-def single_post_no_fsl(precondition, code, model, retry =True):
+def single_post_no_fsl(precondition, code, model):
    
     prompt = PROMPT_COMPLEX.format(precondition=precondition, code=code)
     response = model.query(prompt)
     print(response)
-    post, found = extract_result(response, "Output State")
-    if retry and not found:
-        return single_post_no_fsl(precondition, code, model, retry=False)
+    post = extract_result(response, "Output State")
     print("*" * 50)
     print(f"LLM Reply: {post}")
     return post

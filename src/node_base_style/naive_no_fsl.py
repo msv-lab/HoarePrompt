@@ -67,7 +67,6 @@ First explain your reasoning step by step, then reply Correctness: **True**  if 
 # Your response:
 Reasoning:  
 Correctness: **True** or **False**
-
 """
 
 PROMPT_COMPLEX_NO_COT= """
@@ -83,7 +82,6 @@ Reply Correctness: **True**  if the given program is correct or Correctness: **F
 
 # Your response:
 Correctness: **True** or **False**
-
 """
 
 PROMPT_COMPLEX_CONFIDENCE = """
@@ -140,37 +138,22 @@ The program is correct only if it meets the problem description! The problem des
 Return  True if the program follows the problem description, otherwise return False. if the program does not do what the problem description asks for for every potential case.
 Remember to return just one word for your response.
 """
-
 TEST_GENERATION_PROMPT = """
 Your task is to generate a Python script with assertions to test the correctness of a given Python program, based on the provided problem description. Assume valid inputs as described in the problem description.
 
 The output must be a complete Python script with assertions that verify the program’s correctness. Do not execute the program yourself; just provide the test code.
-
-If the program defines a function, import it and test it by calling the function directly with arguments and using assertions on its return values.
-
-If the program does not define functions but executes directly, use the following helper function to automate input/output capture and execute `program.py` safely:
+If the code uses `stdin`, include the following helper function to automate input/output capture:
 
 import io
 import sys
 
-def run_program_with_captured_io(input_data):
-    original_stdin = sys.stdin
-    original_stdout = sys.stdout
-
-    try:
-        sys.stdin = io.StringIO(input_data)
-        captured_output = io.StringIO()
-        sys.stdout = captured_output
-
-        with open("program.py", "r", encoding="utf-8") as f:
-            code = f.read()
-            exec(code, {repl})
-
-        return captured_output.getvalue().strip()
-    
-    finally:
-        sys.stdin = original_stdin
-        sys.stdout = original_stdout
+def capture_output(func, input_data):
+    sys.stdin = io.StringIO(input_data)
+    captured_output = io.StringIO()
+    sys.stdout = captured_output
+    func() 
+    sys.stdout = sys.__stdout__
+    return captured_output.getvalue().strip()
 
 
 # Problem:
@@ -184,37 +167,18 @@ def run_program_with_captured_io(input_data):
 # Include necessary imports if any
 # Assume the provided program is saved as 'program.py' and can be imported from the same dir.
 
-#if there is a specific function we can call import it
 from program import *
-#otherwise use the run_program_with_captured_io(input_data) function to run the program and capture the output
 
 # Write your test cases below
 # Each test case should include assertions based on the problem description
 # Example:
 # assert function_name(input) == expected_output
 
-# or if the program is a script we must execute 
-# input_data = "input data"
-# expected_output = "expected output"
-# assert run_program_with_captured_io(input_data) == expected_output 
 # Add multiple test cases to ensure correctness across edge cases
-
+assert ...
 
 # End of script
-```
 """
-
-def extract_result(s: str, keyword: str):
-    pattern = fr"{keyword}:\s*\*\*(.*?)\*\*"
-    matches = re.findall(pattern, s, re.DOTALL)
-    if matches:
-        # Select the last match
-        res = matches[-1]
-        # Clean up the beginning and end of the string for any weird characters like * or newlines
-        return res.strip(), True
-    return s, False
-
-import re
 
 def extract_code_from_response(response: str) :
     """
@@ -237,7 +201,7 @@ def extract_code_from_response(response: str) :
  
 def tester_call(description, code, model, retry=True):
    
-    prompt = TEST_GENERATION_PROMPT.format(description=description, code=code, repl= f"{{}}")
+    prompt = TEST_GENERATION_PROMPT.format(description=description, code=code)
     response = model.query(prompt)
     print(response)
     post, found =extract_code_from_response(response)
@@ -247,13 +211,56 @@ def tester_call(description, code, model, retry=True):
         return tester_call(description, code, model, retry=False)
     return post
 
+def extract_result_new(s: str, keyword: str):
+    temp=s
+    s=s[-25:]
+    pattern = fr"{keyword}:\s*\*\*(.*?)\*\*"
+    matches = re.findall(pattern, s, re.DOTALL)
+    if matches:
+        # Select the last match
+        res = matches[-1]
+        # Clean up the beginning and end of the string for any weird characters like * or newlines
+        return res.strip(), True
+    if "false" in s[-20:].lower().strip() :
+        return "false", True
+    if "true" in s[-20:].lower().strip():
+        return "true", True
+    
+    s=temp
+    matches = re.findall(pattern, s, re.DOTALL)
+    if matches:
+        # Select the last match
+        res = matches[-1]
+        # Clean up the beginning and end of the string for any weird characters like * or newlines
+        return res.strip(), True
+    s=temp[-200:]
+    if "code is correct" in s.lower().strip():
+        return "true", True
+    if "code is incorrect" in s.lower().strip():
+        return "false", True
+    if "code is not correct" in s.lower().strip():
+        return "false", True
+    return s, False
+ 
+def extract_result(s: str, keyword: str):
+    
+    pattern = fr"{keyword}:\s*\*\*(.*?)\*\*"
+    matches = re.findall(pattern, s, re.DOTALL)
+    if matches:
+        # Select the last match
+        res = matches[-1]
+        # Clean up the beginning and end of the string for any weird characters like * or newlines
+        return res.strip(), True
+    
+    return s, False
+
 # This is the main function, it completes the prompt, queries the model and extracts the result, meaining the output state of that program part
 def naive_question_no_fsl(description, code, model, retry=True):
    
     prompt = PROMPT_COMPLEX.format(description=description, code=code)
     response = model.query(prompt)
     print(response)
-    post, found = extract_result(response, "Correctness")
+    post, found = extract_result_new(response, "Correctness")
     print("*" * 50)
     print(f"{description} \n {code}")
     print(f"LLM Reply: {post}")

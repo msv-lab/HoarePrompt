@@ -19,7 +19,6 @@ What is the ouput state after the loop executes all the iterations? Change the v
 In your response strictly use the format: Output State: **the output state you calculate.**, and describe this output state in Natural language easily understandable by humans.
 
 """
-
 LOOP_PROMPT_0_UNROLL = """
 Given a Python loop, and an initial execution state, determine the output state after all the executions of the loop have finished. 
 

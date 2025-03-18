@@ -70,7 +70,7 @@ if condition:
 ```
 {program_fragment}
 ```
-Your task is to complete the  postcondition . Try to understand what the if check does to the input and what must hold true to not enter the if. All the information of the precondition must be included in the postcondition and additionally the negation of the if condition must also be included. Give the overall state of the program for the program after it does not enter the if condition and instead enters the else. 
+Your task is to complete the  postcondition .All the information of the precondition must be included in the postcondition and additionally the negation of the if condition must also be included. Give the overall state of the program for the program after it does not enter the if condition and instead enters the else. 
 Provide the postcondition in Natural language easily understandable by humans. Follow the format Postcondition: **the calculated postcondition**
 """
 def extract_postcondition(s: str):

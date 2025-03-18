@@ -1,0 +1,10 @@
+{
+    "model": "qwen2.5-7b-instruct",
+    "temperature": 1.0,
+    "assessment-mode": "naive-test",
+    "postcondition-mode": "hoarecot",
+    "postcondition-cot-prompt": "node-based-style",
+    "loop-unrolling-count": 0,
+    "entailment-mode": "verify-answer",
+    "cex-mode": "with-postcondition"
+}

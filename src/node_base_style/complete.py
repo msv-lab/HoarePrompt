@@ -569,8 +569,8 @@ class PostconditionAnalyzer:
             total_tree = print_tree(total_code, annotate_prints)
 
             # Debugging: Save return conditions to a file
-            with open("tasks.txt", "a") as f:
-                print(return_conditions_str, file =f)
+            # with open("tasks.txt", "a") as f:
+            #     print(return_conditions_str, file =f)
             
             # Add precondition as a comment at the beginning of the tree
             total_tree = f"#State of the program right berfore the function call: {pre}\n" + total_tree

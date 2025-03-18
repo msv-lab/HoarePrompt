@@ -7,4 +7,5 @@ the number of professors per class at building B
 there are 12 classes at building A and 16 at building B. ALl classes have different number of people.
 Make the building have equal number of people by removing the extra people from the more populous building.
 Calculate a equal bonus for each moved person. The bonus pool is created by every staying person at both buildings contributing $10.
-return the bonus that was given at each mover
+return the bonus that was given at each mover and print it as a single number
+The program accepts as input 5 rows of numbers separated by space for the 5 lists.

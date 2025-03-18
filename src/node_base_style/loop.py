@@ -15,7 +15,7 @@ The output state after the loop executes the first {times} times includes what n
 {loop_unrolled}
 
 What is the ouput state after the loop executes all the iterations? Change the values of only the variables in the loop head and body.The state of the other variables in the precondition that are not affected by the loop head and body must remain unchanged.
-The output state must be in a similar format as the initial execution state. describe this output state in Natural language easily understandable by humans. In your response strictly use the format: Output State: **the output state you calculate.**.
+In your response strictly use the format: Output State: **the output state you calculate.**, and describe this output state in Natural language easily understandable by humans.
 
 """
 
@@ -33,7 +33,6 @@ What is the ouput state after the loop executes all the iterations? Change the v
 In your response strictly use the format: Output State: **the output state you calculate.**, and describe this output state in Natural language easily understandable by humans.
 
 """
-
 # The prompt template instructs the model on how to analyze the state of the loop after several(k) iterations.
 # LOOP_PROMPT = """
 # ou have been assigned the role of a program verifier, responsible for analyzing the program's state after the while loop. The initial state of the code has already been provided. Additionally, you can see how the state changes after the loop executes a few times. 
@@ -137,7 +136,7 @@ def complete_loop_triple(incomplete_triple: Triple, model, examples: list[Triple
 def complete_loop_triple_0_unroll(incomplete_triple: Triple, model, retry= True):
     
     
-    prompt = LOOP_PROMPT.format( pre=incomplete_triple.precondition,
+    prompt = LOOP_PROMPT_0_UNROLL.format( pre=incomplete_triple.precondition,
                                 loop_code=pprint_cmd(incomplete_triple.command))
     response = model.query(prompt)
     post, found= extract_result(response, "Output State")

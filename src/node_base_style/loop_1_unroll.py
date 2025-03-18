@@ -5,7 +5,7 @@ from node_base_style.helper import extract_result
 
 
 # The prompt template instructs the model on how to analyze the state of the loop after several(k) iterations.
-LOOP_PROMPT_OLD = """
+LOOP_PROMPT = """
 You have been assigned the role of a program verifier, responsible for analyzing the program's state after the while loop. The initial state of the code has already been provided. Additionally, you can see how the state changes after the loop executes 1 time. The initial state includes the values and relationships of the variables before the program execution. The output state should include the values and relationships of the variables after all the iterations of the while loop have executed. Similar to the initial state, avoid explaining how the program operates; focus solely on the variable values and their interrelations. 
 You must adhere to the text format: Output State: **output state.**
 I am giving you two examples to understand the task better. Then I am giving you your task.
@@ -56,31 +56,7 @@ Code of the loop:
 
 {loop_unrolled}
 Now, please think step by step. Using the results from the first few iterations of the loop provided in the example, determine the loop's output state after all the iterations of the loop have executed. Make sure to include the values of the variables after the loop has finished especially the any loop control variables. 
-In your response strictly use the format: Output State: **the output state**, and describe this output state in Natural language easily understandable by humans
-"""
-
-LOOP_PROMPT = """
-Given a Python loop, an initial execution state, and the output states after the first  iterationsof the loop, determine the output state after all the executions of the loop have finished. Follow these steps carefully:
-
-1. **Analyze the Code and Initial State**: Think step by step about what the commands in the loop do and how they interact with the initial state.
-2. **Track Variable Changes**: Identify variables that are updated during the loop and those that remain constant or depend on the initial state. 
-3. **Summarize the Loop Behavior**: Describe how the loop's execution affects the values and relationships of variables after all iterations, considering edge cases like when the loop does not execute.
-
-You must adhere to the text format: Output State: **output state.**
-
-Initial State: {pre}
-Code of the loop:
-{loop_code}
-
-The output state after the loop executes the first time includes what needed to be true for the loop to execute at least that first time:
-{loop_unrolled}
-
-Make sure to include:  
-- Any variables that remain constant throughout the loop.  
-- Final values of all variables after the loop finishes.  
-- Conditions under which the loop executes or does not execute.  
-
-In your response strictly use the format: Output State: **the output state you calculate.**, and describe this output state in Natural language easily understandable by humans.
+Use the fomrat Output State: **the output state you calculate**
 """
 
 # Format examples of loop iterations into the text format required for the prompt.

@@ -89,16 +89,14 @@ def extract_precondition_from_response(response_content):
     match = re.search(pattern, response_content)
     if match:
         if match.group(1):
-            return match.group(1).strip(), True
+            return match.group(1).strip()
         elif match.group(2):
-            return match.group(2).strip(), True
-    return response_content, False
+            return match.group(2).strip()
+    return response_content
 
 
-def default(model, description, program,retry= True):
+def default(model, description, program):
     prompt = PRECONDITION_EXTRACTION_PROMPT_TEMPLATE.format(program=program, description=description)
     response = model.query(prompt)
-    res, found =  extract_precondition_from_response(response)
-    if retry and not found:
-        return default(model, description, program, retry=False)
-    return res
+    return extract_precondition_from_response(response)
+    

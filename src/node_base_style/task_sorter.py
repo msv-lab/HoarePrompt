@@ -1,3 +1,5 @@
+import os
+
 def sort_tasks_by_depth(elements_simple):
     """
     Sort tasks by depth to create a hierarchical structure.
@@ -126,6 +128,9 @@ def print_tree(elements, annotate_prints=True):
     #save the contents in the tast.txt file for debugging    
     with open("tasks.txt", "r") as f:
             tasks = f.read()
+    #delete the tasks.txt
+    os.remove("tasks.txt")
+
     return tasks
 
 

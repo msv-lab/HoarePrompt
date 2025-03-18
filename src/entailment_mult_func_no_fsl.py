@@ -5,6 +5,25 @@ import re
 # satisfies the description and output specification, and asks it to return either "True" or "False".
 
 ENTAILMENT_CHECKING_PROMPT_TEMPLATE = """
+Your task is to determine if a given Python program is correct the based on the provided problem description and the execution summaries of its functions. You can use the execution summaries as a guides to understand the program’s behavior. Assume valid inputs as described in the problem.
+The program is made of multiple functions and the program is **correct** only if all its functions together meet the problem description.
+First explain your reasoning then reply Correctness: **True**  if the given program is correct or Correctness: **False**  if the given program is incorrect.
+
+
+# Problem:
+{description}
+
+# Functions with Execution Summary:
+{functions}
+
+# Your response:
+Reasoning:  
+Correctness: **True** or **False**
+
+"""
+
+
+ENTAILMENT_CHECKING_PROMPT_TEMPLATE_old = """
 You have been assigned the role of a program verifier. Your task is to determine the correctness of a given Python program based on the provided problem description and the description of program's output. If the program is correct, that is it meets the requirements in the problem description,  print Correctness: **True**; otherwise, print  Correctness: **False**. Partially correct programs should be considered incorrect. You have to use the source code and the Output hints to try to understand if there is any missing logic or edge cases that the code is not handling. 
 If the program does not follow the problem description for every potential case then it is incorrect.Since if for at least one input or potential case the program does not work then Correctness **False**.
 The output hints summarise the code functionality and might give you examples of some of the cases that the code is not working corectly, but make sure the hints agree with the code.

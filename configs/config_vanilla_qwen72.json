@@ -1,12 +1,14 @@
 {
-    "model": "gpt-4o-mini-2024-07-18",
-    "temperature": 0.7,
-    "assessment-mode": "verify", 
+    "model": "qwen2.5-72b-instruct",
+    "temperature": 1.0,
+    "assessment-mode": "naive", 
     "postcondition-mode": "hoarecot",
     "postcondition-cot-prompt": "node-based-style",
+    "annotated_type" : "simple",
     "loop-unrolling-count": 3,
     "entailment-mode": "naive",
     "cex-mode": "with-postcondition",
-    "annotated": false,
-    "fsl": false
+    "annotated" : false,
+    "fsl": false,
+    "COT": false
 }

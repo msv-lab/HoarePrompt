@@ -11,3 +11,13 @@ example2/
 src/HoarePrompt.egg-info
 logs/
 log*/
+log*/
+yihan_test/
+test_example/
+test_llm_calls/
+motivational_example/
+useful_examples/
+incomplete_examples/
+remote-src/
+old_source/
+configs_old

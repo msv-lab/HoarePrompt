@@ -12,3 +12,12 @@ def adjust_buildings_bonus(students_A, admins_A, students_B, admins_B, profs_B):
     
     return  bonus_per_moved
 
+
+#read from user the 5 lists
+# the user must provide the input in th forma1
+students_A = list(map(int, input().split()))
+admins_A = list(map(int, input().split()))
+students_B = list(map(int, input().split()))
+admins_B = list(map(int, input().split()))
+profs_B = list(map(int, input().split()))
+print(adjust_buildings_bonus(students_A, admins_A, students_B, admins_B, profs_B))

@@ -13,9 +13,8 @@ Your task is to determine whether these two postconditions are semantically rela
 
 For your response, provide:
 
-- SAME: **True** or Same: **False** (True if they describe the same state semantically; False if not).
+- SAME: **True or False** (True if they describe the same state semantically; False if not).
 - REASON: **The reason why the postconditions are the same or not**.
-Follow this exact format.
 
 Here are the two postconditions:
 
@@ -27,7 +26,7 @@ Computed Postcondition:
 
 Your Response: 
 
-SAME: **True**   or SAME: **False**.
+SAME: **True or False**  
 REASON: **Explanation for the decision**
 """
 

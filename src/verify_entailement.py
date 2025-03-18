@@ -5,6 +5,41 @@ import re
 # satisfies the description and output specification, and asks it to return either "True" or "False".
 
 VERIFY_PROMPT_TEMPLATE_FUNCTION_SUMMARY = """
+You are a program verifier. Your task is to evaluate the correctness of a Python program based on a given problem description, the program code, an initial assessment, and one or more function summaries of the code. A function summary describing a function's output states and return values.
+
+Task:
+1. Analyze the problem description, the program code, and the function summary(ies). Assume valid inputs.
+2. Use the summary(ies) to systematically evaluate the program’s behavior and reasoning. Use it (them) to validate or challenge the original assessment.
+3. Decide whether to maintain or overturn the original assessment based on the evidence.
+
+Reason about the code and explain if the  original assessment was accurate or inaccurate.
+Then provide the final evaluation Final: **True** if the given program is correct  or Final: **False** if the given program is incorrect.
+
+
+
+- Problem description: 
+{description}
+
+- Program:
+{program}
+
+- Function Summary: 
+{postcondition}
+
+Beggining of Original Assessment: 
+{original_assessment}
+
+End of Original Assessment
+
+Your Response:
+
+Reasoning: [Your explanation]
+Final: **True** or **False**
+
+"""
+
+
+VERIFY_PROMPT_TEMPLATE_FUNCTION_SUMMARY_old = """
 You have been assigned the role of a program verifier. Given a python program and a problem description, we have performed an initial assessment of the program's correctness. We also provide the reasoning behind our assessment. 
 We are additionally providing you with some output hints that summarize the program's functionality.
 Your task is to analyze the problem description, the program, and the original assessment. Use the provided output hints to systematically evaluate the program's behavior and reasoning. Based on the program, the output hints the problem description and the original assessment, determine the final correctness of the program.
@@ -37,6 +72,39 @@ If you keep the original assessment then you need to provide a reason why you th
 """
 
 VERIFY_PROMPT_TEMPLATE_TREE = """
+You are a program verifier. Your task is to evaluate the correctness of a Python program based on a given problem description, the program code, an initial assessment, and an annotated version of the code. The annotations describe the program's state at key points.
+
+Task:
+1. Analyze the problem description, the program code, and the original assessment. Assume valid inputs.
+2. Use the annotated version to systematically evaluate the program’s behavior and reasoning. Use the annotations to validate or challenge the original assessment.
+3. Decide whether to maintain or overturn the original assessment based on the evidence.
+
+Reason about the code and explain if the  original assessment was accurate or inaccurate.
+Then provide the final evaluation Final: **True** if the given program is correct  or Final: **False** if the given program is incorrect.
+
+- Problem description: 
+{description}
+
+- Program: 
+{program}
+
+- Annotated Code: 
+{postcondition}
+
+
+Beggining of Original Assessment: 
+{original_assessment}
+
+End of Original Assessment
+
+Your Response: 
+Reasoning: [Your explanation] 
+Final: **True** or **False**
+
+"""
+
+
+VERIFY_PROMPT_TEMPLATE_TREE_old = """
 You have been assigned the role of a program verifier. Given a python program and a problem description, we have performed an initial assessment of the program's correctness. We also provide the reasoning behind our assessment. 
 We are additionally providing you with the program again but this time we are providing you with an annotated version of the program. This annotated version provides the state of the program at different points in the program.
 Your task is to analyze the problem description, the program, and the original assessment. Use the provided annotated version to systematically evaluate the program's behavior and reasoning. Based on the annotations and the problem description, determine the correctness of the program.
@@ -103,6 +171,7 @@ def verify_function_summary(model, description, postcondition, program, original
         return (False , response)
     return("Nan", response)
 
+
 def verify_tree(model, description, postcondition, program, original_assessment, module_name, config, cex_path=None):
     prompt = VERIFY_PROMPT_TEMPLATE_TREE.format(program=program,
                                                         description=description,
@@ -124,6 +193,5 @@ def verify_tree(model, description, postcondition, program, original_assessment,
     if 'false' in result.lower():
         return (False , response)
     return("Nan", response)
-
 
 # TBD: WHAT OTHER APPROACH CAN BE USED OTHER THAN NAIVE?
