@@ -50,15 +50,18 @@ Problem description: Write a python function to identify non-prime numbers.
 Program:
 ```
 import math
-def is_not_prime(n):
-    result = False
-    for i in range(2,int(math.sqrt(n)) + 1):
-        if n % i == 0:
-            result = True
-    return result
+
+n = int(input())
+
+result = False
+for i in range(2, int(math.sqrt(n)) + 1):
+    if n % i == 0:
+        result = True
+print(result)
+
 ```
 
-Precondition: **n is an integer greater than 1.**
+Precondition: **stdin contains one input: an integer n (greater than 1).**
 
 # Example 4
 
@@ -66,12 +69,15 @@ Problem description: Write a function to find the largest integers from a given 
 Program:
 ```
 import heapq as hq
-def heap_queue_largest(nums,n):
-  largest_nums = hq.nlargest(n, nums)
-  return largest_nums
+
+nums = list(map(int, input().split()))
+n = int(input())
+largest_nums = hq.nlargest(n, nums)
+print(largest_nums)
+
 ```
 
-Precondition: **nums is a list of integers, and n is a non-negative integer such that 0 <= n <= len(nums).**
+Precondition: **stdin contains two inputs: first a  space-separated list of integers and then an integer n. The integer n is a non-negative integer and less or equal than the lengtth of the list.**
 
 # Example 5
 

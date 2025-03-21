@@ -12,14 +12,14 @@ I am giving you some examples to understand the task better. Then I am giving yo
 
 
 Example1:
-Initial State: `str` is a string
+Initial State: `str` is a string, stdin contains two input: an integer larger than 0 and a string
 ```
 n = int(input())
 ```
 Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate the result.
 Example Answer 1:
-`n` is assigned the value `int(input())`, where `input` accepts an input and `int` converts it to an integer. Other variables are not affected, so the output state is `str` is a string, `n` is an input integer.
-Output State: **`str` is a string, `n` is an input integer**
+`n` is assigned the value `int(input())`, where `input` accepts an input and `int` converts it to an integer. The stdin contains an input integer larger than 0 first and that integer is assigned into n.  So stdin now contains a string first. Other variables are not affected, so the output state is `str` is a string, stdin contains one input: a string.
+Output State: **`str` is a string, `n` is an integer larger than 0, stdin contains one input: a string**
 
 
 Example2:
@@ -34,14 +34,14 @@ Output State: **variable `i` is increased by 1**
 
 
 Example3:
-Initial State: `n` is either 3 or 5
+Initial State: `n` is either 3 or 5, stdin contains one input: an integer
 ```
 m = n + 1
 ```
 Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate the result.
 Example Answer 3:
 m is assigned the value n + 1. The value of n can be 3 or 5, so the value of m is 4 or 6. Therefore, the Output State is: n is either 3 or 5; m is either 4 or 6.
-Output State: **`n` is either 3 or 5; `m` is either 4 or 6**
+Output State: **`n` is either 3 or 5; `m` is either 4 or 6, stdin contains one input: an integer**
 
 
 Example4:
@@ -66,14 +66,14 @@ Example Answer 5:
 Output State: **`total' is 0, `i` is 1 and we break out of the most internal loop or if statement.**
 
 Example 6:
-Initial State: `total' is positive, `num` is negative, `x` is 0
+Initial State: `total' is positive, `s` is negative, stdin contains a space-separated list of integers
 ```
-x = total - num
+nums = list(map(int, input().split()))
 ```
 Now, please think step by step: List the impact of the code on the program, check the previous values of the affected variables, and then calculate the result.
 Example Answer 6: 
-`x' becomes total minus num. The value of `total` is positive, and the value of `num` is negative, so the value of `x` is a positive valye greater than total. The states of the other variables are not affected. Therefore, the Output State is: `total' is positive, `num` is negative, `x` is a positive value `total` - `num.
-Output State: **`total' is positive, `num` is negative, `x` is a positive value equal to `total` - `num'.**
+`nums` is assigned the list of integers from the input, where `input().split()` accepts a space-separated list of integers and `map(int, ...)` converts them to integers. The stdin contains a space-separated list of integers. The values of the other variables are not affected.since stdin is now empty we wont include it in the output state.
+Output State: **`total' is positive,  `s` is negative, `num` is a list of integer**
 
 Your Task:
 Initial State: {pre}
@@ -105,26 +105,27 @@ The first line assigns the value of `a + b` to `c`. Since `a` is 5 and `b` is 3,
 Output State: **a is 5, b is 3, c is 8, d is 16**
 
 Example 2:
-Initial State: `x` is a positive integer
+Initial State: `x` is a positive integer , stdin contains 2 inputs: an integer and a second integer
 ```
 n= int(input())
 x += n
 ```
 
 Example Answer 2:
-The first line assigns the integer value of the input to `n`. The second line increments `x` by the value of `n`. The value of `x` is a positive integer, and `n` is an integer. No other variables are affected.
-Output State: **x is a positive integer equal to its original value plus n , n is an integer**
+The first line assigns the integer value of the input to `n`. So now stdin only contains one integer now. The second line increments `x` by the value of `n`. The value of `x` is a positive integer, and `n` is an integer. No other variables are affected.
+Output State: **x is a positive integer equal to its original value plus n , n is an integer, stdin contains 1 input: an integer **
 
 Example 3:
-Initial State: `n` is 3, `total` is 1
+Initial State: `n` is 3, `total` is 1 , stdin contains a space-separated list of integers
 ```
+nums = list(map(int, input().split()))
 total += n
 pass
 n= max(total, n)
 ```
 
 Example Answer 3:
-The first line increments `total` by the value of `n`, making `total` equal to 4. The second line does not affect any variables. The third line assigns the maximum value between `total` and `n` to `n`. Since `total` is 4, and n was 3, `n` becomes 4.
+The first line assins to num a list of integers from stdin. Stdin is now empty so we dont include it in the output state.The second line increments `total` by the value of `n`, making `total` equal to 4. The thir line does not affect any variables. The 4th line assigns the maximum value between `total` and `n` to `n`. Since `total` is 4, and n was 3, `n` becomes 4.
 Output State: **n is 4, total is 4**
 
 Your Task:

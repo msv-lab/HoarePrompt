@@ -50,28 +50,30 @@ Problem description: Write a python function to identify if 2 consecutive intege
 Program:
 ```
 import math
-def is_not_prime(n):
+def is_not_prime():
+   n = int(input())
     result = False
     for i in range(2,int(math.sqrt(n)) + 1):
         if n % i == 0:
             result = True
     return result
 ```
-
-Precondition: **n is an integer greater than 1.**
+Precondition: **stdin contains one input: an integer  (greater than 1).**
 
 # Example 4
-
-Problem description: Write a function to find the largest integers from a given list of numbers using heap queue algorithm.
+Problem description:Write a Python program that reads a list of integers and a number n from the user, then finds the n largest integers using the heap queue algorithm.
 Program:
 ```
 import heapq as hq
-def heap_queue_largest(nums,n):
+def func_1():
+  nums = list(map(int, input().split()))
+  n = int(input())
   largest_nums = hq.nlargest(n, nums)
-  return largest_nums
+  print(largest_nums)
 ```
 
-Precondition: **nums is a list of integers, and n is a non-negative integer such that 0 <= n <= len(nums).**
+Precondition: **stdin contains two inputs: first a  space-separated list of integers and then an integer . The integer is a non-negative integer and less or equal than the lengtth of the list.**
+
 
 
 # Your task

@@ -30,25 +30,28 @@ def similar_elements(test_tup1, test_tup2):
 
 Precondition: **test_tup1 and test_tup2 are tuples.**
 
+
 # Example 3
 
-Problem description: Write a python function to identify non-prime numbers.
-Function definition:
+Problem description: Write a python function to identify non-prime numbers.The user gives the number as input.
+Program:
 ```
-def is_not_prime(n):
+def is_prime():
+
 ```
 
-Precondition: **n is an integer greater than 1.**
+Precondition: **stdin contains one input: an integer n (greater than 1).**
 
 # Example 4
 
-Problem description: Write a function to find the largest integers from a given list of numbers using heap queue algorithm.
-Function definition:
+Problem description:Write a Python program that reads a list of integers and a number n from the user, then finds the n largest integers using the heap queue algorithm.
+Program:
 ```
-def heap_queue_largest(nums,n):
+def func_1():
+
 ```
 
-Precondition: **nums is a list of integers, and n is a non-negative integer such that 0 <= n <= len(nums).**
+Precondition: **stdin contains two inputs: first a  space-separated list of integers and then an integer n. The integer n is a non-negative integer and less or equal than the lengtth of the list.**
 
 # Example 5
 
