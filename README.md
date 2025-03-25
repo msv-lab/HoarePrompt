@@ -220,10 +220,6 @@ The HoarePrompt project consists of multiple repositories, each serving a specif
    
 3. **[HoarePrompt-experiments](https://github.com/msv-lab/HoarePrompt-experiments)**  
    - This repository provides scripts and configurations to run large-scale experiments with HoarePrompt on various datasets. It includes automated evaluation scripts and batch processing tools.
-   
-4. **[HoarePrompt Artifacts (ICSE Submission)](https://anonymous.4open.science/r/HoarePrompt-icse/README.md)**  
-   - The repository containing all artifacts submitted for the paper, including code, datasets, and experiment details required for reproduction.
-
 These repositories collectively support the development, evaluation, and reproducibility of HoarePrompt, making it easy for researchers and developers to experiment with and extend its capabilities.
 
 
