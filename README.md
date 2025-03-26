@@ -220,7 +220,17 @@ The HoarePrompt project consists of multiple repositories, each serving a specif
    
 3. **[HoarePrompt-experiments](https://github.com/msv-lab/HoarePrompt-experiments)**  
    - This repository provides scripts and configurations to run large-scale experiments with HoarePrompt on various datasets. It includes automated evaluation scripts and batch processing tools.
-These repositories collectively support the development, evaluation, and reproducibility of HoarePrompt, making it easy for researchers and developers to experiment with and extend its capabilities.
+   - 
+4. **[CoCoClaNeL](https://github.com/msv-lab/CoCoClaNeL)** 
+   This repository: the dataset and associated documentation.
 
+---
+
+## License
+
+This dataset is released under the **MIT License**.  
+See the [LICENSE](./LICENSE) file for details.
+
+---
 
 
