@@ -1,5 +1,5 @@
 <p align="center">
-<img src="./assets/hoareprompt_logo.png" width="200" alt="HoarePrompt logo">
+<img src="./assets/hoareprompt_logo.png" width="150" alt="HoarePrompt logo">
 </p>
 
 # HoarePrompt: Structural Reasoning About Program Correctness in Natural Language
