@@ -1,21 +1,8 @@
-<table>
-  <tr>
-    <td style="width: 35%; text-align: center;">
-      <img src="./assets/hoareprompt_logo.png" alt="HoarePrompt Logo" width="100"/>
-    </td>
-    <td style="width: 65%; text-align: left;">
-      <div id="user-content-toc">
-         <ul style="list-style: none;">
-            <summary>
-               <h1>HoarePrompt: Structural Reasoning About Program Correctness in Natural Language</h1>
-            </summary>
-         </ul>
-      </div>
-    </td>
-  </tr>
-</table>
+<p align="center">
+<img src="./assets/hoareprompt_logo.png" width="200" alt="HoarePrompt logo">
+</p>
 
-## Introduction
+# HoarePrompt: Structural Reasoning About Program Correctness in Natural Language
 
 HoarePrompt structurally reasons about program correctness in natural language using large language models (LLMs). Drawing inspiration from the [strongest postcondition calculus](https://en.wikipedia.org/wiki/Predicate_transformer_semantics), it employs a step-by-step process to generate natural language descriptions of reachable program states at various program points. By aligning formal semantics with informal requirements, HoarePrompt enables LLMs to detect bugs that violate natural language specifications.
 
