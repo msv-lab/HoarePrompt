@@ -4,7 +4,13 @@
       <img src="./assets/hoareprompt_logo.png" alt="HoarePrompt Logo" width="100"/>
     </td>
     <td style="width: 65%; text-align: left;">
-      <h1>HoarePrompt: Structural Reasoning About Programs in Natural Language</h1>
+      <div id="user-content-toc">
+         <ul style="list-style: none;">
+            <summary>
+               <h1>HoarePrompt: Structural Reasoning About Programs in Natural Language</h1>
+            </summary>
+         </ul>
+      </div>
     </td>
   </tr>
 </table>
@@ -32,8 +38,6 @@ HoarePrompt uses different approaches to handle loops and conditional statements
    
 5. **Counterexample Generation:**
    - Produces counterexamples when a program fails to meet its specification, helping identify the cause of failure.
-
----
 
 ## Installation
 
@@ -75,8 +79,6 @@ You can add these export commands to your `.bashrc` or `.zshrc` file to avoid ha
 
 Additional providers and models can be configured in `src/model.py`.
 
----
-
 ## Motivational Example
 
 To motivate our approach, we first show that annotating a program with natural language descriptions of reachable program states enhances an LLM's reasoning about program correctness.
@@ -85,8 +87,9 @@ To motivate our approach, we first show that annotating a program with natural l
 
 Consider the problem: *Given an integer list, the task is to find the maximum product of any sublist.* The left side of the figure below presents a flawed implementation of Kadane’s algorithm for solving this problem.
 The description and code for this example can be found at `examples/motivating_example/description.txt` and `examples/motivating_example/program.py`.
+
 <p align="center">
-  <img src="./assets/motivating_example.png" alt="Motivational Example" width="80%"/>
+  <img src="./assets/motivating_example.png" alt="Motivational Example" width="90%"/>
 </p>
 
 The bug in this implementation stems from incorrect indentation, which results in `best_so_far` being updated only once—after the loop ends—instead of being updated during each iteration.
@@ -103,8 +106,6 @@ The results above show that without state annotations, LLMs rarely detect the bu
 
 By iteratively applying this process, HoarePrompt constructs a structured representation of program states, making it easier for LLMs to reason about correctness. With these annotations, the bug detection rate increases significantly.
 
----
-
 ## Running the Motivational Example
 
 You can run the motivational example using the following command:
@@ -118,8 +119,6 @@ Alternatively, specify the type of command and the log path too:
 ```bash
 python src/hoareprompt.py --command assess --description examples/motivating_example/description.txt --program examples/motivating_example/program.py --config configs/config_motivational.json --log logs/motivating_example/
 ```
-
-
 
 ## Usage
 
@@ -172,8 +171,6 @@ python src/hoareprompt.py --command check-entailment --description example/descr
 
 - **Log Directory:** Specify `--log` to save detailed logs.
 - **Counterexample Generation:** Use `--cex <FILE>` with `assess` or `check-entailment` to generate counterexamples.
-
----
 
 ## Configuration
 
