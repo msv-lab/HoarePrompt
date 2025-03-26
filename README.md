@@ -7,7 +7,7 @@
       <div id="user-content-toc">
          <ul style="list-style: none;">
             <summary>
-               <h1>HoarePrompt: Structural Reasoning About Programs in Natural Language</h1>
+               <h1>HoarePrompt: Structural Reasoning About Program Correctness in Natural Language</h1>
             </summary>
          </ul>
       </div>
@@ -17,27 +17,15 @@
 
 ## Introduction
 
-**HoarePrompt** leverages large language models (LLMs) to perform natural language reasoning about program behavior and correctness. By analyzing programs step-by-step, it generates descriptions of the program's state (i.e., the values of variables) at various points during execution. These descriptions are used to check if the program adheres to a given specification or problem description written in natural language. It is a combination of Chain of Thought (CoT) reasoning and Hoare logic expressed in natural language to be more easily understood by the LLM.
+HoarePrompt structurally reasons about program correctness in natural language using large language models (LLMs). Drawing inspiration from the [strongest postcondition calculus](https://en.wikipedia.org/wiki/Predicate_transformer_semantics), it employs a step-by-step process to generate natural language descriptions of reachable program states at various program points. By aligning formal semantics with informal requirements, HoarePrompt enables LLMs to detect bugs that violate natural language specifications.
 
-HoarePrompt uses different approaches to handle loops and conditional statements, such as **k-unrolling**, improving the accuracy of the description of states throughout program execution. If an inconsistency between the program and its specification is found, HoarePrompt not only informs the user that the program is malfunctioning but is also able to generate a **failing test case (counterexample)** that demonstrates the error.
+Key features:
+1. **Correctness assessment**: classify program correctness with respect to natural language specifications, providing a verdict of `CORRECT` or `INCORRECT`.
+2. **Descriptions of reachable states**: infer natural language descriptions of reachable program states without executing the program.
+3. **Loop summarization**: apply a novel _few-shot-driven k-induction_ to precisely summarize the semantics of loops in natural language.
 
-## Key Features
-
-1. **Program Specification-Functionality Comparison:**
-   - Verifies if a program is consistent with a natural language description of its behavior (specification).
-   - Produces a verdict of `CORRECT` or `INCORRECT`.
-   
-2. **Precondition and Postcondition Inference:**
-   - Extracts preconditions from problem descriptions and computes postconditions for program fragments.
-   
-3. **Loop Summarization:**
-   - Supports loop unrolling and summarization for better reasoning about loops.
-
-4. **Functionality Extraction:**
-   - Extracts and summarizes the functionality of a given function based on its input parameters and output behavior. This helps provide a clearer understanding of the purpose and outcome of the function in natural language.
-   
-5. **Counterexample Generation:**
-   - Produces counterexamples when a program fails to meet its specification, helping identify the cause of failure.
+Preprint:
+- **HoarePrompt: Structural Reasoning About Program Correctness in Natural Language**<br>Dimitrios Stamatios Bouras, Yihan Dai, Tairan Wang, Yingfei Xiong, Sergey Mechtaev<br>[https://arxiv.org/abs/2503.19599](https://arxiv.org/abs/2503.19599)
 
 ## Installation
 
@@ -79,7 +67,7 @@ You can add these export commands to your `.bashrc` or `.zshrc` file to avoid ha
 
 Additional providers and models can be configured in `src/model.py`.
 
-## Motivational Example
+## Motivating Example
 
 To motivate our approach, we first show that annotating a program with natural language descriptions of reachable program states enhances an LLM's reasoning about program correctness.
 
