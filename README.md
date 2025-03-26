@@ -212,7 +212,7 @@ Predefined configurations for classifiers used in the HoarePrompt paper are avai
 
 The HoarePrompt project consists of multiple repositories, each serving a specific function:
 
-1. **[HoarePrompt (Main Repo)](https://github.com/msv-lab/HoarePrompt)**  
+1. **[HoarePrompt (Main Repo)](https://github.com/msv-lab/HoarePrompt)**  (TThis is the current repo you are on)
    - The core repository containing the implementation of HoarePrompt, including the logic for analyzing programs, state propagation, and correctness verification.
    
 2. **[HoarePrompt-data](https://github.com/msv-lab/HoarePrompt-data)**  
