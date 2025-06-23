@@ -1,0 +1,13 @@
+{
+    "model": "llama-v3p1-70b-instruct",
+    "temperature": 0.5,
+    "assessment-mode": "naive-test",
+    "postcondition-mode": "hoarecot",
+    "postcondition-cot-prompt": "node-based-style",
+    "loop-unrolling-count": 0,
+    "entailment-mode": "verify-answer",
+    "cex-mode": "with-postcondition",
+    "annotated": false,
+    "fsl": true,
+    "confidence": false
+}
