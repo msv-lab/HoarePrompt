@@ -82,6 +82,7 @@ def get_model(name: str, temperature: float, log_directory: Path = None):
     fireworks_models = {"qwen2p5-7b-instruct",  # model better than gpt3.5
         "qwen2p5-coder-32b-instruct",
         "qwen2p5-72b-instruct",
+        "llama-v3p1-70b-instruct",
         "accounts/mechtaev-89641e/deployedModels/qwen2p5-7b-instruct-fa0f85bd"
     }
     if name in fireworks_models:
